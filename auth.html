@@ -558,6 +558,9 @@
     </div>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
+  <script src="js/supabase.js"></script>
   <script src="js/script.js"></script>
   <script>
     // Switch between login and register tabs
@@ -590,40 +593,161 @@
     }
 
     // Handle login form submission
-    function handleLogin(event) {
+    async function handleLogin(event) {
       event.preventDefault();
-      const email = document.getElementById('loginEmail').value;
+      const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value;
-      
-      if (email && password) {
-        alert(`Welcome back! You've successfully logged in as ${email}. (This is a demo)`);
-        event.target.reset();
+      const submitBtn = event.target.querySelector('button[type="submit"]');
+
+      if (!email || !password) return;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Signing in...';
+
+      try {
+        // Find user by login
+        const { data: user, error } = await supabaseClient
+          .from('Users')
+          .select('*')
+          .eq('user_login', email)
+          .single();
+
+        if (error || !user) {
+          alert('User not found. Check your email or register.');
+          return;
+        }
+
+        // Verify password
+        const passwordMatch = dcodeIO.bcrypt.compareSync(password, user.user_password);
+        if (!passwordMatch) {
+          alert('Wrong password.');
+          return;
+        }
+
+        // Save session to localStorage
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('userId', user.user_id);
+        localStorage.setItem('userRole', user.role);
+        localStorage.setItem('userLogin', user.user_login);
+
+        // Redirect based on role
+        if (user.role === 1) {
+          window.location.href = 'student-profile.html';
+        } else if (user.role === 2) {
+          window.location.href = 'company-profile.html';
+        } else {
+          // admin (role 0) — for now redirect to index
+          window.location.href = 'index.html';
+        }
+      } catch (err) {
+        console.error('Login error:', err);
+        alert('An error occurred. Please try again.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign In';
       }
     }
 
     // Handle register form submission
-    function handleRegister(event) {
+    async function handleRegister(event) {
       event.preventDefault();
-      const firstName = document.getElementById('firstName').value;
-      const email = document.getElementById('regEmail').value;
+      const firstName = document.getElementById('firstName').value.trim();
+      const lastName = document.getElementById('lastName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
       const password = document.getElementById('regPassword').value;
       const confirmPassword = document.getElementById('confirmPassword').value;
-      const role = document.querySelector('input[name="role"]:checked').value;
+      const roleValue = document.querySelector('input[name="role"]:checked').value;
+      const submitBtn = event.target.querySelector('button[type="submit"]');
 
+      // Validation
       if (password !== confirmPassword) {
         alert('Passwords do not match!');
         return;
       }
-
       if (password.length < 6) {
         alert('Password must be at least 6 characters long!');
         return;
       }
 
-      let registrationType = role === 'student' ? '📚 Student' : '💼 Company/Employer';
-      alert(`Welcome, ${firstName}! Your ${registrationType} account has been successfully created. (This is a demo)`);
-      event.target.reset();
-      switchTab('login');
+      const role = roleValue === 'student' ? 1 : 2;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Creating account...';
+
+      try {
+        // Check if user already exists
+        const { data: existing } = await supabaseClient
+          .from('Users')
+          .select('user_id')
+          .eq('user_login', email)
+          .single();
+
+        if (existing) {
+          alert('An account with this email already exists.');
+          return;
+        }
+
+        // Hash password
+        const salt = dcodeIO.bcrypt.genSaltSync(10);
+        const hashedPassword = dcodeIO.bcrypt.hashSync(password, salt);
+
+        // Create user in Users table
+        const { data: newUser, error: userError } = await supabaseClient
+          .from('Users')
+          .insert({
+            user_login: email,
+            user_password: hashedPassword,
+            role: role
+          })
+          .select()
+          .single();
+
+        if (userError) {
+          console.error('Registration error:', userError);
+          alert('Registration failed: ' + userError.message);
+          return;
+        }
+
+        // Create profile based on role
+        if (role === 1) {
+          // Student profile
+          const { error: profileError } = await supabaseClient
+            .from('student_profiles')
+            .insert({
+              user_id: newUser.user_id,
+              first_name: firstName,
+              last_name: lastName,
+              type_education: document.getElementById('university')?.value || null
+            });
+
+          if (profileError) {
+            console.error('Profile creation error:', profileError);
+          }
+        } else if (role === 2) {
+          // Company profile
+          const { error: companyError } = await supabaseClient
+            .from('Companies')
+            .insert({
+              user_id: newUser.user_id,
+              company_name: document.getElementById('companyName')?.value || firstName + ' ' + lastName,
+              website: document.getElementById('companyWebsite')?.value || null
+            });
+
+          if (companyError) {
+            console.error('Company creation error:', companyError);
+          }
+        }
+
+        alert('Registration successful! Please sign in.');
+        event.target.reset();
+        switchTab('login');
+      } catch (err) {
+        console.error('Registration error:', err);
+        alert('An error occurred. Please try again.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create Account';
+      }
     }
 
     // Toggle between student and company fields
