@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>InternHub - Find Your Dream Internship</title>
+  <title>About Us - InternHub</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -13,7 +13,7 @@
       <a href="index.html" class="logo">InternHub</a>
       <ul class="nav-menu">
         <li class="nav-item">
-          <a href="index.html" class="nav-link active">Home</a>
+          <a href="index.html" class="nav-link">Home</a>
         </li>
         <li class="nav-item">
           <a href="internships.html" class="nav-link">Internships</a>
@@ -33,26 +33,63 @@
     </div>
   </nav>
 
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="hero-content">
-      <h1>Find Your Perfect Internship</h1>
-      <p>Discover exciting internship opportunities with leading companies and launch your career</p>
-      <div class="hero-buttons">
-        <a href="internships.html" class="btn btn-primary btn-large">Browse Internships</a>
-        <a href="company-profile.html" class="btn btn-secondary btn-large">Post Internship</a>
-      </div>
+  <!-- Page Header -->
+  <section class="section" style="background: linear-gradient(135deg, var(--primary-color) 0%, #667eea 100%); color: white; padding: 3rem 1rem;">
+    <div class="container text-center">
+      <h1 style="color: white; margin-bottom: 0.5rem;">About InternHub</h1>
+      <p>Connecting students with their dream internships</p>
     </div>
   </section>
 
-  <!-- Call to Action Section -->
+  <!-- About Content -->
   <section class="section">
-    <div class="container text-center">
-      <h2 class="mb-4">Ready to Start Your Journey?</h2>
-      <p class="mb-4">Find your perfect internship opportunity</p>
-      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-        <a href="internships.html" class="btn btn-primary btn-large">Browse Internships</a>
-        <a href="auth.html" class="btn btn-outline btn-large">Create Account</a>
+    <div class="container">
+      <div class="grid-2">
+        <div>
+          <h2>Our Mission</h2>
+          <p>
+            InternHub is dedicated to bridging the gap between talented students and innovative companies. We believe that internships are a crucial stepping stone in any career journey, and we're committed to making the process seamless and rewarding for both students and employers.
+          </p>
+
+          <h2 style="margin-top: 2rem;">Our Vision</h2>
+          <p>
+            To create a world where every student has access to meaningful internship opportunities that help them grow, learn, and succeed in their chosen field.
+          </p>
+
+          <h2 style="margin-top: 2rem;">What We Offer</h2>
+          <ul style="margin-left: 1.5rem;">
+            <li>Easy-to-use platform for job search and posting</li>
+            <li>Resume builder and interview preparation tools</li>
+            <li>Networking opportunities with industry professionals</li>
+            <li>Dedicated support for both students and employers</li>
+            <li>Career resources and guidance</li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="card">
+            <h3 style="margin-top: 0;">Why Choose InternHub?</h3>
+            <div style="margin: 1.5rem 0;">
+              <h4>🎯 Curated Opportunities</h4>
+              <p>We carefully vet every internship posting to ensure quality experiences for our users.</p>
+            </div>
+
+            <div style="margin: 1.5rem 0;">
+              <h4>🚀 Career Growth</h4>
+              <p>Our platform provides tools and resources to accelerate your career development.</p>
+            </div>
+
+            <div style="margin: 1.5rem 0;">
+              <h4>💼 Industry Connections</h4>
+              <p>Network with leading companies and professionals in your field.</p>
+            </div>
+
+            <div style="margin: 1.5rem 0;">
+              <h4>📱 User-Friendly</h4>
+              <p>Our platform is designed with users in mind, making it easy to find, apply, and manage internships.</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -105,9 +142,6 @@
     </div>
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js"></script>
-  <script src="js/auth.js"></script>
   <script src="js/script.js"></script>
 </body>
 </html>
