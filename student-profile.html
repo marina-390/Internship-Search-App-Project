@@ -43,49 +43,7 @@
       padding-bottom: 0.5rem;
     }
 
-    .skills-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-
-    .skill-tag {
-      background: var(--light-color);
-      border: 1px solid var(--border-color);
-      padding: 0.75rem 1rem;
-      border-radius: 0.5rem;
-      text-align: center;
-      font-weight: 500;
-    }
-
-    .skill-tag:hover {
-      border-color: var(--primary-color);
-      background: rgba(79, 70, 229, 0.05);
-    }
-
-    .experience-item {
-      border-left: 3px solid var(--primary-color);
-      padding-left: 1rem;
-      margin-bottom: 2rem;
-    }
-
-    .experience-item h4 {
-      margin: 0 0 0.25rem 0;
-      color: var(--dark-color);
-    }
-
-    .experience-item .date {
-      font-size: 0.875rem;
-      color: var(--text-light);
-      margin-bottom: 0.5rem;
-    }
-
-    .experience-item p {
-      margin: 0.5rem 0;
-    }
-
-    .edit-input, .edit-textarea {
+    .edit-input, .edit-textarea, .edit-select {
       width: 100%;
       padding: 0.75rem;
       border: 2px solid var(--border-color);
@@ -96,7 +54,7 @@
       transition: border-color 0.3s ease;
     }
 
-    .edit-input:focus, .edit-textarea:focus {
+    .edit-input:focus, .edit-textarea:focus, .edit-select:focus {
       outline: none;
       border-color: var(--primary-color);
       box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
@@ -104,7 +62,6 @@
 
     .edit-textarea {
       resize: vertical;
-      font-family: inherit;
     }
 
     .form-group {
@@ -118,11 +75,240 @@
       color: var(--text-color);
     }
 
-    #editMode {
-      background: rgba(79, 70, 229, 0.02);
-      padding: 2rem;
-      border-radius: 0.75rem;
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .profile-field {
+      margin-bottom: 1rem;
+    }
+
+    .profile-field-label {
+      font-weight: 600;
+      color: var(--text-light);
+      font-size: 0.875rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .profile-field-value {
+      color: var(--text-color);
+    }
+
+    .profile-field-value.empty {
+      color: var(--text-light);
+      font-style: italic;
+    }
+
+    /* Category search */
+    .category-search {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+
+    .category-search input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid var(--border-color);
+      border-radius: 0.5rem;
+      font-size: 1rem;
+    }
+
+    .category-search input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+    }
+
+    .category-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
       border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      max-height: 250px;
+      overflow-y: auto;
+      z-index: 100;
+      display: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .category-dropdown.show {
+      display: block;
+    }
+
+    .category-group-title {
+      padding: 0.5rem 1rem;
+      font-weight: 700;
+      font-size: 0.8rem;
+      color: var(--text-light);
+      background: var(--light-color);
+      text-transform: uppercase;
+    }
+
+    .category-option {
+      padding: 0.5rem 1rem 0.5rem 1.5rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .category-option:hover {
+      background: rgba(79, 70, 229, 0.05);
+    }
+
+    .category-option.selected {
+      background: rgba(79, 70, 229, 0.1);
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+
+    .selected-categories {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .category-tag {
+      background: var(--primary-color);
+      color: white;
+      padding: 0.35rem 0.75rem;
+      border-radius: 2rem;
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .category-tag button {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .toggle-switch {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .toggle-switch input[type="checkbox"] {
+      width: 48px;
+      height: 24px;
+      appearance: none;
+      background: #ccc;
+      border-radius: 12px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .toggle-switch input[type="checkbox"]:checked {
+      background: var(--secondary-color);
+    }
+
+    .toggle-switch input[type="checkbox"]::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.3s;
+    }
+
+    .toggle-switch input[type="checkbox"]:checked::after {
+      transform: translateX(24px);
+    }
+
+    .application-item {
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .application-item:last-child {
+      border-bottom: none;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 1rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-viewed { background: #dbeafe; color: #1e40af; }
+    .status-accepted { background: #d1fae5; color: #065f46; }
+    .status-rejected { background: #fee2e2; color: #991b1b; }
+
+    .link-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0;
+    }
+
+    .link-item a {
+      color: var(--primary-color);
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    .link-item a:hover {
+      text-decoration: underline;
+    }
+
+    .link-icon {
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .link-edit-row {
+      display: grid;
+      grid-template-columns: 130px 1fr 1fr auto;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      align-items: center;
+    }
+
+    .link-edit-row select,
+    .link-edit-row input {
+      padding: 0.5rem;
+      border: 2px solid var(--border-color);
+      border-radius: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .link-edit-row select:focus,
+    .link-edit-row input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+    }
+
+    .link-remove-btn {
+      background: none;
+      border: none;
+      color: #ef4444;
+      cursor: pointer;
+      font-size: 1.2rem;
+      padding: 0.25rem;
+    }
+
+    @media (max-width: 768px) {
+      .link-edit-row {
+        grid-template-columns: 1fr 1fr;
+      }
     }
 
     @media (max-width: 768px) {
@@ -136,6 +322,10 @@
         width: 100px;
         height: 100px;
         font-size: 2rem;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -176,182 +366,196 @@
           <div class="card">
             <!-- Profile Header -->
             <div class="profile-header">
-              <div class="profile-avatar">👤</div>
+              <div class="profile-avatar" id="profileAvatar" style="overflow:hidden; position:relative;">
+                <img id="avatarImg" src="" alt="" style="width:100%; height:100%; object-fit:cover; display:none; border-radius:50%;" />
+                <span id="avatarPlaceholder">👤</span>
+                <label for="avatarUpload" style="position:absolute; bottom:0; right:0; background:var(--primary-color); color:white; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.1rem; border:2px solid white;">
+                  +
+                </label>
+                <input type="file" id="avatarUpload" accept="image/*" style="display:none;" onchange="uploadAvatar(this)" />
+              </div>
               <div class="profile-info">
-                <h2>Student Name</h2>
-                <p>student@email.com</p>
-                <p>📚 University Name - Computer Science</p>
-                <p>🎓 Expected Graduation: 2025</p>
-                <p>📍 Location, Country</p>
+                <h2 id="profileName">-</h2>
+                <p id="profileEmail">-</p>
+                <p id="profilePhone"></p>
+                <p id="profileCity"></p>
               </div>
             </div>
 
-            <!-- Edit Button -->
+            <!-- Edit / Save buttons -->
             <div style="text-align: right; margin-bottom: 2rem;">
               <button class="btn btn-small btn-primary" id="editProfileBtn" onclick="enterEditMode()">Edit Profile</button>
+              <button class="btn btn-small btn-primary" id="saveProfileBtn" onclick="saveProfile()" style="display:none;">Save</button>
+              <button class="btn btn-small btn-secondary" id="cancelEditBtn" onclick="cancelEditMode()" style="display:none;">Cancel</button>
             </div>
 
             <!-- Display Mode -->
             <div id="displayMode">
-              <!-- About Section -->
+              <div class="profile-section-title">Personal Information</div>
+
+              <div class="form-row">
+                <div class="profile-field">
+                  <div class="profile-field-label">First Name</div>
+                  <div class="profile-field-value" id="dFirstName">-</div>
+                </div>
+                <div class="profile-field">
+                  <div class="profile-field-label">Last Name</div>
+                  <div class="profile-field-value" id="dLastName">-</div>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="profile-field">
+                  <div class="profile-field-label">Date of Birth</div>
+                  <div class="profile-field-value" id="dBirthDate">-</div>
+                </div>
+                <div class="profile-field">
+                  <div class="profile-field-label">Phone</div>
+                  <div class="profile-field-value" id="dPhone">-</div>
+                </div>
+              </div>
+
+              <div class="profile-field">
+                <div class="profile-field-label">City</div>
+                <div class="profile-field-value" id="dCity">-</div>
+              </div>
+
+              <div class="profile-field">
+                <div class="profile-field-label">Education</div>
+                <div class="profile-field-value" id="dEducation">-</div>
+              </div>
+
               <div class="profile-section-title">About Me</div>
-              <p id="aboutDisplay">
-                Write a brief bio about yourself. Share your passions, interests, and what you're looking for in an internship. This helps employers get to know you better.
-              </p>
+              <p id="dAbout" class="profile-field-value">-</p>
 
-              <!-- Skills Section -->
-              <div class="profile-section-title">Skills</div>
-              <div class="skills-grid" id="skillsDisplay">
-                <div class="skill-tag">JavaScript</div>
-                <div class="skill-tag">Python</div>
-                <div class="skill-tag">React</div>
-                <div class="skill-tag">Web Design</div>
-                <div class="skill-tag">Communication</div>
-                <div class="skill-tag">Problem Solving</div>
+              <div class="profile-section-title">Practice Period</div>
+              <div class="form-row">
+                <div class="profile-field">
+                  <div class="profile-field-label">Start</div>
+                  <div class="profile-field-value" id="dPracticeStart">-</div>
+                </div>
+                <div class="profile-field">
+                  <div class="profile-field-label">End</div>
+                  <div class="profile-field-value" id="dPracticeEnd">-</div>
+                </div>
               </div>
 
-              <!-- Experience Section -->
-              <div class="profile-section-title">Experience & Projects</div>
-              
-              <div class="experience-item" id="experienceDisplay">
-                <h4>Project Title</h4>
-                <p class="date">2024</p>
-                <p>
-                  Describe a project you've worked on. Include what technologies you used, what you learned, and the impact of the project.
-                </p>
+              <div class="profile-field">
+                <div class="profile-field-label">Open to offers</div>
+                <div class="profile-field-value" id="dOpenToOffers">-</div>
+              </div>
+
+              <div class="profile-section-title">Desired Job Categories</div>
+              <div class="selected-categories" id="dCategories">
+                <span class="profile-field-value empty">No categories selected</span>
+              </div>
+
+              <div class="profile-section-title">Links</div>
+              <div id="dLinks">
+                <span class="profile-field-value empty">No links added</span>
               </div>
             </div>
 
-            <!-- Edit Mode Form -->
+            <!-- Edit Mode -->
             <div id="editMode" style="display: none;">
-              <form onsubmit="saveProfileChanges(event)" id="editProfileForm">
-                <!-- Profile Header Edit -->
-                <div class="profile-section-title">Personal Information</div>
-                
+              <div class="profile-section-title">Personal Information</div>
+
+              <div class="form-row">
                 <div class="form-group">
-                  <label for="editFullName">Full Name</label>
-                  <input type="text" id="editFullName" class="edit-input" placeholder="Your full name" required />
+                  <label for="eFirstName">First Name</label>
+                  <input type="text" id="eFirstName" class="edit-input" placeholder="First name" />
                 </div>
-
                 <div class="form-group">
-                  <label for="editEmail">Email Address</label>
-                  <input type="email" id="editEmail" class="edit-input" placeholder="your@email.com" required />
+                  <label for="eLastName">Last Name</label>
+                  <input type="text" id="eLastName" class="edit-input" placeholder="Last name" />
                 </div>
+              </div>
 
+              <div class="form-row">
                 <div class="form-group">
-                  <label for="editUniversity">University/School</label>
-                  <input type="text" id="editUniversity" class="edit-input" placeholder="Your university name" />
+                  <label for="eBirthDate">Date of Birth</label>
+                  <input type="date" id="eBirthDate" class="edit-input" />
                 </div>
-
                 <div class="form-group">
-                  <label for="editMajor">Major</label>
-                  <input type="text" id="editMajor" class="edit-input" placeholder="Your major" />
+                  <label for="ePhone">Phone</label>
+                  <input type="tel" id="ePhone" class="edit-input" placeholder="+358..." />
                 </div>
+              </div>
 
+              <div class="form-group">
+                <label for="eCity">City</label>
+                <input type="text" id="eCity" class="edit-input" placeholder="City" />
+              </div>
+
+              <div class="form-group">
+                <label for="eEducation">Education</label>
+                <input type="text" id="eEducation" class="edit-input" placeholder="e.g. KPEDU, IT" />
+              </div>
+
+              <div class="profile-section-title">About Me</div>
+              <div class="form-group">
+                <textarea id="eAbout" class="edit-textarea" placeholder="Tell about yourself..." rows="4"></textarea>
+              </div>
+
+              <div class="profile-section-title">Practice Period</div>
+              <div class="form-row">
                 <div class="form-group">
-                  <label for="editGraduation">Expected Graduation</label>
-                  <input type="text" id="editGraduation" class="edit-input" placeholder="2025" />
+                  <label for="ePracticeStart">Start</label>
+                  <input type="date" id="ePracticeStart" class="edit-input" />
                 </div>
-
                 <div class="form-group">
-                  <label for="editLocation">Location</label>
-                  <input type="text" id="editLocation" class="edit-input" placeholder="City, Country" />
+                  <label for="ePracticeEnd">End</label>
+                  <input type="date" id="ePracticeEnd" class="edit-input" />
                 </div>
+              </div>
 
-                <!-- About Section Edit -->
-                <div class="profile-section-title">About Me</div>
-                <div class="form-group">
-                  <textarea id="editAbout" class="edit-textarea" placeholder="Write about yourself..." rows="4"></textarea>
-                </div>
+              <div class="toggle-switch">
+                <input type="checkbox" id="eOpenToOffers" checked />
+                <label for="eOpenToOffers">Open to offers</label>
+              </div>
 
-                <!-- Skills Edit -->
-                <div class="profile-section-title">Skills</div>
-                <div class="form-group">
-                  <label for="editSkills">Skills (comma-separated)</label>
-                  <textarea id="editSkills" class="edit-textarea" placeholder="JavaScript, Python, React, etc." rows="3"></textarea>
-                </div>
+              <div class="profile-section-title">Desired Job Categories</div>
+              <div class="category-search">
+                <input type="text" id="categorySearchInput" placeholder="Search categories..." oninput="filterCategories()" onfocus="showCategoryDropdown()" />
+                <div class="category-dropdown" id="categoryDropdown"></div>
+              </div>
+              <div class="selected-categories" id="eSelectedCategories"></div>
 
-                <!-- Form Actions -->
-                <div style="margin-top: 2rem; display: flex; gap: 1rem;">
-                  <button type="submit" class="btn btn-primary">Save Changes</button>
-                  <button type="button" class="btn btn-secondary" onclick="cancelEditMode()">Cancel</button>
-                </div>
-              </form>
-            </div>
-
-            <div class="experience-item">
-              <h4>Another Project</h4>
-              <p class="date">2023</p>
-              <p>
-                Add more projects or experiences you want to highlight to potential employers.
-              </p>
-            </div>
-
-            <!-- Education Section -->
-            <div class="profile-section-title">Education</div>
-            <div class="experience-item">
-              <h4>University Name</h4>
-              <p class="date">2023 - 2025</p>
-              <p>
-                <strong>Degree:</strong> Bachelor of Science in Computer Science<br>
-                <strong>GPA:</strong> 3.8/4.0<br>
-                <strong>Relevant Coursework:</strong> Data Structures, Algorithms, Web Development
-              </p>
+              <div class="profile-section-title">Links</div>
+              <div id="eLinksContainer"></div>
+              <button type="button" class="btn btn-small btn-secondary" onclick="addLinkRow()">+ Add Link</button>
             </div>
           </div>
         </div>
 
         <!-- Sidebar -->
         <div>
-          <!-- CV Download Card -->
+          <!-- CV / Files Card -->
           <div class="card" style="position: sticky; top: 90px; margin-bottom: 2rem;">
             <div class="card-header">
               <h3 class="card-title">CV / Resume</h3>
             </div>
             <div class="card-content">
-              <p class="text-muted mb-3">Download your CV to share with employers or use when applying.</p>
-              <button class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;" onclick="downloadCV()">
-                📥 Download CV (PDF)
-              </button>
-              <button class="btn btn-secondary" style="width: 100%;" onclick="alert('Upload CV feature coming soon')">
-                📤 Upload New CV
+              <div id="cvFileInfo" style="margin-bottom: 1rem;">
+                <p class="text-muted">No CV uploaded yet.</p>
+              </div>
+              <label for="cvUpload" class="btn btn-secondary" style="width:100%; margin-bottom:0.75rem; display:block; text-align:center; cursor:pointer;">
+                Upload CV (PDF)
+              </label>
+              <input type="file" id="cvUpload" accept=".pdf,.doc,.docx" style="display:none;" onchange="uploadCV(this)" />
+              <button class="btn btn-primary" style="width: 100%;" onclick="downloadCV()" id="downloadCvBtn" disabled>
+                Download CV
               </button>
             </div>
           </div>
 
-          <!-- Applied Positions Card -->
+          <!-- Applications Card -->
           <div class="card" style="margin-bottom: 2rem;">
             <div class="card-header">
-              <h3 class="card-title">Applications</h3>
+              <h3 class="card-title">My Applications</h3>
             </div>
-            <div class="card-content">
-              <p class="text-muted mb-2">Internship Positions Applied</p>
-              <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
-                <p style="margin: 0; font-weight: 600;">Frontend Developer Intern</p>
-                <p style="margin: 0.5rem 0; font-size: 0.875rem; color: var(--text-light);">Applied - Pending Review</p>
-              </div>
-              <div>
-                <p style="margin: 0; font-weight: 600;">UX Designer Intern</p>
-                <p style="margin: 0.5rem 0; font-size: 0.875rem; color: var(--secondary-color);">Accepted ✓</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Saved Positions Card -->
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">Saved Positions</h3>
-            </div>
-            <div class="card-content">
-              <p class="text-muted mb-2">Positions you've bookmarked</p>
-              <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
-                <p style="margin: 0; font-weight: 600;">Backend Developer Intern</p>
-                <p style="margin: 0.5rem 0; font-size: 0.875rem; color: var(--text-light);">CloudSystems Ltd.</p>
-              </div>
-              <div>
-                <p style="margin: 0; font-weight: 600;">Data Science Intern</p>
-                <p style="margin: 0.5rem 0; font-size: 0.875rem; color: var(--text-light);">Analytics Pro</p>
-              </div>
+            <div class="card-content" id="applicationsContainer">
+              <p class="text-muted">No applications yet.</p>
             </div>
           </div>
         </div>

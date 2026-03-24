@@ -2,93 +2,650 @@
    STUDENT PROFILE (Supabase)
    ========================================== */
 
-// Load student profile from Supabase
+// Current profile data & categories & links
+let currentProfile = null;
+let allCategories = [];
+let selectedCategoryIds = [];
+let currentLinks = [];
+
+// ==========================================
+// LOAD PROFILE
+// ==========================================
 async function loadStudentProfile() {
   const session = requireAuth();
   if (!session) return;
 
   try {
-    const { data: profile, error } = await supabaseClient
-      .from('student_profiles')
-      .select('*')
-      .eq('user_id', session.userId)
-      .single();
+    // Load profile, categories, and applications in parallel
+    const [profileRes, categoriesRes, studentCatsRes, applicationsRes] = await Promise.all([
+      supabaseClient
+        .from('student_profiles')
+        .select('*')
+        .eq('user_id', session.userId)
+        .single(),
+      supabaseClient
+        .from('job_categories')
+        .select('category_id, title, group_id, job_groups(title)')
+        .order('group_id'),
+      supabaseClient
+        .from('student_categories')
+        .select('category_id')
+        .eq('student_id', 0), // placeholder, updated below
+      supabaseClient
+        .from('applications')
+        .select('*, positions(title, Companies:company_id(company_name))')
+        .eq('student_id', 0) // placeholder, updated below
+    ]);
 
-    if (error || !profile) {
-      console.error('Error loading profile:', error);
+    const profile = profileRes.data;
+    allCategories = categoriesRes.data || [];
+
+    if (!profile) {
+      console.error('Profile not found');
       return;
     }
 
-    // Update profile header
-    const profileName = document.querySelector('.profile-info h2');
-    const profileEmail = document.querySelectorAll('.profile-info p')[0];
-    const profileUniversity = document.querySelectorAll('.profile-info p')[1];
-    const profileLocation = document.querySelectorAll('.profile-info p')[2];
+    currentProfile = profile;
 
-    if (profileName) profileName.textContent = (profile.first_name || '') + ' ' + (profile.last_name || '');
-    if (profileEmail) profileEmail.textContent = session.login;
-    if (profileUniversity) profileUniversity.innerHTML = profile.type_education || '';
-    if (profileLocation) profileLocation.innerHTML = profile.city || '';
+    // Load student categories with real student_id
+    const { data: studentCats } = await supabaseClient
+      .from('student_categories')
+      .select('category_id')
+      .eq('student_id', profile.id);
 
-    // Update About Section
-    const aboutDisplay = document.getElementById('aboutDisplay');
-    if (aboutDisplay) aboutDisplay.textContent = profile.about || '';
+    selectedCategoryIds = (studentCats || []).map(sc => sc.category_id);
 
-    // Add Logout button
+    // Load applications with real student_id
+    const { data: applications } = await supabaseClient
+      .from('applications')
+      .select('*, positions(title)')
+      .eq('student_id', profile.id);
+
+    // Load links
+    const { data: links } = await supabaseClient
+      .from('Student_links')
+      .select('*')
+      .eq('student_id', profile.id)
+      .order('created_at');
+
+    currentLinks = links || [];
+
+    // Fill display mode
+    fillDisplayMode(profile, session);
+    fillAvatar(profile);
+    fillCvInfo(profile);
+    fillLinks();
+    fillApplications(applications || []);
     addLogoutButton();
   } catch (err) {
     console.error('Error loading profile:', err);
   }
 }
 
-// Download CV
-async function downloadCV() {
-  const session = requireAuth();
-  if (!session) return;
+// ==========================================
+// FILL DISPLAY MODE
+// ==========================================
+function fillDisplayMode(profile, session) {
+  // Header
+  const fullName = [(profile.first_name || ''), (profile.last_name || '')].filter(Boolean).join(' ');
+  setText('profileName', fullName || session.login);
+  setText('profileEmail', session.login);
+  setText('profilePhone', profile.phone || '');
+  setText('profileCity', profile.city || '');
+
+  // Fields
+  setField('dFirstName', profile.first_name);
+  setField('dLastName', profile.last_name);
+  setField('dBirthDate', profile.birth_date);
+  setField('dPhone', profile.phone);
+  setField('dCity', profile.city);
+  setField('dEducation', profile.type_education);
+  setField('dAbout', profile.about);
+  setField('dPracticeStart', profile.practice_start);
+  setField('dPracticeEnd', profile.practice_end);
+
+  const openEl = document.getElementById('dOpenToOffers');
+  if (openEl) {
+    openEl.textContent = profile.is_open_to_offers ? 'Yes' : 'No';
+    openEl.className = 'profile-field-value';
+  }
+
+  // Categories
+  const catContainer = document.getElementById('dCategories');
+  if (catContainer) {
+    if (selectedCategoryIds.length === 0) {
+      catContainer.innerHTML = '<span class="profile-field-value empty">No categories selected</span>';
+    } else {
+      catContainer.innerHTML = selectedCategoryIds.map(id => {
+        const cat = allCategories.find(c => c.category_id === id);
+        return cat ? `<span class="category-tag">${cat.title}</span>` : '';
+      }).join('');
+    }
+  }
+}
+
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value || '';
+}
+
+function setField(id, value) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (value) {
+    el.textContent = value;
+    el.className = 'profile-field-value';
+  } else {
+    el.textContent = 'Not specified';
+    el.className = 'profile-field-value empty';
+  }
+}
+
+// ==========================================
+// FILL APPLICATIONS
+// ==========================================
+function fillApplications(applications) {
+  const container = document.getElementById('applicationsContainer');
+  if (!container) return;
+
+  if (applications.length === 0) {
+    container.innerHTML = '<p class="text-muted">No applications yet.</p>';
+    return;
+  }
+
+  container.innerHTML = applications.map(app => {
+    const title = app.positions?.title || 'Position';
+    const statusClass = 'status-' + app.status;
+    return `
+      <div class="application-item">
+        <p style="margin:0; font-weight:600;">${title}</p>
+        <span class="status-badge ${statusClass}">${app.status}</span>
+        <p style="margin:0.25rem 0 0; font-size:0.8rem; color:var(--text-light);">
+          ${new Date(app.applied_at).toLocaleDateString()}
+        </p>
+      </div>
+    `;
+  }).join('');
+}
+
+// ==========================================
+// EDIT MODE
+// ==========================================
+function enterEditMode() {
+  if (!currentProfile) return;
+
+  document.getElementById('displayMode').style.display = 'none';
+  document.getElementById('editMode').style.display = 'block';
+  document.getElementById('editProfileBtn').style.display = 'none';
+  document.getElementById('saveProfileBtn').style.display = 'inline-block';
+  document.getElementById('cancelEditBtn').style.display = 'inline-block';
+
+  // Fill form fields
+  document.getElementById('eFirstName').value = currentProfile.first_name || '';
+  document.getElementById('eLastName').value = currentProfile.last_name || '';
+  document.getElementById('eBirthDate').value = currentProfile.birth_date || '';
+  document.getElementById('ePhone').value = currentProfile.phone || '';
+  document.getElementById('eCity').value = currentProfile.city || '';
+  document.getElementById('eEducation').value = currentProfile.type_education || '';
+  document.getElementById('eAbout').value = currentProfile.about || '';
+  document.getElementById('ePracticeStart').value = currentProfile.practice_start || '';
+  document.getElementById('ePracticeEnd').value = currentProfile.practice_end || '';
+  document.getElementById('eOpenToOffers').checked = currentProfile.is_open_to_offers;
+
+  // Render selected categories
+  renderSelectedCategories();
+  buildCategoryDropdown();
+
+  // Render links
+  fillEditLinks();
+}
+
+function cancelEditMode() {
+  document.getElementById('displayMode').style.display = 'block';
+  document.getElementById('editMode').style.display = 'none';
+  document.getElementById('editProfileBtn').style.display = 'inline-block';
+  document.getElementById('saveProfileBtn').style.display = 'none';
+  document.getElementById('cancelEditBtn').style.display = 'none';
+}
+
+// ==========================================
+// SAVE PROFILE
+// ==========================================
+async function saveProfile() {
+  const session = getCurrentSession();
+  if (!session || !currentProfile) return;
+
+  const saveBtn = document.getElementById('saveProfileBtn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving...';
 
   try {
-    const { data: profile } = await supabaseClient
+    const updates = {
+      first_name: document.getElementById('eFirstName').value.trim() || null,
+      last_name: document.getElementById('eLastName').value.trim() || null,
+      birth_date: document.getElementById('eBirthDate').value || null,
+      phone: document.getElementById('ePhone').value.trim() || null,
+      city: document.getElementById('eCity').value.trim() || null,
+      type_education: document.getElementById('eEducation').value.trim() || null,
+      about: document.getElementById('eAbout').value.trim() || null,
+      practice_start: document.getElementById('ePracticeStart').value || null,
+      practice_end: document.getElementById('ePracticeEnd').value || null,
+      is_open_to_offers: document.getElementById('eOpenToOffers').checked,
+      updated_at: new Date().toISOString()
+    };
+
+    // Update profile
+    const { error: profileError } = await supabaseClient
       .from('student_profiles')
-      .select('*')
-      .eq('user_id', session.userId)
-      .single();
+      .update(updates)
+      .eq('id', currentProfile.id);
 
-    if (!profile) return;
+    if (profileError) {
+      alert('Error saving profile: ' + profileError.message);
+      return;
+    }
 
-    const fullName = (profile.first_name || '') + ' ' + (profile.last_name || '');
+    // Update categories: delete old, insert new
+    await supabaseClient
+      .from('student_categories')
+      .delete()
+      .eq('student_id', currentProfile.id);
 
-    const cvContent = `
-═══════════════════════════════════════════════════════════
-                      CURRICULUM VITAE
-═══════════════════════════════════════════════════════════
+    if (selectedCategoryIds.length > 0) {
+      const rows = selectedCategoryIds.map(catId => ({
+        student_id: currentProfile.id,
+        category_id: catId
+      }));
+      await supabaseClient
+        .from('student_categories')
+        .insert(rows);
+    }
 
-NAME: ${fullName}
-EMAIL: ${session.login}
-LOCATION: ${profile.city || ''}
+    // Save links
+    await saveLinks();
 
-───────────────────────────────────────────────────────────
-EDUCATION
-───────────────────────────────────────────────────────────
-${profile.type_education || ''}
+    // Update local data
+    Object.assign(currentProfile, updates);
 
-───────────────────────────────────────────────────────────
-ABOUT
-───────────────────────────────────────────────────────────
-${profile.about || ''}
-
-═══════════════════════════════════════════════════════════
-Downloaded on: ${new Date().toLocaleDateString()}
-═══════════════════════════════════════════════════════════
-    `.trim();
-
-    const element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(cvContent));
-    element.setAttribute('download', `${fullName.replace(/\s+/g, '_')}_CV.txt`);
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
+    // Refresh display
+    fillDisplayMode(currentProfile, session);
+    cancelEditMode();
   } catch (err) {
-    console.error('Error downloading CV:', err);
+    console.error('Save error:', err);
+    alert('An error occurred while saving.');
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save';
   }
+}
+
+// ==========================================
+// CATEGORY SEARCH & SELECTION
+// ==========================================
+function buildCategoryDropdown() {
+  const dropdown = document.getElementById('categoryDropdown');
+  if (!dropdown) return;
+
+  // Group categories by job_group
+  const groups = {};
+  allCategories.forEach(cat => {
+    const groupTitle = cat.job_groups?.title || 'Other';
+    if (!groups[groupTitle]) groups[groupTitle] = [];
+    groups[groupTitle].push(cat);
+  });
+
+  let html = '';
+  for (const [groupTitle, cats] of Object.entries(groups)) {
+    html += `<div class="category-group-title">${groupTitle}</div>`;
+    cats.forEach(cat => {
+      const isSelected = selectedCategoryIds.includes(cat.category_id);
+      html += `<div class="category-option ${isSelected ? 'selected' : ''}"
+                    data-id="${cat.category_id}"
+                    onclick="toggleCategory(${cat.category_id})">
+                ${cat.title}
+              </div>`;
+    });
+  }
+
+  dropdown.innerHTML = html;
+}
+
+function filterCategories() {
+  const search = document.getElementById('categorySearchInput').value.toLowerCase();
+  const dropdown = document.getElementById('categoryDropdown');
+  dropdown.classList.add('show');
+
+  const options = dropdown.querySelectorAll('.category-option');
+  const groupTitles = dropdown.querySelectorAll('.category-group-title');
+
+  // Hide all group titles first
+  groupTitles.forEach(g => g.style.display = 'none');
+
+  options.forEach(opt => {
+    const text = opt.textContent.toLowerCase();
+    if (text.includes(search)) {
+      opt.style.display = '';
+      // Show parent group title
+      let prev = opt.previousElementSibling;
+      while (prev && !prev.classList.contains('category-group-title')) {
+        prev = prev.previousElementSibling;
+      }
+      if (prev) prev.style.display = '';
+    } else {
+      opt.style.display = 'none';
+    }
+  });
+}
+
+function showCategoryDropdown() {
+  const dropdown = document.getElementById('categoryDropdown');
+  if (dropdown) {
+    dropdown.classList.add('show');
+    // Show all when opening
+    dropdown.querySelectorAll('.category-option, .category-group-title').forEach(el => {
+      el.style.display = '';
+    });
+  }
+}
+
+function toggleCategory(categoryId) {
+  const idx = selectedCategoryIds.indexOf(categoryId);
+  if (idx === -1) {
+    selectedCategoryIds.push(categoryId);
+  } else {
+    selectedCategoryIds.splice(idx, 1);
+  }
+  renderSelectedCategories();
+  buildCategoryDropdown();
+}
+
+function removeCategory(categoryId) {
+  selectedCategoryIds = selectedCategoryIds.filter(id => id !== categoryId);
+  renderSelectedCategories();
+  buildCategoryDropdown();
+}
+
+function renderSelectedCategories() {
+  const container = document.getElementById('eSelectedCategories');
+  if (!container) return;
+
+  if (selectedCategoryIds.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = selectedCategoryIds.map(id => {
+    const cat = allCategories.find(c => c.category_id === id);
+    if (!cat) return '';
+    return `<span class="category-tag">
+              ${cat.title}
+              <button onclick="removeCategory(${id})">&times;</button>
+            </span>`;
+  }).join('');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+  const search = document.querySelector('.category-search');
+  const dropdown = document.getElementById('categoryDropdown');
+  if (dropdown && search && !search.contains(e.target)) {
+    dropdown.classList.remove('show');
+  }
+});
+
+// ==========================================
+// LINKS (Student_links table)
+// ==========================================
+const LINK_ICONS = {
+  github: '&#128736;',
+  linkedin: '&#128100;',
+  portfolio: '&#127760;',
+  other: '&#128279;'
+};
+
+function fillLinks() {
+  const container = document.getElementById('dLinks');
+  if (!container) return;
+
+  if (currentLinks.length === 0) {
+    container.innerHTML = '<span class="profile-field-value empty">No links added</span>';
+    return;
+  }
+
+  container.innerHTML = currentLinks.map(link => {
+    const icon = LINK_ICONS[link.link_type] || LINK_ICONS.other;
+    const label = link.label || link.link_type;
+    return `<div class="link-item">
+              <span class="link-icon">${icon}</span>
+              <a href="${link.url}" target="_blank" rel="noopener">${label}</a>
+            </div>`;
+  }).join('');
+}
+
+function fillEditLinks() {
+  const container = document.getElementById('eLinksContainer');
+  if (!container) return;
+
+  container.innerHTML = '';
+  currentLinks.forEach((link, index) => {
+    addLinkRowHtml(container, link.link_type, link.label || '', link.url, link.link_id);
+  });
+}
+
+function addLinkRow() {
+  const container = document.getElementById('eLinksContainer');
+  if (!container) return;
+  addLinkRowHtml(container, 'github', '', '', null);
+}
+
+function addLinkRowHtml(container, type, label, url, linkId) {
+  const row = document.createElement('div');
+  row.className = 'link-edit-row';
+  row.dataset.linkId = linkId || '';
+  row.innerHTML = `
+    <select class="link-type-select">
+      <option value="github" ${type === 'github' ? 'selected' : ''}>GitHub</option>
+      <option value="linkedin" ${type === 'linkedin' ? 'selected' : ''}>LinkedIn</option>
+      <option value="portfolio" ${type === 'portfolio' ? 'selected' : ''}>Portfolio</option>
+      <option value="other" ${type === 'other' ? 'selected' : ''}>Other</option>
+    </select>
+    <input type="text" class="link-label-input" placeholder="Label" value="${label}" />
+    <input type="url" class="link-url-input" placeholder="https://..." value="${url}" />
+    <button type="button" class="link-remove-btn" onclick="this.parentElement.remove()">&times;</button>
+  `;
+  container.appendChild(row);
+}
+
+async function saveLinks() {
+  if (!currentProfile) return;
+
+  const container = document.getElementById('eLinksContainer');
+  if (!container) return;
+
+  const rows = container.querySelectorAll('.link-edit-row');
+  const newLinks = [];
+
+  rows.forEach(row => {
+    const url = row.querySelector('.link-url-input').value.trim();
+    if (!url) return; // skip empty
+    newLinks.push({
+      student_id: currentProfile.id,
+      link_type: row.querySelector('.link-type-select').value,
+      label: row.querySelector('.link-label-input').value.trim() || null,
+      url: url
+    });
+  });
+
+  // Delete old links
+  await supabaseClient
+    .from('Student_links')
+    .delete()
+    .eq('student_id', currentProfile.id);
+
+  // Insert new
+  if (newLinks.length > 0) {
+    const { error } = await supabaseClient
+      .from('Student_links')
+      .insert(newLinks);
+
+    if (error) {
+      console.error('Error saving links:', error);
+      return;
+    }
+  }
+
+  // Reload links
+  const { data } = await supabaseClient
+    .from('Student_links')
+    .select('*')
+    .eq('student_id', currentProfile.id)
+    .order('created_at');
+
+  currentLinks = data || [];
+  fillLinks();
+}
+
+// ==========================================
+// AVATAR (Supabase Storage: foto)
+// ==========================================
+function fillAvatar(profile) {
+  const img = document.getElementById('avatarImg');
+  const placeholder = document.getElementById('avatarPlaceholder');
+  if (!img || !placeholder) return;
+
+  if (profile.photo_url) {
+    img.src = profile.photo_url;
+    img.style.display = 'block';
+    placeholder.style.display = 'none';
+  } else {
+    img.style.display = 'none';
+    placeholder.style.display = '';
+  }
+}
+
+async function uploadAvatar(input) {
+  const file = input.files[0];
+  if (!file || !currentProfile) return;
+
+  const session = getCurrentSession();
+  if (!session) return;
+
+  // Max 2MB
+  if (file.size > 2 * 1024 * 1024) {
+    alert('Photo must be under 2 MB.');
+    return;
+  }
+
+  const ext = file.name.split('.').pop();
+  const filePath = `user_${session.userId}/avatar.${ext}`;
+
+  try {
+    // Upload to Supabase Storage (overwrite if exists)
+    const { error: uploadError } = await supabaseClient.storage
+      .from('foto')
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      alert('Upload error: ' + uploadError.message);
+      return;
+    }
+
+    // Get public URL
+    const { data } = supabaseClient.storage
+      .from('foto')
+      .getPublicUrl(filePath);
+
+    const photoUrl = data.publicUrl;
+
+    // Save URL to profile
+    await supabaseClient
+      .from('student_profiles')
+      .update({ photo_url: photoUrl, updated_at: new Date().toISOString() })
+      .eq('id', currentProfile.id);
+
+    currentProfile.photo_url = photoUrl;
+    fillAvatar(currentProfile);
+  } catch (err) {
+    console.error('Avatar upload error:', err);
+    alert('Failed to upload photo.');
+  }
+}
+
+// ==========================================
+// CV FILE (Supabase Storage: practice-files)
+// ==========================================
+function fillCvInfo(profile) {
+  const container = document.getElementById('cvFileInfo');
+  const downloadBtn = document.getElementById('downloadCvBtn');
+  if (!container) return;
+
+  if (profile.cv_url && profile.cv_original_name) {
+    container.innerHTML = `<p style="font-weight:600;">${profile.cv_original_name}</p>`;
+    if (downloadBtn) downloadBtn.disabled = false;
+  } else {
+    container.innerHTML = '<p class="text-muted">No CV uploaded yet.</p>';
+    if (downloadBtn) downloadBtn.disabled = true;
+  }
+}
+
+async function uploadCV(input) {
+  const file = input.files[0];
+  if (!file || !currentProfile) return;
+
+  const session = getCurrentSession();
+  if (!session) return;
+
+  // Max 10MB
+  if (file.size > 10 * 1024 * 1024) {
+    alert('CV must be under 10 MB.');
+    return;
+  }
+
+  const ext = file.name.split('.').pop();
+  const filePath = `user_${session.userId}/cv.${ext}`;
+
+  try {
+    const { error: uploadError } = await supabaseClient.storage
+      .from('practice-files')
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      alert('Upload error: ' + uploadError.message);
+      return;
+    }
+
+    const { data } = supabaseClient.storage
+      .from('practice-files')
+      .getPublicUrl(filePath);
+
+    const cvUrl = data.publicUrl;
+
+    await supabaseClient
+      .from('student_profiles')
+      .update({
+        cv_url: cvUrl,
+        cv_original_name: file.name,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', currentProfile.id);
+
+    currentProfile.cv_url = cvUrl;
+    currentProfile.cv_original_name = file.name;
+    fillCvInfo(currentProfile);
+    alert('CV uploaded successfully!');
+  } catch (err) {
+    console.error('CV upload error:', err);
+    alert('Failed to upload CV.');
+  }
+}
+
+// ==========================================
+// DOWNLOAD CV
+// ==========================================
+function downloadCV() {
+  if (!currentProfile || !currentProfile.cv_url) {
+    alert('No CV uploaded yet.');
+    return;
+  }
+  window.open(currentProfile.cv_url, '_blank');
 }
