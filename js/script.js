@@ -1,5 +1,5 @@
 /* ==========================================
-   INTERNSHIP SEARCH APP - JAVASCRIPT
+   INTERNSHIP SEARCH APP - NAVIGATION & UI
    ========================================== */
 
 // Hamburger Menu Toggle
@@ -12,7 +12,6 @@ if (hamburger) {
     navMenu.classList.toggle('active');
   });
 
-  // Close menu when a link is clicked
   const navLinks = document.querySelectorAll('.nav-link');
   navLinks.forEach(link => {
     link.addEventListener('click', () => {
@@ -37,9 +36,6 @@ function setActiveNavLink() {
   });
 }
 
-// Call on page load
-document.addEventListener('DOMContentLoaded', setActiveNavLink);
-
 // Form Validation
 function validateForm(formId) {
   const form = document.getElementById(formId);
@@ -57,7 +53,6 @@ function validateForm(formId) {
     }
   });
 
-  // Email validation
   const emailInputs = form.querySelectorAll('input[type="email"]');
   emailInputs.forEach(input => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -69,7 +64,6 @@ function validateForm(formId) {
     }
   });
 
-  // Password validation (min 6 characters)
   const passwordInputs = form.querySelectorAll('input[type="password"]');
   passwordInputs.forEach(input => {
     if (input.value && input.value.length < 6) {
@@ -82,17 +76,6 @@ function validateForm(formId) {
 
   return isValid;
 }
-
-// Job Card Navigation
-const jobCards = document.querySelectorAll('.job-card');
-jobCards.forEach(card => {
-  card.addEventListener('click', function() {
-    const jobId = this.getAttribute('data-job-id');
-    if (jobId) {
-      window.location.href = `internship-detail.html?id=${jobId}`;
-    }
-  });
-});
 
 // Get URL Parameters
 function getUrlParameter(name) {
@@ -127,6 +110,17 @@ function filterJobs() {
   });
 }
 
+// Job Card Navigation
+const jobCards = document.querySelectorAll('.job-card');
+jobCards.forEach(card => {
+  card.addEventListener('click', function() {
+    const jobId = this.getAttribute('data-job-id');
+    if (jobId) {
+      window.location.href = `internship-detail.html?id=${jobId}`;
+    }
+  });
+});
+
 // Add to Favorites (Demo)
 const favoriteButtons = document.querySelectorAll('.job-card .favorite-btn');
 favoriteButtons.forEach(btn => {
@@ -152,157 +146,18 @@ document.addEventListener('input', function(e) {
 });
 
 // ==========================================
-// AUTH HELPERS (work with Supabase data)
+// INITIALIZATION
 // ==========================================
-
-// Check if user is logged in
-function isLoggedIn() {
-  return localStorage.getItem('isLoggedIn') === 'true' && localStorage.getItem('userId');
-}
-
-// Get current user session info from localStorage
-function getCurrentSession() {
-  if (!isLoggedIn()) return null;
-  return {
-    userId: parseInt(localStorage.getItem('userId')),
-    role: parseInt(localStorage.getItem('userRole')),
-    login: localStorage.getItem('userLogin')
-  };
-}
-
-// Check auth and redirect if not logged in
-function requireAuth() {
-  if (!isLoggedIn()) {
-    window.location.href = 'auth.html';
-    return null;
-  }
-  return getCurrentSession();
-}
-
-// Load student profile from Supabase
-async function loadStudentProfile() {
-  const session = requireAuth();
-  if (!session) return;
-
-  try {
-    const { data: profile, error } = await supabaseClient
-      .from('student_profiles')
-      .select('*')
-      .eq('user_id', session.userId)
-      .single();
-
-    if (error || !profile) {
-      console.error('Error loading profile:', error);
-      return;
-    }
-
-    // Update profile header
-    const profileName = document.querySelector('.profile-info h2');
-    const profileEmail = document.querySelectorAll('.profile-info p')[0];
-    const profileUniversity = document.querySelectorAll('.profile-info p')[1];
-    const profileLocation = document.querySelectorAll('.profile-info p')[2];
-
-    if (profileName) profileName.textContent = (profile.first_name || '') + ' ' + (profile.last_name || '');
-    if (profileEmail) profileEmail.textContent = session.login;
-    if (profileUniversity) profileUniversity.innerHTML = profile.type_education || '';
-    if (profileLocation) profileLocation.innerHTML = profile.city || '';
-
-    // Update About Section
-    const aboutDisplay = document.getElementById('aboutDisplay');
-    if (aboutDisplay) aboutDisplay.textContent = profile.about || '';
-
-    // Add Logout button
-    addLogoutButton();
-  } catch (err) {
-    console.error('Error loading profile:', err);
-  }
-}
-
-// Add Logout Button to Navigation
-function addLogoutButton() {
-  const navMenu = document.querySelector('.nav-menu');
-  const existingLogout = document.querySelector('.logout-link');
-
-  if (navMenu && !existingLogout) {
-    const logoutLi = document.createElement('li');
-    logoutLi.className = 'nav-item';
-    logoutLi.innerHTML = '<a href="#" class="nav-link logout-link" onclick="logout(event)">Logout</a>';
-    navMenu.appendChild(logoutLi);
-  }
-}
-
-// Logout
-function logout(event) {
-  event.preventDefault();
-  localStorage.removeItem('isLoggedIn');
-  localStorage.removeItem('userId');
-  localStorage.removeItem('userRole');
-  localStorage.removeItem('userLogin');
-  window.location.href = 'index.html';
-}
-
-// Download CV
-async function downloadCV() {
-  const session = requireAuth();
-  if (!session) return;
-
-  try {
-    const { data: profile } = await supabaseClient
-      .from('student_profiles')
-      .select('*')
-      .eq('user_id', session.userId)
-      .single();
-
-    if (!profile) return;
-
-    const fullName = (profile.first_name || '') + ' ' + (profile.last_name || '');
-
-    const cvContent = `
-═══════════════════════════════════════════════════════════
-                      CURRICULUM VITAE
-═══════════════════════════════════════════════════════════
-
-NAME: ${fullName}
-EMAIL: ${session.login}
-LOCATION: ${profile.city || ''}
-
-───────────────────────────────────────────────────────────
-EDUCATION
-───────────────────────────────────────────────────────────
-${profile.type_education || ''}
-
-───────────────────────────────────────────────────────────
-ABOUT
-───────────────────────────────────────────────────────────
-${profile.about || ''}
-
-═══════════════════════════════════════════════════════════
-Downloaded on: ${new Date().toLocaleDateString()}
-═══════════════════════════════════════════════════════════
-    `.trim();
-
-    const element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(cvContent));
-    element.setAttribute('download', `${fullName.replace(/\s+/g, '_')}_CV.txt`);
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-  } catch (err) {
-    console.error('Error downloading CV:', err);
-  }
-}
-
-// Initialize profile page on load
 document.addEventListener('DOMContentLoaded', function() {
-  if (window.location.pathname.includes('student-profile.html')) {
-    loadStudentProfile();
-  }
+  setActiveNavLink();
 
   // Show logout button on all pages if logged in
   if (isLoggedIn()) {
     addLogoutButton();
   }
 
-  setActiveNavLink();
+  // Load student profile if on that page
+  if (window.location.pathname.includes('student-profile.html')) {
+    loadStudentProfile();
+  }
 });
