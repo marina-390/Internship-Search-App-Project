@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Internship Details - InternHub</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav>
+    <div class="nav-container">
+      <a href="index.html" class="logo">InternHub</a>
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link">Home</a>
+        </li>
+        <li class="nav-item">
+          <a href="internships.html" class="nav-link">Internships</a>
+        </li>
+        <li class="nav-item">
+          <a href="company-profile.html" class="nav-link">Employers</a>
+        </li>
+        <li class="nav-item">
+          <a href="auth.html" class="nav-link">Login/Register</a>
+        </li>
+      </ul>
+      <div class="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Back Button -->
+  <section class="section" style="padding: 1rem 0;">
+    <div class="container">
+      <a href="internships.html" class="text-primary" style="font-weight: 500;">← Back to Internships</a>
+    </div>
+  </section>
+
+  <!-- Internship Details -->
+  <section class="section">
+    <div class="container">
+      <div class="grid-2">
+        <!-- Main Content -->
+        <div>
+          <div class="card">
+            <!-- Header -->
+            <div class="card-header">
+              <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                  <h1 class="card-title" style="margin: 0;">Position Title</h1>
+                  <p class="text-muted" style="margin: 0.5rem 0;">Company Name</p>
+                  <div class="job-meta" style="margin-top: 1rem;">
+                    <span class="badge badge-primary">Location</span>
+                    <span class="badge badge-secondary">Duration</span>
+                    <span class="badge">Skills</span>
+                  </div>
+                </div>
+                <button class="favorite-btn" style="background: none; border: none; font-size: 2rem; cursor: pointer;">🤍</button>
+              </div>
+            </div>
+
+            <!-- Job Overview -->
+            <div class="card-content">
+              <h3>Job Overview</h3>
+              <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 2rem;">
+                <div>
+                  <p class="text-muted" style="margin: 0; font-size: 0.875rem;">SALARY</p>
+                  <p style="margin: 0.5rem 0; font-weight: 600; font-size: 1.25rem;">$XX - $XX/hr</p>
+                </div>
+                <div>
+                  <p class="text-muted" style="margin: 0; font-size: 0.875rem;">DURATION</p>
+                  <p style="margin: 0.5rem 0; font-weight: 600; font-size: 1.25rem;">Duration</p>
+                </div>
+                <div>
+                  <p class="text-muted" style="margin: 0; font-size: 0.875rem;">LOCATION</p>
+                  <p style="margin: 0.5rem 0; font-weight: 600; font-size: 1.25rem;">Location</p>
+                </div>
+                <div>
+                  <p class="text-muted" style="margin: 0; font-size: 0.875rem;">TYPE</p>
+                  <p style="margin: 0.5rem 0; font-weight: 600; font-size: 1.25rem;">Full-time</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div class="card-content">
+              <h3>About This Role</h3>
+              <p>
+                Add a description of the internship position here. Explain what the intern will be doing and what they can expect from this opportunity.
+              </p>
+            </div>
+
+            <!-- Responsibilities -->
+            <div class="card-content">
+              <h3>Responsibilities</h3>
+              <ul style="margin-left: 1.5rem;">
+                <li>Responsibility 1</li>
+                <li>Responsibility 2</li>
+                <li>Responsibility 3</li>
+                <li>Responsibility 4</li>
+              </ul>
+            </div>
+
+            <!-- Requirements -->
+            <div class="card-content">
+              <h3>Requirements</h3>
+              <ul style="margin-left: 1.5rem;">
+                <li>Requirement 1</li>
+                <li>Requirement 2</li>
+                <li>Requirement 3</li>
+                <li>Requirement 4</li>
+              </ul>
+            </div>
+
+            <!-- Application Button -->
+            <div class="card-footer" style="border-top: 1px solid var(--border-color); padding-top: 2rem; margin-top: 2rem;">
+              <button class="btn btn-primary btn-large" onclick="alert('Redirecting to application form...');">Apply Now</button>
+              <button class="btn btn-outline btn-large" onclick="alert('Saved to favorites!');">Save Position</button>
+            </div>
+          </div>
+
+          <!-- Company Info Card -->
+          <div class="card" style="margin-top: 2rem;">
+            <div class="card-header">
+              <h3 class="card-title">About Company Name</h3>
+            </div>
+            <div class="card-content">
+              <p>
+                Add company description here. Tell potential interns about your company's mission, values, and what it's like to work there.
+              </p>
+              <p>
+                <strong>Founded:</strong> Year<br>
+                <strong>Headquarters:</strong> Location<br>
+                <strong>Team Size:</strong> Number of employees<br>
+                <strong>Industry:</strong> Industry Type
+              </p>
+              <a href="#" class="btn btn-small btn-outline">Visit Company Website</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div>
+          <!-- Quick Apply Card -->
+          <div class="card" style="position: sticky; top: 90px;">
+            <div class="card-header">
+              <h3 class="card-title">Apply Now</h3>
+            </div>
+            <div class="card-content">
+              <p class="text-muted">Ready to apply? Fill out the form below to submit your application.</p>
+            </div>
+            <div class="card-content">
+              <form id="quickApplyForm">
+                <div class="form-group">
+                  <label for="fullName">Full Name</label>
+                  <input type="text" id="fullName" name="fullName" required>
+                </div>
+                <div class="form-group">
+                  <label for="email">Email Address</label>
+                  <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                  <label for="phone">Phone Number</label>
+                  <input type="text" id="phone" name="phone" required>
+                </div>
+                <div class="form-group">
+                  <label for="resume">Resume (PDF)</label>
+                  <input type="file" id="resume" name="resume" accept=".pdf" required>
+                </div>
+                <div class="form-group">
+                  <label for="coverLetter">Cover Letter</label>
+                  <textarea id="coverLetter" name="coverLetter" placeholder="Tell us why you're interested..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Application</button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Share Section -->
+          <div class="card" style="margin-top: 2rem;">
+            <div class="card-header">
+              <h3 class="card-title">Share This Position</h3>
+            </div>
+            <div class="card-content">
+              <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <button class="btn btn-small btn-outline" onclick="alert('Shared on LinkedIn!');">LinkedIn</button>
+                <button class="btn btn-small btn-outline" onclick="alert('Shared on Twitter!');">Twitter</button>
+                <button class="btn btn-small btn-outline" onclick="alert('Link copied to clipboard!');">Copy Link</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>About InternHub</h4>
+        <ul>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Our Team</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>For Students</h4>
+        <ul>
+          <li><a href="#">Browse Internships</a></li>
+          <li><a href="#">Career Resources</a></li>
+          <li><a href="#">Resume Builder</a></li>
+          <li><a href="#">Interview Tips</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>For Employers</h4>
+        <ul>
+          <li><a href="company-profile.html">Post Job</a></li>
+          <li><a href="#">Browse Candidates</a></li>
+          <li><a href="#">Pricing</a></li>
+          <li><a href="#">Support</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">Cookie Policy</a></li>
+          <li><a href="#">Accessibility</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2024 InternHub. All rights reserved. | Helping students find their next opportunity</p>
+    </div>
+  </footer>
+
+  <script src="js/script.js"></script>
+  <script>
+    // Handle quick apply form submission
+    document.addEventListener('DOMContentLoaded', function() {
+      const quickApplyForm = document.getElementById('quickApplyForm');
+      if (quickApplyForm) {
+        quickApplyForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          const fullName = document.getElementById('fullName').value;
+          alert(`Thank you, ${fullName}! Your application has been submitted.`);
+          this.reset();
+        });
+      }
+
+      // Handle favorite button on detail page
+      const detailFavoriteBtn = document.querySelector('.job-meta .favorite-btn');
+      if (detailFavoriteBtn) {
+        detailFavoriteBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          this.textContent = this.textContent === '🤍' ? '❤️' : '🤍';
+        });
+      }
+    });
+  </script>
+</body>
+</html>

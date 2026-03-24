@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browse Internships - InternHub</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav>
+    <div class="nav-container">
+      <a href="index.html" class="logo">InternHub</a>
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link">Home</a>
+        </li>
+        <li class="nav-item">
+          <a href="internships.html" class="nav-link active">Internships</a>
+        </li>
+        <li class="nav-item">
+          <a href="company-profile.html" class="nav-link">Employers</a>
+        </li>
+        <li class="nav-item">
+          <a href="auth.html" class="nav-link">Login/Register</a>
+        </li>
+      </ul>
+      <div class="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page Header -->
+  <section class="section" style="background-color: var(--light-color); padding-top: 2rem;">
+    <div class="container">
+      <h1 class="mb-2">Browse Internships</h1>
+      <p class="text-muted">Discover exciting opportunities from leading companies</p>
+    </div>
+  </section>
+
+  <!-- Search & Filter Bar -->
+  <section class="section" style="padding: 2rem 0; border-bottom: 1px solid var(--border-color);">
+    <div class="container">
+      <div class="form-row">
+        <div>
+          <input 
+            type="text" 
+            id="searchInput" 
+            placeholder="Search by position or company..." 
+            style="margin-bottom: 0;"
+          />
+        </div>
+        <div>
+          <select id="filterCategory" style="margin-bottom: 0;">
+            <option value="">All Categories</option>
+            <option value="Engineering">Engineering</option>
+            <option value="Design">Design</option>
+            <option value="Marketing">Marketing</option>
+            <option value="Business">Business</option>
+          </select>
+        </div>
+        <div>
+          <button class="btn btn-primary" id="filterBtn" style="width: 100%;">Search</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Internships List -->
+  <section class="section">
+    <div class="container">
+      <div id="jobsList" class="grid" style="grid-template-columns: 1fr;">
+        <!-- Job Card Template -->
+        <div class="job-card" data-job-id="1">
+          <div class="job-meta" style="display: flex; justify-content: space-between; align-items: start;">
+            <div>
+              <h3 class="job-title">Position Title</h3>
+              <p class="job-company">Company Name</p>
+            </div>
+            <button class="favorite-btn" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">🤍</button>
+          </div>
+          
+          <div class="job-meta">
+            <span class="badge badge-primary">Location</span>
+            <span class="badge badge-secondary">Duration</span>
+            <span class="badge">Skills</span>
+          </div>
+
+          <p class="job-description">
+            Brief description of the internship position and what the intern will be doing.
+          </p>
+
+          <div class="job-footer">
+            <span class="job-salary">$XX/hr - $XX/hr</span>
+            <a href="internship-detail.html?id=1" class="btn btn-small btn-primary">View Details</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- No Results Message -->
+      <div id="noResults" class="text-center" style="padding: 4rem 2rem; display: none;">
+        <h3>No internships found</h3>
+        <p class="text-muted">Try adjusting your search filters</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>About InternHub</h4>
+        <ul>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Our Team</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>For Students</h4>
+        <ul>
+          <li><a href="#">Browse Internships</a></li>
+          <li><a href="#">Career Resources</a></li>
+          <li><a href="#">Resume Builder</a></li>
+          <li><a href="#">Interview Tips</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>For Employers</h4>
+        <ul>
+          <li><a href="company-profile.html">Post Job</a></li>
+          <li><a href="#">Browse Candidates</a></li>
+          <li><a href="#">Pricing</a></li>
+          <li><a href="#">Support</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">Cookie Policy</a></li>
+          <li><a href="#">Accessibility</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2024 InternHub. All rights reserved. | Helping students find their next opportunity</p>
+    </div>
+  </footer>
+
+  <script src="js/script.js"></script>
+</body>
+</html>

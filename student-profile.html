@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Profile - InternHub</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .profile-header {
+      display: flex;
+      gap: 2rem;
+      align-items: start;
+      margin-bottom: 2rem;
+    }
+
+    .profile-avatar {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      flex-shrink: 0;
+    }
+
+    .profile-info h2 {
+      margin: 0 0 0.5rem 0;
+    }
+
+    .profile-info p {
+      margin: 0.25rem 0;
+      color: var(--text-light);
+    }
+
+    .profile-section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 0.5rem;
+    }
+
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .skill-tag {
+      background: var(--light-color);
+      border: 1px solid var(--border-color);
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .skill-tag:hover {
+      border-color: var(--primary-color);
+      background: rgba(79, 70, 229, 0.05);
+    }
+
+    .experience-item {
+      border-left: 3px solid var(--primary-color);
+      padding-left: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .experience-item h4 {
+      margin: 0 0 0.25rem 0;
+      color: var(--dark-color);
+    }
+
+    .experience-item .date {
+      font-size: 0.875rem;
+      color: var(--text-light);
+      margin-bottom: 0.5rem;
+    }
+
+    .experience-item p {
+      margin: 0.5rem 0;
+    }
+
+    .edit-input, .edit-textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid var(--border-color);
+      border-radius: 0.5rem;
+      font-family: inherit;
+      font-size: inherit;
+      margin-bottom: 1rem;
+      transition: border-color 0.3s ease;
+    }
+
+    .edit-input:focus, .edit-textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    .edit-textarea {
+      resize: vertical;
+      font-family: inherit;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text-color);
+    }
+
+    #editMode {
+      background: rgba(79, 70, 229, 0.02);
+      padding: 2rem;
+      border-radius: 0.75rem;
+      border: 1px solid var(--border-color);
+    }
+
+    @media (max-width: 768px) {
+      .profile-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .profile-avatar {
+        width: 100px;
+        height: 100px;
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav>
+    <div class="nav-container">
+      <a href="index.html" class="logo">InternHub</a>
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link">Home</a>
+        </li>
+        <li class="nav-item">
+          <a href="internships.html" class="nav-link">Internships</a>
+        </li>
+        <li class="nav-item">
+          <a href="company-profile.html" class="nav-link">Employers</a>
+        </li>
+        <li class="nav-item">
+          <a href="auth.html" class="nav-link">Login/Register</a>
+        </li>
+      </ul>
+      <div class="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Profile Section -->
+  <section class="section section-light">
+    <div class="container">
+      <div class="grid-2">
+        <!-- Main Profile Content -->
+        <div>
+          <div class="card">
+            <!-- Profile Header -->
+            <div class="profile-header">
+              <div class="profile-avatar">👤</div>
+              <div class="profile-info">
+                <h2>Student Name</h2>
+                <p>student@email.com</p>
+                <p>📚 University Name - Computer Science</p>
+                <p>🎓 Expected Graduation: 2025</p>
+                <p>📍 Location, Country</p>
+              </div>
+            </div>
+
+            <!-- Edit Button -->
+            <div style="text-align: right; margin-bottom: 2rem;">
+              <button class="btn btn-small btn-primary" id="editProfileBtn" onclick="enterEditMode()">Edit Profile</button>
+            </div>
+
+            <!-- Display Mode -->
+            <div id="displayMode">
+              <!-- About Section -->
+              <div class="profile-section-title">About Me</div>
+              <p id="aboutDisplay">
+                Write a brief bio about yourself. Share your passions, interests, and what you're looking for in an internship. This helps employers get to know you better.
+              </p>
+
+              <!-- Skills Section -->
+              <div class="profile-section-title">Skills</div>
+              <div class="skills-grid" id="skillsDisplay">
+                <div class="skill-tag">JavaScript</div>
+                <div class="skill-tag">Python</div>
+                <div class="skill-tag">React</div>
+                <div class="skill-tag">Web Design</div>
+                <div class="skill-tag">Communication</div>
+                <div class="skill-tag">Problem Solving</div>
+              </div>
+
+              <!-- Experience Section -->
+              <div class="profile-section-title">Experience & Projects</div>
+              
+              <div class="experience-item" id="experienceDisplay">
+                <h4>Project Title</h4>
+                <p class="date">2024</p>
+                <p>
+                  Describe a project you've worked on. Include what technologies you used, what you learned, and the impact of the project.
+                </p>
+              </div>
+            </div>
+
+            <!-- Edit Mode Form -->
+            <div id="editMode" style="display: none;">
+              <form onsubmit="saveProfileChanges(event)" id="editProfileForm">
+                <!-- Profile Header Edit -->
+                <div class="profile-section-title">Personal Information</div>
+                
+                <div class="form-group">
+                  <label for="editFullName">Full Name</label>
+                  <input type="text" id="editFullName" class="edit-input" placeholder="Your full name" required />
+                </div>
+
+                <div class="form-group">
+                  <label for="editEmail">Email Address</label>
+                  <input type="email" id="editEmail" class="edit-input" placeholder="your@email.com" required />
+                </div>
+
+                <div class="form-group">
+                  <label for="editUniversity">University/School</label>
+                  <input type="text" id="editUniversity" class="edit-input" placeholder="Your university name" />
+                </div>
+
+                <div class="form-group">
+                  <label for="editMajor">Major</label>
+                  <input type="text" id="editMajor" class="edit-input" placeholder="Your major" />
+                </div>
+
+                <div class="form-group">
+                  <label for="editGraduation">Expected Graduation</label>
+                  <input type="text" id="editGraduation" class="edit-input" placeholder="2025" />
+                </div>
+
+                <div class="form-group">
+                  <label for="editLocation">Location</label>
+                  <input type="text" id="editLocation" class="edit-input" placeholder="City, Country" />
+                </div>
+
+                <!-- About Section Edit -->
+                <div class="profile-section-title">About Me</div>
+                <div class="form-group">
+                  <textarea id="editAbout" class="edit-textarea" placeholder="Write about yourself..." rows="4"></textarea>
+                </div>
+
+                <!-- Skills Edit -->
+                <div class="profile-section-title">Skills</div>
+                <div class="form-group">
+                  <label for="editSkills">Skills (comma-separated)</label>
+                  <textarea id="editSkills" class="edit-textarea" placeholder="JavaScript, Python, React, etc." rows="3"></textarea>
+                </div>
+
+                <!-- Form Actions -->
+                <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                  <button type="submit" class="btn btn-primary">Save Changes</button>
+                  <button type="button" class="btn btn-secondary" onclick="cancelEditMode()">Cancel</button>
+                </div>
+              </form>
+            </div>
+
+            <div class="experience-item">
+              <h4>Another Project</h4>
+              <p class="date">2023</p>
+              <p>
+                Add more projects or experiences you want to highlight to potential employers.
+              </p>
+            </div>
+
+            <!-- Education Section -->
+            <div class="profile-section-title">Education</div>
+            <div class="experience-item">
+              <h4>University Name</h4>
+              <p class="date">2023 - 2025</p>
+              <p>
+                <strong>Degree:</strong> Bachelor of Science in Computer Science<br>
+                <strong>GPA:</strong> 3.8/4.0<br>
+                <strong>Relevant Coursework:</strong> Data Structures, Algorithms, Web Development
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div>
+          <!-- CV Download Card -->
+          <div class="card" style="position: sticky; top: 90px; margin-bottom: 2rem;">
+            <div class="card-header">
+              <h3 class="card-title">CV / Resume</h3>
+            </div>
+            <div class="card-content">
+              <p class="text-muted mb-3">Download your CV to share with employers or use when applying.</p>
+              <button class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;" onclick="downloadCV()">
+                📥 Download CV (PDF)
+              </button>
+              <button class="btn btn-secondary" style="width: 100%;" onclick="alert('Upload CV feature coming soon')">
+                📤 Upload New CV
+              </button>
+            </div>
+          </div>
+
+          <!-- Applied Positions Card -->
+          <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header">
+              <h3 class="card-title">Applications</h3>
+            </div>
+            <div class="card-content">
+              <p class="text-muted mb-2">Internship Positions Applied</p>
+              <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
+                <p style="margin: 0; font-weight: 600;">Frontend Developer Intern</p>
+                <p style="margin: 0.5rem 0; font-size: 0.875rem; color: var(--text-light);">Applied - Pending Review</p>
+              </div>
+              <div>
+                <p style="margin: 0; font-weight: 600;">UX Designer Intern</p>
+                <p style="margin: 0.5rem 0; font-size: 0.875rem; color: var(--secondary-color);">Accepted ✓</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Saved Positions Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Saved Positions</h3>
+            </div>
+            <div class="card-content">
+              <p class="text-muted mb-2">Positions you've bookmarked</p>
+              <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
+                <p style="margin: 0; font-weight: 600;">Backend Developer Intern</p>
+                <p style="margin: 0.5rem 0; font-size: 0.875rem; color: var(--text-light);">CloudSystems Ltd.</p>
+              </div>
+              <div>
+                <p style="margin: 0; font-weight: 600;">Data Science Intern</p>
+                <p style="margin: 0.5rem 0; font-size: 0.875rem; color: var(--text-light);">Analytics Pro</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>About InternHub</h4>
+        <ul>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Our Team</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>For Students</h4>
+        <ul>
+          <li><a href="#">Browse Internships</a></li>
+          <li><a href="#">Career Resources</a></li>
+          <li><a href="#">Resume Builder</a></li>
+          <li><a href="#">Interview Tips</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>For Employers</h4>
+        <ul>
+          <li><a href="company-profile.html">Post Job</a></li>
+          <li><a href="#">Browse Candidates</a></li>
+          <li><a href="#">Pricing</a></li>
+          <li><a href="#">Support</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">Cookie Policy</a></li>
+          <li><a href="#">Accessibility</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2024 InternHub. All rights reserved. | Helping students find their next opportunity</p>
+    </div>
+  </footer>
+
+  <script src="js/script.js"></script>
+</body>
+</html>

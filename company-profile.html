@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Company Profile - InternHub</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .company-header {
+      display: flex;
+      gap: 2rem;
+      align-items: start;
+      margin-bottom: 2rem;
+    }
+
+    .company-logo {
+      width: 150px;
+      height: 150px;
+      border-radius: 0.75rem;
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      flex-shrink: 0;
+    }
+
+    .company-info h2 {
+      margin: 0 0 0.5rem 0;
+    }
+
+    .company-info p {
+      margin: 0.25rem 0;
+      color: var(--text-light);
+    }
+
+    .company-section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 0.5rem;
+    }
+
+    .posting-item {
+      border-left: 3px solid var(--primary-color);
+      padding-left: 1rem;
+      padding: 1rem;
+      padding-left: 1rem;
+      border-left: 3px solid var(--primary-color);
+      margin-bottom: 1rem;
+      background: var(--light-color);
+      border-radius: 0.5rem;
+    }
+
+    .posting-item h4 {
+      margin: 0 0 0.25rem 0;
+      color: var(--dark-color);
+    }
+
+    .posting-item .applications {
+      font-size: 0.875rem;
+      color: var(--text-light);
+      margin-bottom: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .company-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .company-logo {
+        width: 100px;
+        height: 100px;
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav>
+    <div class="nav-container">
+      <a href="index.html" class="logo">InternHub</a>
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link">Home</a>
+        </li>
+        <li class="nav-item">
+          <a href="internships.html" class="nav-link">Internships</a>
+        </li>
+        <li class="nav-item">
+          <a href="company-profile.html" class="nav-link">Employers</a>
+        </li>
+        <li class="nav-item">
+          <a href="auth.html" class="nav-link">Login/Register</a>
+        </li>
+      </ul>
+      <div class="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Company Profile Section -->
+  <section class="section section-light">
+    <div class="container">
+      <div class="grid-2">
+        <!-- Main Profile Content -->
+        <div>
+          <div class="card">
+            <!-- Company Header -->
+            <div class="company-header">
+              <div class="company-logo">🏢</div>
+              <div class="company-info">
+                <h2>Company Name</h2>
+                <p>industry@company.com</p>
+                <p>📍 City, Country</p>
+                <p>👥 100-200 employees</p>
+                <p>🌐 www.company.com</p>
+              </div>
+            </div>
+
+            <!-- Edit Button -->
+            <div style="text-align: right; margin-bottom: 2rem;">
+              <button class="btn btn-small btn-primary" onclick="alert('Edit profile feature')">Edit Company</button>
+            </div>
+
+            <!-- About Section -->
+            <div class="company-section-title">About Company</div>
+            <p>
+              Describe your company mission, values, and what makes your organization special. This helps potential interns understand your company culture and what to expect.
+            </p>
+
+            <!-- Active Job Postings -->
+            <div class="company-section-title">Active Job Postings</div>
+            
+            <div class="posting-item">
+              <h4>Frontend Developer Intern</h4>
+              <p class="applications">📊 12 Applications</p>
+              <p style="font-size: 0.875rem; margin: 0.5rem 0 0 0;">
+                <a href="internship-detail.html?id=1" class="text-primary">View Posting</a> | 
+                <a href="#" class="text-primary">Edit</a> | 
+                <a href="#" class="text-primary">Close</a>
+              </p>
+            </div>
+
+            <div class="posting-item">
+              <h4>Backend Developer Intern</h4>
+              <p class="applications">📊 8 Applications</p>
+              <p style="font-size: 0.875rem; margin: 0.5rem 0 0 0;">
+                <a href="internship-detail.html?id=2" class="text-primary">View Posting</a> | 
+                <a href="#" class="text-primary">Edit</a> | 
+                <a href="#" class="text-primary">Close</a>
+              </p>
+            </div>
+
+            <!-- Company Details -->
+            <div class="company-section-title">Company Details</div>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+              <div>
+                <p style="margin: 0; color: var(--text-light); font-size: 0.875rem;">FOUNDED</p>
+                <p style="margin: 0.5rem 0; font-weight: 600;">2015</p>
+              </div>
+              <div>
+                <p style="margin: 0; color: var(--text-light); font-size: 0.875rem;">HEADQUARTERS</p>
+                <p style="margin: 0.5rem 0; font-weight: 600;">San Francisco, CA</p>
+              </div>
+              <div>
+                <p style="margin: 0; color: var(--text-light); font-size: 0.875rem;">INDUSTRY</p>
+                <p style="margin: 0.5rem 0; font-weight: 600;">Technology</p>
+              </div>
+              <div>
+                <p style="margin: 0; color: var(--text-light); font-size: 0.875rem;">WEBSITE</p>
+                <p style="margin: 0.5rem 0; font-weight: 600;"><a href="#" class="text-primary">www.company.com</a></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div>
+          <!-- Post Job Card -->
+          <div class="card" style="position: sticky; top: 90px; margin-bottom: 2rem;">
+            <div class="card-header">
+              <h3 class="card-title">Post New Job</h3>
+            </div>
+            <div class="card-content">
+              <p class="text-muted mb-3">Create a new internship opportunity for your company.</p>
+              <button class="btn btn-primary" style="width: 100%;" onclick="alert('Post job feature')">
+                ➕ Post New Position
+              </button>
+            </div>
+          </div>
+
+          <!-- Analytics Card -->
+          <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header">
+              <h3 class="card-title">Analytics</h3>
+            </div>
+            <div class="card-content">
+              <div style="margin-bottom: 1.5rem;">
+                <p style="margin: 0; color: var(--text-light); font-size: 0.875rem;">TOTAL APPLICATIONS</p>
+                <p style="margin: 0.5rem 0; font-weight: 600; font-size: 1.5rem;">42</p>
+              </div>
+              <div style="margin-bottom: 1.5rem;">
+                <p style="margin: 0; color: var(--text-light); font-size: 0.875rem;">PROFILE VIEWS</p>
+                <p style="margin: 0.5rem 0; font-weight: 600; font-size: 1.5rem;">238</p>
+              </div>
+              <div>
+                <p style="margin: 0; color: var(--text-light); font-size: 0.875rem;">ACTIVE POSTINGS</p>
+                <p style="margin: 0.5rem 0; font-weight: 600; font-size: 1.5rem;">2</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Applications Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Recent Applications</h3>
+            </div>
+            <div class="card-content">
+              <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
+                <p style="margin: 0; font-weight: 600;">John Doe</p>
+                <p style="margin: 0.5rem 0; font-size: 0.875rem; color: var(--text-light);">Frontend Developer Intern</p>
+              </div>
+              <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
+                <p style="margin: 0; font-weight: 600;">Jane Smith</p>
+                <p style="margin: 0.5rem 0; font-size: 0.875rem; color: var(--text-light);">Backend Developer Intern</p>
+              </div>
+              <div>
+                <p style="margin: 0; font-weight: 600;">Alex Johnson</p>
+                <p style="margin: 0.5rem 0; font-size: 0.875rem; color: var(--text-light);">Frontend Developer Intern</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>About InternHub</h4>
+        <ul>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Our Team</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>For Students</h4>
+        <ul>
+          <li><a href="#">Browse Internships</a></li>
+          <li><a href="#">Career Resources</a></li>
+          <li><a href="#">Resume Builder</a></li>
+          <li><a href="#">Interview Tips</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>For Employers</h4>
+        <ul>
+          <li><a href="#">Post Job</a></li>
+          <li><a href="#">Browse Candidates</a></li>
+          <li><a href="#">Pricing</a></li>
+          <li><a href="#">Support</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">Cookie Policy</a></li>
+          <li><a href="#">Accessibility</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2024 InternHub. All rights reserved. | Helping students find their next opportunity</p>
+    </div>
+  </footer>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
