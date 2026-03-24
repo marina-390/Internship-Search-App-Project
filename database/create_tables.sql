@@ -1,25 +1,25 @@
 -- ============================================================
 -- Practice Search - Создание таблиц
 -- База данных: Practice_search
--- Выполнять подключившись к базе Practice_search
+-- Supabase: https://nfrmrpfdfbscplqgwrtx.supabase.co
 -- ============================================================
 
--- Таблица пользователей (уже существует)
--- CREATE TABLE IF NOT EXISTS public."Users"
--- (
---     user_id integer NOT NULL,
---     user_login character varying(100) NOT NULL,
---     user_password character varying(255) NOT NULL,
---     user_token text,
---     created_at timestamp with time zone NOT NULL DEFAULT now(),
---     updated_at timestamp with time zone NOT NULL DEFAULT now(),
---     role integer NOT NULL,
---     CONSTRAINT "Users_pkey" PRIMARY KEY (user_id),
---     CONSTRAINT user_login UNIQUE (user_login)
--- );
+-- ============================================================
+-- 1. Пользователи
+-- ============================================================
+CREATE TABLE IF NOT EXISTS "Users" (
+    user_id     SERIAL PRIMARY KEY,
+    user_login  VARCHAR(100) NOT NULL,
+    user_password VARCHAR(255) NOT NULL,
+    user_token  TEXT,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    role        INTEGER NOT NULL,
+    CONSTRAINT user_login UNIQUE (user_login)
+);
 
 -- ============================================================
--- Профили студентов
+-- 2. Профили студентов
 -- ============================================================
 CREATE TABLE IF NOT EXISTS student_profiles (
     id              SERIAL PRIMARY KEY,
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS student_profiles (
 );
 
 -- ============================================================
--- Компании
+-- 3. Компании
 -- ============================================================
 CREATE TABLE IF NOT EXISTS "Companies" (
     company_id      SERIAL PRIMARY KEY,
@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS "Companies" (
 );
 
 -- ============================================================
--- Позиции (вакансии компании)
+-- 4. Позиции (вакансии компании)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS positions (
     position_id     SERIAL PRIMARY KEY,
@@ -82,7 +82,85 @@ CREATE TABLE IF NOT EXISTS positions (
 );
 
 -- ============================================================
--- Ссылки студента (GitHub, LinkedIn, портфолио и т.д.)
+-- 5. Сферы деятельности (группы)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS job_groups (
+    group_id    SERIAL PRIMARY KEY,
+    title       VARCHAR(255) NOT NULL UNIQUE,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+INSERT INTO job_groups (title) VALUES
+    ('IT & Development'),
+    ('Design'),
+    ('Food & Hospitality'),
+    ('Business & Management'),
+    ('Healthcare'),
+    ('Education'),
+    ('Construction & Engineering'),
+    ('Marketing & Communications');
+
+-- ============================================================
+-- 6. Каталог должностей (привязаны к сферам)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS job_categories (
+    category_id SERIAL PRIMARY KEY,
+    group_id    INTEGER NOT NULL
+                    REFERENCES job_groups(group_id) ON DELETE CASCADE,
+    title       VARCHAR(255) NOT NULL UNIQUE,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+INSERT INTO job_categories (group_id, title) VALUES
+    (1, 'Backend Developer'),
+    (1, 'Frontend Developer'),
+    (1, 'Full Stack Developer'),
+    (1, 'DevOps Engineer'),
+    (1, 'QA Tester'),
+    (1, 'Mobile Developer'),
+    (1, 'Data Analyst'),
+    (2, 'UX/UI Designer'),
+    (2, 'Graphic Designer'),
+    (2, '3D Modeler'),
+    (3, 'Cook'),
+    (3, 'Pastry Chef'),
+    (3, 'Barista'),
+    (3, 'Restaurant Manager'),
+    (4, 'Project Manager'),
+    (4, 'Business Analyst'),
+    (4, 'HR Specialist'),
+    (5, 'Nurse'),
+    (5, 'Physiotherapist'),
+    (6, 'Teaching Assistant'),
+    (7, 'Construction Worker'),
+    (7, 'Electrician'),
+    (8, 'Marketing Specialist'),
+    (8, 'Content Creator');
+
+-- ============================================================
+-- 7. Связь: вакансия <-> должности (многие-ко-многим)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS position_categories (
+    position_id INTEGER NOT NULL
+        REFERENCES positions(position_id) ON DELETE CASCADE,
+    category_id INTEGER NOT NULL
+        REFERENCES job_categories(category_id) ON DELETE CASCADE,
+    PRIMARY KEY (position_id, category_id)
+);
+
+-- ============================================================
+-- 8. Связь: студент <-> желаемые должности (многие-ко-многим)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS student_categories (
+    student_id  INTEGER NOT NULL
+        REFERENCES student_profiles(id) ON DELETE CASCADE,
+    category_id INTEGER NOT NULL
+        REFERENCES job_categories(category_id) ON DELETE CASCADE,
+    PRIMARY KEY (student_id, category_id)
+);
+
+-- ============================================================
+-- 9. Ссылки студента (GitHub, LinkedIn, портфолио и т.д.)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS "Student_links" (
     link_id     SERIAL PRIMARY KEY,
@@ -97,19 +175,7 @@ CREATE TABLE IF NOT EXISTS "Student_links" (
 );
 
 -- ============================================================
--- Желаемые позиции студента
--- ============================================================
-CREATE TABLE IF NOT EXISTS "Student_desired_positions" (
-    id          SERIAL PRIMARY KEY,
-    student_id  INTEGER NOT NULL,
-    title       VARCHAR(255) NOT NULL,
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
-    CONSTRAINT fk_desired_student FOREIGN KEY (student_id)
-        REFERENCES student_profiles(id) ON DELETE CASCADE
-);
-
--- ============================================================
--- Заявки на вакансии
+-- 10. Заявки на вакансии
 -- ============================================================
 CREATE TABLE IF NOT EXISTS applications (
     application_id  SERIAL PRIMARY KEY,
@@ -128,11 +194,16 @@ CREATE TABLE IF NOT EXISTS applications (
 );
 
 -- ============================================================
--- Индексы
+-- 11. Индексы
 -- ============================================================
-CREATE INDEX IF NOT EXISTS idx_positions_company      ON positions(company_id);
-CREATE INDEX IF NOT EXISTS idx_positions_status       ON positions(status);
-CREATE INDEX IF NOT EXISTS idx_student_links_student  ON "Student_links"(student_id);
-CREATE INDEX IF NOT EXISTS idx_applications_student   ON applications(student_id);
-CREATE INDEX IF NOT EXISTS idx_applications_position  ON applications(position_id);
-CREATE INDEX IF NOT EXISTS idx_applications_status    ON applications(status);
+CREATE INDEX IF NOT EXISTS idx_positions_company       ON positions(company_id);
+CREATE INDEX IF NOT EXISTS idx_positions_status        ON positions(status);
+CREATE INDEX IF NOT EXISTS idx_job_categories_group    ON job_categories(group_id);
+CREATE INDEX IF NOT EXISTS idx_position_categories_pos ON position_categories(position_id);
+CREATE INDEX IF NOT EXISTS idx_position_categories_cat ON position_categories(category_id);
+CREATE INDEX IF NOT EXISTS idx_student_categories_stu  ON student_categories(student_id);
+CREATE INDEX IF NOT EXISTS idx_student_categories_cat  ON student_categories(category_id);
+CREATE INDEX IF NOT EXISTS idx_student_links_student   ON "Student_links"(student_id);
+CREATE INDEX IF NOT EXISTS idx_applications_student    ON applications(student_id);
+CREATE INDEX IF NOT EXISTS idx_applications_position   ON applications(position_id);
+CREATE INDEX IF NOT EXISTS idx_applications_status     ON applications(status);
