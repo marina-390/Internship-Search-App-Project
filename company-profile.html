@@ -87,9 +87,6 @@
       <a href="index.html" class="logo">InternHub</a>
       <ul class="nav-menu">
         <li class="nav-item">
-          <a href="index.html" class="nav-link">Home</a>
-        </li>
-        <li class="nav-item">
           <a href="internships.html" class="nav-link">Internships</a>
         </li>
         <li class="nav-item">
@@ -173,17 +170,23 @@
               </div>
             </div>
 
-            <div class="company-section-title">Active Job Postings</div>
-            <div class="posting-item">
-              <h4>Frontend Developer Intern</h4>
+           <div class="posting-item" id="posting-1">
+            <div id="view-mode-1">
+              <h4 id="title-1">Frontend Developer Intern</h4>
               <p class="applications">📊 12 Applications</p>
               <p style="font-size: 0.875rem; margin: 0.5rem 0 0 0;">
                 <a href="internship-detail.html?id=1" class="text-primary">View Posting</a> | 
-                <a href="#" class="text-primary">Edit</a> | 
+                <a href="javascript:void(0)" onclick="togglePostEdit(1, true)" class="text-primary">Edit</a> | 
                 <a href="#" class="text-primary">Close</a>
               </p>
             </div>
+
+            <div id="edit-mode-1" style="display: none; margin-top: 10px;">
+              <input type="text" id="input-title-1" class="form-control" style="margin-bottom: 5px;">
+              <button class="btn-save" onclick="savePost(1)" style="background: green; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Save</button>
+              <button class="btn-cancel" onclick="togglePostEdit(1, false)" style="background: #ccc; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Cancel</button>
             </div>
+          </div>
         </div>
 
             <!-- Company Details -->

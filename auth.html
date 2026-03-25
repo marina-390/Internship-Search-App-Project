@@ -117,6 +117,7 @@
       height: 1px;
       background-color: var(--border-color);
     }
+
   </style>
 </head>
 <body>
@@ -125,9 +126,6 @@
     <div class="nav-container">
       <a href="index.html" class="logo">InternHub</a>
       <ul class="nav-menu">
-        <li class="nav-item">
-          <a href="index.html" class="nav-link">Home</a>
-        </li>
         <li class="nav-item">
           <a href="internships.html" class="nav-link">Internships</a>
         </li>
@@ -566,23 +564,22 @@
   <script>
     // Switch between login and register tabs
     function switchTab(tab) {
-      const loginForm = document.getElementById('loginForm');
-      const registerForm = document.getElementById('registerForm');
-      const formTabs = document.querySelectorAll('.form-tab');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const formTabs = document.querySelectorAll('.form-tab');
 
-      if (tab === 'login') {
+    if (tab === 'login') {
         loginForm.classList.add('active');
         registerForm.classList.remove('active');
         formTabs[0].classList.add('active');
         formTabs[1].classList.remove('active');
-      } else {
+    } else {
         loginForm.classList.remove('active');
         registerForm.classList.add('active');
         formTabs[0].classList.remove('active');
         formTabs[1].classList.add('active');
-      }
     }
-
+}
     // Toggle password visibility
     function togglePasswordVisibility(fieldId) {
       const field = document.getElementById(fieldId);

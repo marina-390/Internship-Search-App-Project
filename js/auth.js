@@ -48,3 +48,14 @@ function logout(event) {
   localStorage.removeItem('userLogin');
   window.location.href = 'index.html';
 }
+
+window.onload = function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = urlParams.get('mode');
+
+    if (mode === 'register') {
+        switchTab('register');
+    } else {
+        switchTab('login'); 
+    }
+};

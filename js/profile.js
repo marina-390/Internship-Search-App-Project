@@ -112,6 +112,33 @@ function addLogoutButton() {
     }
   }
 }
+
+function togglePostEdit(postId, isEditing) {
+    const viewDiv = document.getElementById(`view-mode-${postId}`);
+    const editDiv = document.getElementById(`edit-mode-${postId}`);
+    const inputField = document.getElementById(`input-title-${postId}`);
+    const currentTitle = document.getElementById(`title-${postId}`).innerText;
+
+    if (isEditing) {
+        viewDiv.style.display = 'none';
+        editDiv.style.display = 'block';
+        inputField.value = currentTitle; 
+    } else {
+
+        viewDiv.style.display = 'block';
+        editDiv.style.display = 'none';
+    }
+}
+
+async function savePost(postId) {
+    const newTitle = document.getElementById(`input-title-${postId}`).value;
+    
+    document.getElementById(`title-${postId}`).innerText = newTitle;
+    
+    togglePostEdit(postId, false);
+    alert("Position updated!");
+}
+
 // ==========================================
 // FILL DISPLAY MODE
 // ==========================================
