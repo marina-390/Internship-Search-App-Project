@@ -268,6 +268,80 @@ function cancelEditMode() {
   document.getElementById('cancelEditBtn').style.display = 'none';
 }
 
+// This function opens and closes the edit boxes
+function toggleCompanyEdit(isEditing) {
+    const editBtn = document.getElementById('editCompanyBtn');
+    const actionBtns = document.getElementById('editActionButtons');
+    const displayAbout = document.getElementById('companyDisplayAbout');
+    const editMode = document.getElementById('companyEditMode');
+    const displayHeader = document.querySelector('.company-info');
+
+    if (isEditing) {
+        // 1. Copy current text INTO the input boxes so you can edit them
+        document.getElementById('eCompanyName').value = document.getElementById('dCompanyName').innerText;
+        document.getElementById('eCompanyDesc').value = document.getElementById('dCompanyDesc').innerText;
+        document.getElementById('eHeadquarters').value = document.getElementById('dHeadquarters').innerText;
+        document.getElementById('eTeamSize').value = document.getElementById('dTeamSize').innerText;
+        document.getElementById('eWebsite').value = document.getElementById('dWebsite').innerText;
+
+        // 2. Show the Edit form, hide the display text
+        editBtn.style.display = 'none';
+        actionBtns.style.display = 'flex';
+        displayAbout.style.display = 'none';
+        editMode.style.display = 'block';
+        if(displayHeader) displayHeader.style.opacity = '0.5';
+    } else {
+        // 3. Switch back to normal view
+        editBtn.style.display = 'inline-block';
+        actionBtns.style.display = 'none';
+        displayAbout.style.display = 'block';
+        editMode.style.display = 'none';
+        if(displayHeader) displayHeader.style.opacity = '1';
+    }
+}
+
+async function saveCompanyProfile() {
+    const session = getCurrentSession(); 
+    const client = typeof supabaseClient !== 'undefined' ? supabaseClient : window.supabase;
+    
+    if (!session || !session.userId) {
+        alert("Session not found. Please log in again.");
+        return;
+    }
+
+    try {
+        const updatedData = {
+            company_name: document.getElementById('eCompanyName').value,
+            description: document.getElementById('eCompanyDesc').value,
+            website: document.getElementById('eWebsite').value,
+            updated_at: new Date().toISOString()
+        };
+
+        // 2. Save using the userId from your session
+        const { error } = await client
+            .from('Companies') 
+            .update(updatedData)
+            .eq('user_id', session.userId); 
+
+        if (error) throw error;
+
+        document.getElementById('dCompanyName').innerText = updatedData.company_name;
+        document.getElementById('dCompanyDesc').innerText = updatedData.description;
+        document.getElementById('dWebsite').innerText = updatedData.website;
+        
+        if(document.getElementById('dHeadquarters')) {
+            document.getElementById('dHeadquarters').innerText = document.getElementById('eHeadquarters').value;
+        }
+
+        toggleCompanyEdit(false);
+        alert("Company profile saved successfully!");
+
+    } catch (err) {
+        console.error("Save error:", err);
+        alert("Save failed: " + err.message);
+    }
+}
+
 // ==========================================
 // SAVE PROFILE
 // ==========================================

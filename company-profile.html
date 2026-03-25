@@ -114,32 +114,66 @@
         <!-- Main Profile Content -->
         <div>
           <div class="card">
-            <!-- Company Header -->
-            <div class="company-header">
-              <div class="company-logo">🏢</div>
-              <div class="company-info">
-                <h2>Company Name</h2>
-                <p>industry@company.com</p>
-                <p>📍 City, Country</p>
-                <p>👥 100-200 employees</p>
-                <p>🌐 www.company.com</p>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+              <div class="company-header" style="margin-bottom: 0;">
+                <div class="company-logo">🏢</div>
+                <div id="companyDisplayHeader" class="company-info">
+                  <h2 id="dCompanyName">Company Name</h2>
+                  <p id="dCompanyEmail">industry@company.com</p>
+                  <p>📍 <span id="dHeadquarters">San Francisco, CA</span></p>
+                  <p>👥 <span id="dTeamSize">100-200 employees</span></p>
+                  <p>🌐 <span id="dWebsite">www.company.com</span></p>
+                </div>
+              </div>
+              
+              <div>
+                <button class="btn btn-small btn-primary" id="editCompanyBtn" onclick="toggleCompanyEdit(true)">Edit Profile</button>
+                <div id="editActionButtons" style="display: none; gap: 0.5rem;">
+                 <button class="btn btn-small btn-primary" onclick="saveCompanyProfile()">Save</button>
+                  <button class="btn btn-small btn-secondary" onclick="toggleCompanyEdit(false)">Cancel</button>
+                </div>
               </div>
             </div>
 
-            <!-- Edit Button -->
-            <div style="text-align: right; margin-bottom: 2rem;">
-              <button class="btn btn-small btn-primary" onclick="alert('Edit profile feature')">Edit Company</button>
+            <div id="companyDisplayAbout">
+              <div class="company-section-title">About Company</div>
+              <p id="dCompanyDesc">
+                Describe your company mission, values, and what makes your organization special.
+              </p>
             </div>
 
-            <!-- About Section -->
-            <div class="company-section-title">About Company</div>
-            <p>
-              Describe your company mission, values, and what makes your organization special. This helps potential interns understand your company culture and what to expect.
-            </p>
+            <div id="companyEditMode" style="display: none; margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+              <div class="company-section-title">Edit Company Details</div>
+              <div class="form-group">
+                <label>Company Name</label>
+                <input type="text" id="eCompanyName" class="edit-input" style="width:100%; margin-bottom:1rem;">
+              </div>
+              <div class="form-group">
+                <label>About Description</label>
+                <textarea id="eCompanyDesc" rows="4" style="width:100%; margin-bottom:1rem;"></textarea>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                  <label>Headquarters</label>
+                  <input type="text" id="eHeadquarters" class="edit-input" list="citySuggestions" oninput="handleCityInput(this.value)">
+                  <datalist id="citySuggestions"></datalist>
+                </div>
+                <div class="form-group">
+                  <label>Team Size</label>
+                  <input type="text" id="eTeamSize" class="edit-input">
+                </div>
+                <div class="form-group">
+                  <label>Industry</label>
+                  <input type="text" id="eIndustry" class="edit-input">
+                </div>
+                <div class="form-group">
+                  <label>Website</label>
+                  <input type="text" id="eWebsite" class="edit-input">
+                </div>
+              </div>
+            </div>
 
-            <!-- Active Job Postings -->
             <div class="company-section-title">Active Job Postings</div>
-            
             <div class="posting-item">
               <h4>Frontend Developer Intern</h4>
               <p class="applications">📊 12 Applications</p>
@@ -149,16 +183,8 @@
                 <a href="#" class="text-primary">Close</a>
               </p>
             </div>
-
-            <div class="posting-item">
-              <h4>Backend Developer Intern</h4>
-              <p class="applications">📊 8 Applications</p>
-              <p style="font-size: 0.875rem; margin: 0.5rem 0 0 0;">
-                <a href="internship-detail.html?id=2" class="text-primary">View Posting</a> | 
-                <a href="#" class="text-primary">Edit</a> | 
-                <a href="#" class="text-primary">Close</a>
-              </p>
             </div>
+        </div>
 
             <!-- Company Details -->
             <div class="company-section-title">Company Details</div>
@@ -295,6 +321,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js"></script>
   <script src="js/auth.js"></script>
-  <script src="js/script.js"></script>
+  <script src="js/profile.js"></script> <script src="js/script.js"></script>
 </body>
 </html>
