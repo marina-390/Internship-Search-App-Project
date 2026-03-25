@@ -1,3 +1,4 @@
+const DIGITRANSIT_API_KEY = '4346b471f4ea41cb923eb2b40556c495';
 /* ==========================================
    STUDENT PROFILE (Supabase)
    ========================================== */
@@ -167,7 +168,66 @@ function fillApplications(applications) {
     `;
   }).join('');
 }
+async function handleCityInput(query) {
+    console.log("Typing detected:", query);
+    const datalist = document.getElementById('citySuggestions');
+    if (!datalist) return;
 
+    if (!query || query.length < 2) {
+        datalist.innerHTML = ''; 
+        return;
+    }
+
+    // FIX 1: Define the Set at the very beginning
+    const uniqueCities = new Set();
+
+    try {
+        // FIX 2: Using a more stable version of the URL
+        // We removed 'layers' for a moment to see if that's causing the 400 error
+        const url = `https://api.digitransit.fi/geocoding/v1/autocomplete?text=${encodeURIComponent(query)}&boundary.country=FIN&size=15`;
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: { 
+                'digitransit-subscription-key': DIGITRANSIT_API_KEY 
+            }
+        });
+
+        // If the API returns 400, let's see why
+        if (!response.ok) {
+            console.error("API Error Status:", response.status);
+            return;
+        }
+
+        const data = await response.json();
+        console.log("API Response:", data);
+
+        datalist.innerHTML = '';
+
+        if (data.features && data.features.length > 0) {
+            data.features.forEach(feature => {
+                const props = feature.properties;
+                
+                // FIX 3: Filter out anything with numbers (street addresses)
+                // This keeps only names like "Kokkola" and skips "Kokkolantie 5"
+                const hasNumber = /\d/.test(props.name);
+                
+                if (!hasNumber) {
+                    const cityName = props.name;
+                    if (!uniqueCities.has(cityName)) {
+                        uniqueCities.add(cityName);
+                        const option = document.createElement('option');
+                        option.value = cityName;
+                        datalist.appendChild(option);
+                    }
+                }
+            });
+            console.log("Filtered Results:", Array.from(uniqueCities));
+        }
+    } catch (err) {
+        console.error('Script Error:', err);
+    }
+}
 // ==========================================
 // EDIT MODE
 // ==========================================
