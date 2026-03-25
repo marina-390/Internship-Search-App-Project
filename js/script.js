@@ -21,7 +21,21 @@ if (hamburger) {
   });
 }
 
+function checkCompanyAuth() {
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    const userRole = localStorage.getItem('userRole');
 
+    if (isLoggedIn === 'true') {
+        if (userRole === '2') {
+            window.location.href = 'company-profile.html';
+        } else {
+            alert("You are logged in as a Student. Please use a Company account if you want to post internships.");
+        }
+    } else {
+ 
+        window.location.href = 'auth.html?mode=login';
+    }
+}
 // Add Logout Button and Hide Login/Register buttons
 function addLogoutButton() {
   const navMenu = document.querySelector('.nav-menu');
