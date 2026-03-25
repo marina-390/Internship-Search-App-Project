@@ -83,6 +83,35 @@ async function loadStudentProfile() {
   }
 }
 
+// Add Logout Button and Hide Login/Register buttons
+function addLogoutButton() {
+  const navMenu = document.querySelector('.nav-menu');
+  const session = isLoggedIn(); 
+
+  if (navMenu) {
+
+    const loginBtn = document.querySelector('a[href="auth.html"], .login-link');
+    const registerBtn = document.querySelector('a[href="register.html"], .register-link');
+
+    if (session) {
+      
+      // Hide Login/Register 
+      if (loginBtn) loginBtn.parentElement.style.display = 'none';
+      if (registerBtn) registerBtn.parentElement.style.display = 'none';
+
+      const existingLogout = document.querySelector('.logout-link');
+      if (!existingLogout) {
+        const logoutLi = document.createElement('li');
+        logoutLi.className = 'nav-item';
+        logoutLi.innerHTML = '<a href="#" class="nav-link logout-link" onclick="logout(event)">Logout</a>';
+        navMenu.appendChild(logoutLi);
+      }
+    } else {
+      if (loginBtn) loginBtn.parentElement.style.display = 'block';
+      if (registerBtn) registerBtn.parentElement.style.display = 'block';
+    }
+  }
+}
 // ==========================================
 // FILL DISPLAY MODE
 // ==========================================
