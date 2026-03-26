@@ -26,19 +26,6 @@ function requireAuth() {
   return getCurrentSession();
 }
 
-// Add Logout Button to Navigation
-function addLogoutButton() {
-  const navMenu = document.querySelector('.nav-menu');
-  const existingLogout = document.querySelector('.logout-link');
-
-  if (navMenu && !existingLogout) {
-    const logoutLi = document.createElement('li');
-    logoutLi.className = 'nav-item';
-    logoutLi.innerHTML = '<a href="#" class="nav-link logout-link" onclick="logout(event)">Logout</a>';
-    navMenu.appendChild(logoutLi);
-  }
-}
-
 function switchTab(tab) {
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');

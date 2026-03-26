@@ -36,33 +36,108 @@ function checkCompanyAuth() {
         window.location.href = 'auth.html?mode=login';
     }
 }
-// Add Logout Button and Hide Login/Register buttons
-function addLogoutButton() {
+// Initialize User Menu (replaces addLogoutButton)
+function initUserMenu() {
   const navMenu = document.querySelector('.nav-menu');
-  const session = isLoggedIn(); 
+  if (!navMenu) return;
 
-  if (navMenu) {
-    const loginBtn = document.querySelector('a[href="auth.html"], .login-link');
-    const registerBtn = document.querySelector('a[href="register.html"], .register-link');
+  const session = getCurrentSession();
+  const loginLi = Array.from(navMenu.children).find(li => 
+    li.querySelector('a[href="auth.html"], .login-link')
+  );
 
-    if (session) {
+  if (session) {
+    // Hide login/register
+    if (loginLi) loginLi.style.display = 'none';
+
+    // Remove existing user menu or logout
+    const existingUserMenu = navMenu.querySelector('.user-menu');
+    const existingLogout = navMenu.querySelector('.logout-link');
+    if (existingUserMenu) existingUserMenu.remove();
+    if (existingLogout) existingLogout.closest('li').remove();
+
+    // Create new user menu
+    const userLi = document.createElement('li');
+    userLi.className = 'nav-item user-menu';
+
+    getUserData(session.userId).then(userData => {
+      const avatarInitials = userData.name ? 
+        userData.name.charAt(0).toUpperCase() : 
+        session.login.charAt(0).toUpperCase();
       
-      // Hide Login/Register 
-      if (loginBtn) loginBtn.parentElement.style.display = 'none';
-      if (registerBtn) registerBtn.parentElement.style.display = 'none';
+      userLi.innerHTML = `
+        <div class="user-avatar" onclick="toggleUserDropdown(event)" title="${userData.name || session.login}">
+          ${userData.photo_url ? `<img src="${userData.photo_url}" alt="Profile">` : avatarInitials}
+        </div>
+        <ul class="user-dropdown" id="userDropdown">
+          <li><a href="${getProfileUrl(session.role)}">Profile</a></li>
+          <li><a href="#" onclick="logout(event)">Logout</a></li>
+        </ul>
+      `;
+      navMenu.appendChild(userLi);
+    }).catch(() => {
+      // Fallback without photo/name
+      userLi.innerHTML = `
+        <div class="user-avatar" onclick="toggleUserDropdown(event)" title="${session.login}">
+          ${session.login.charAt(0).toUpperCase()}
+        </div>
+        <ul class="user-dropdown" id="userDropdown">
+          <li><a href="${getProfileUrl(session.role)}">Profile</a></li>
+          <li><a href="#" onclick="logout(event)">Logout</a></li>
+        </ul>
+      `;
+      navMenu.appendChild(userLi);
+    });
+  } else {
+    // Show login/register
+    if (loginLi) loginLi.style.display = '';
+    
+    // Remove user menu
+    const existingUserMenu = navMenu.querySelector('.user-menu');
+    if (existingUserMenu) existingUserMenu.remove();
+  }
+}
 
-      // Add Logout button if it's not already there
-      const existingLogout = document.querySelector('.logout-link');
-      if (!existingLogout) {
-        const logoutLi = document.createElement('li');
-        logoutLi.className = 'nav-item';
-        logoutLi.innerHTML = '<a href="#" class="nav-link logout-link" onclick="logout(event)">Logout</a>';
-        navMenu.appendChild(logoutLi);
-      }
-    } else {
-      if (loginBtn) loginBtn.parentElement.style.display = 'block';
-      if (registerBtn) registerBtn.parentElement.style.display = 'block';
-    }
+// Toggle user dropdown
+function toggleUserDropdown(event) {
+  event.stopPropagation();
+  const dropdown = document.getElementById('userDropdown');
+  if (dropdown) {
+    dropdown.classList.toggle('show');
+  }
+}
+
+// Close dropdown on outside click
+document.addEventListener('click', function(event) {
+  const userMenu = document.querySelector('.user-menu');
+  const dropdown = document.querySelector('.user-dropdown');
+  if (dropdown && !userMenu.contains(event.target)) {
+    dropdown.classList.remove('show');
+  }
+});
+
+// Get profile URL based on role
+function getProfileUrl(role) {
+  return role === 2 ? 'company-profile.html' : 'student-profile.html';
+}
+
+// Get user data (photo, name) - sync fallback to local
+async function getUserData(userId) {
+  try {
+    if (typeof supabaseClient === 'undefined') throw new Error('No Supabase');
+    
+    const { data: profile } = await supabaseClient
+      .from('student_profiles')
+      .select('first_name, last_name, photo_url')
+      .eq('user_id', userId)
+      .single();
+
+    return {
+      name: profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || null : null,
+      photo_url: profile?.photo_url || null
+    };
+  } catch {
+    return { name: null, photo_url: null };
   }
 }
 // Set Active Nav Link
@@ -195,9 +270,8 @@ document.addEventListener('input', function(e) {
 document.addEventListener('DOMContentLoaded', function() {
   setActiveNavLink();
 
-  // Show logout button on all pages if logged in
   if (isLoggedIn()) {
-    addLogoutButton();
+    initUserMenu();
   }
 
   // Load student profile if on that page
