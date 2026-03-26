@@ -118,23 +118,24 @@
           </div>
 
           <!-- Company Info Card -->
-         <div class="card" style="margin-top: 2rem;">
+<div class="card" style="margin-top: 2rem;">
   <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
     <h3 class="card-title">Company Profile</h3>
-    <div>
+    <div id="companyAuthControls">
       <button class="btn btn-small btn-primary" id="editCompanyBtn" onclick="toggleCompanyEdit(true)">Edit</button>
-      <button class="btn btn-small btn-primary" id="saveCompanyBtn" onclick="saveCompanyProfile()" style="display:none;">Save</button>
-      <button class="btn btn-small btn-secondary" id="cancelCompanyBtn" onclick="toggleCompanyEdit(false)" style="display:none;">Cancel</button>
+      <div id="editActionButtons" style="display: none; gap: 0.5rem;">
+        <button class="btn btn-small btn-primary" id="saveCompanyBtn" onclick="saveCompanyProfile()">Save</button>
+        <button class="btn btn-small btn-secondary" id="cancelCompanyBtn" onclick="toggleCompanyEdit(false)">Cancel</button>
+      </div>
     </div>
   </div>
 
   <div id="companyDisplayMode" class="card-content">
     <p id="dCompanyDesc">Add company description here...</p>
     <p>
-      <strong>Founded:</strong> <span id="dFounded">Year</span><br>
+      <strong>Website:</strong> <span id="dWebsite">www.company.com</span><br>
       <strong>Headquarters:</strong> <span id="dHeadquarters">Location</span><br>
-      <strong>Team Size:</strong> <span id="dTeamSize">Number</span><br>
-      <strong>Industry:</strong> <span id="dIndustry">Industry Type</span>
+      <strong>Business ID (Y-Tunnus):</strong> <span id="dYTunnus">Number</span><br>
     </p>
   </div>
 
@@ -145,20 +146,16 @@
     </div>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
       <div class="form-group">
-        <label>Founded Year</label>
-        <input type="text" id="eFounded" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
+        <label>Website</label>
+        <input type="text" id="eWebsite" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
       </div>
       <div class="form-group">
-        <label>Headquarters</label>
-        <input type="text" id="eHeadquarters" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
+        <label>Headquarters (City)</label>
+        <input type="text" id="eCity" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
       </div>
       <div class="form-group">
-        <label>Team Size</label>
-        <input type="text" id="eTeamSize" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
-      </div>
-      <div class="form-group">
-        <label>Industry</label>
-        <input type="text" id="eIndustry" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
+        <label>Business ID (Y-Tunnus)</label>
+        <input type="text" id="eYTunnus" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
       </div>
     </div>
   </div>

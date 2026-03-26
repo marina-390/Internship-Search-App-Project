@@ -168,6 +168,217 @@ function setField(id, value) {
 }
 
 // ==========================================
+// COMPANY PROFILE LOGIC
+// ==========================================
+
+async function loadCompanyProfile() {
+    const session = getCurrentSession();
+    if (!session) return;
+
+    try {
+        const { data: profile, error } = await supabaseClient
+            .from('Companies') 
+            .select('*')
+            .eq('user_id', session.userId)
+            .single();
+
+        if (error) throw error;
+        if (profile) {
+            currentProfile = profile; 
+            fillCompanyDisplay(profile);
+            fillCompanyLogo(profile);
+        }
+    } catch (err) {
+        console.error('Error loading company:', err.message);
+    }
+}
+
+async function saveCompanyProfile() {
+    const session = getCurrentSession();
+    if (!session || !currentProfile) return;
+
+    const saveBtn = document.querySelector('[onclick="saveCompanyProfile()"]');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+
+    // Map your UI inputs to your DB columns exactly as they are in the image
+    const updates = {
+        company_name: document.getElementById('eCompanyName').value.trim(),
+        description: document.getElementById('eCompanyDesc').value.trim(),
+        website: document.getElementById('eWebsite').value.trim(),
+        city: document.getElementById('eHeadquarters').value.trim(), 
+        y_tunnus: document.getElementById('eTeamSize').value.trim(),
+        updated_at: new Date().toISOString()
+    };
+
+    try {
+        const { error } = await supabaseClient
+            .from('Companies')
+            .update(updates)
+            .eq('company_id', currentProfile.company_id); // Use company_id PK from image
+
+        if (error) throw error;
+
+        // Update local data and UI
+        Object.assign(currentProfile, updates);
+        fillCompanyDisplay(currentProfile);
+        toggleCompanyEdit(false);
+        alert("Changes saved successfully!");
+    } catch (err) {
+        console.error("Save error:", err);
+        alert("Failed to save: " + err.message);
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save';
+    }
+}
+
+// Helper to fill the display text
+function fillCompanyDisplay(profile) {
+    if(document.getElementById('dCompanyName')) 
+        document.getElementById('dCompanyName').innerText = profile.company_name || '';
+    
+    if(document.getElementById('dCompanyDesc')) 
+        document.getElementById('dCompanyDesc').innerText = profile.description || '';
+    
+    if(document.getElementById('dWebsite')) 
+        document.getElementById('dWebsite').innerText = profile.website || '';
+    
+    if(document.getElementById('dHeadquarters')) 
+        document.getElementById('dHeadquarters').innerText = profile.city || '';
+
+    // FIX THIS LINE: Use dYTunnus if that is what is in your HTML
+    const yTunnusEl = document.getElementById('dYTunnus') || document.getElementById('dTeamSize');
+    if(yTunnusEl) yTunnusEl.innerText = profile.y_tunnus || '';
+}
+
+async function uploadCompanyLogo(input) {
+    const file = input.files[0];
+    if (!file || !currentProfile) return;
+
+    const fileExt = file.name.split('.').pop();
+    const filePath = `logos/${currentProfile.company_id}.${fileExt}`;
+
+    try {
+        const { error: uploadError } = await supabaseClient.storage
+            .from('LOGO')
+            .upload(filePath, file, { upsert: true });
+
+        if (uploadError) throw uploadError;
+
+        const { data } = supabaseClient.storage
+            .from('LOGO')
+            .getPublicUrl(filePath);
+
+        const publicUrl = data.publicUrl;
+
+        const { error: dbError } = await supabaseClient
+            .from('Companies')
+            .update({ logo_url: publicUrl })
+            .eq('company_id', currentProfile.company_id);
+
+        if (dbError) throw dbError;
+
+        currentProfile.logo_url = publicUrl;
+        fillCompanyLogo(currentProfile);
+        alert('Logo updated!');
+    } catch (err) {
+        console.error('Logo Error:', err.message);
+    }
+}
+
+function toggleCompanyEdit(isEditing) {
+    const editBtn = document.getElementById('editCompanyBtn');
+    const actionBtns = document.getElementById('editActionButtons');
+    const displayAbout = document.getElementById('companyDisplayAbout');
+    const editMode = document.getElementById('companyEditMode');
+
+    if (isEditing) {
+        document.getElementById('eCompanyName').value = document.getElementById('dCompanyName').innerText;
+        document.getElementById('eCompanyDesc').value = document.getElementById('dCompanyDesc').innerText;
+        
+        document.getElementById('eHeadquarters').value = document.getElementById('dHeadquarters').innerText;
+        document.getElementById('eTeamSize').value = document.getElementById('dTeamSize').innerText;
+        document.getElementById('eWebsite').value = document.getElementById('dWebsite').innerText;
+
+        editBtn.style.display = 'none';
+        actionBtns.style.display = 'flex';
+        displayAbout.style.display = 'none';
+        editMode.style.display = 'block';
+    } else {
+        editBtn.style.display = 'inline-block';
+        actionBtns.style.display = 'none';
+        displayAbout.style.display = 'block';
+        editMode.style.display = 'none';
+    }
+}
+
+async function saveCompanyProfile() {
+    const session = getCurrentSession(); 
+    if (!session) {
+        alert("You must be logged in to save.");
+        return;
+    }
+
+    const saveBtn = document.getElementById('saveCompanyBtn');
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerText = 'Saving...';
+    }
+
+    try {
+        const updates = {
+            company_name: document.getElementById('eCompanyName').value.trim(),
+            description: document.getElementById('eCompanyDesc').value.trim(),
+            website: document.getElementById('eWebsite').value.trim(),
+            city: document.getElementById('eHeadquarters').value.trim(),
+            y_tunnus: document.getElementById('eTeamSize').value.trim(),
+            updated_at: new Date().toISOString()
+        };
+
+        const { error } = await supabaseClient
+            .from('Companies') 
+            .update(updates)
+            .eq('user_id', session.userId); 
+
+        if (error) throw error;
+
+        document.getElementById('dCompanyName').innerText = updates.company_name;
+        document.getElementById('dCompanyDesc').innerText = updates.description;
+        document.getElementById('dHeadquarters').innerText = updates.city;
+        document.getElementById('dTeamSize').innerText = updates.y_tunnus;
+        document.getElementById('dWebsite').innerText = updates.website;
+
+        toggleCompanyEdit(false);
+        alert("Profile updated successfully!");
+
+    } catch (err) {
+        console.error("Full Save Error:", err);
+        alert("Save failed: " + (err.message || "Unknown error"));
+    } finally {
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.innerText = 'Save';
+        }
+    }
+}
+
+function fillCompanyLogo(profile) {
+    const logoImg = document.getElementById('companyLogoImg');
+    const logoEmoji = document.getElementById('logoEmoji');
+    
+    if (profile.logo_url) {
+        if (logoImg) {
+            logoImg.src = profile.logo_url;
+            logoImg.style.display = 'block';
+        }
+        if (logoEmoji) logoEmoji.style.display = 'none';
+    } else {
+        if (logoImg) logoImg.style.display = 'none';
+        if (logoEmoji) logoEmoji.style.display = 'block';
+    }
+}
+// ==========================================
 // FILL APPLICATIONS
 // ==========================================
 function fillApplications(applications) {
@@ -325,47 +536,6 @@ function toggleCompanyEdit(isEditing) {
     }
 }
 
-async function saveCompanyProfile() {
-    const session = getCurrentSession(); 
-    const client = typeof supabaseClient !== 'undefined' ? supabaseClient : window.supabase;
-    
-    if (!session || !session.userId) {
-        alert("Session not found. Please log in again.");
-        return;
-    }
-
-    try {
-        const updatedData = {
-            company_name: document.getElementById('eCompanyName').value,
-            description: document.getElementById('eCompanyDesc').value,
-            website: document.getElementById('eWebsite').value,
-            updated_at: new Date().toISOString()
-        };
-
-        // 2. Save using the userId from your session
-        const { error } = await client
-            .from('Companies') 
-            .update(updatedData)
-            .eq('user_id', session.userId); 
-
-        if (error) throw error;
-
-        document.getElementById('dCompanyName').innerText = updatedData.company_name;
-        document.getElementById('dCompanyDesc').innerText = updatedData.description;
-        document.getElementById('dWebsite').innerText = updatedData.website;
-        
-        if(document.getElementById('dHeadquarters')) {
-            document.getElementById('dHeadquarters').innerText = document.getElementById('eHeadquarters').value;
-        }
-
-        toggleCompanyEdit(false);
-        alert("Company profile saved successfully!");
-
-    } catch (err) {
-        console.error("Save error:", err);
-        alert("Save failed: " + err.message);
-    }
-}
 
 // ==========================================
 // SAVE PROFILE

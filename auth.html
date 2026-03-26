@@ -745,6 +745,17 @@
       }
     }
 
+    const { error } = await supabaseClient
+    .from('Companies')
+    .upsert({
+        user_id: session.userId, 
+        company_name: document.getElementById('eCompanyName').value,
+        city: document.getElementById('eHeadquarters').value,
+        y_tunnus: document.getElementById('eTeamSize').value,
+        website: document.getElementById('eWebsite').value,
+        description: document.getElementById('eCompanyDesc').value
+    }, { onConflict: 'user_id' }); 
+
     // Toggle between student and company fields
     function toggleRoleFields() {
       const role = document.querySelector('input[name="role"]:checked').value;

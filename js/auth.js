@@ -33,10 +33,9 @@ function switchTab(tab) {
 
     tabs.forEach(t => t.classList.remove('active'));
     
-    if (tab === 'login') {
-        loginForm.style.display = 'block';
-        registerForm.style.display = 'none';
-        document.querySelector('[onclick="switchTab(\'login\')"]').classList.add('active');
+    const loginBtn = document.getElementById('loginBtn');
+    if (loginBtn) {
+        loginBtn.style.display = 'none';
     } else {
         loginForm.style.display = 'none';
         registerForm.style.display = 'block';

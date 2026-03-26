@@ -107,65 +107,64 @@
       <div class="grid-2">
         <!-- Main Profile Content -->
         <div>
-          <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
-              <div class="company-header" style="margin-bottom: 0;">
-                <div class="company-logo">🏢</div>
-                <div id="companyDisplayHeader" class="company-info">
-                  <h2 id="dCompanyName">Company Name</h2>
-                  <p id="dCompanyEmail">industry@company.com</p>
-                  <p>📍 <span id="dHeadquarters">San Francisco, CA</span></p>
-                  <p>👥 <span id="dTeamSize">100-200 employees</span></p>
-                  <p>🌐 <span id="dWebsite">www.company.com</span></p>
-                </div>
-              </div>
-              
-              <div>
-                <button class="btn btn-small btn-primary" id="editCompanyBtn" onclick="toggleCompanyEdit(true)">Edit Profile</button>
-                <div id="editActionButtons" style="display: none; gap: 0.5rem;">
-                 <button class="btn btn-small btn-primary" onclick="saveCompanyProfile()">Save</button>
-                  <button class="btn btn-small btn-secondary" onclick="toggleCompanyEdit(false)">Cancel</button>
-                </div>
-              </div>
-            </div>
+<div>
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+      <div class="company-header" style="margin-bottom: 0;">
+        <div class="company-logo" id="companyLogoDiv">🏢</div>
+        <div id="companyDisplayHeader" class="company-info">
+          <h2 id="dCompanyName">Company Name</h2>
+          <p id="dCompanyEmail">industry@company.com</p>
+          <p>📍 <span id="dHeadquarters">Location</span></p>
+          <p>👥 <span id="dTeamSize">Business ID</span></p> <p>🌐 <span id="dWebsite">www.company.com</span></p>
+        </div>
+      </div>
+      
+      <div>
+        <button class="btn btn-small btn-primary" id="editCompanyBtn" onclick="toggleCompanyEdit(true)">Edit Profile</button>
+        <div id="editActionButtons" style="display: none; gap: 0.5rem;">
+          <button class="btn btn-small btn-primary" id="saveCompanyBtn" onclick="saveCompanyProfile()">Save</button>
+          <button class="btn btn-small btn-secondary" onclick="toggleCompanyEdit(false)">Cancel</button>
+        </div>
+      </div>
+    </div>
 
-            <div id="companyDisplayAbout">
-              <div class="company-section-title">About Company</div>
-              <p id="dCompanyDesc">
-                Describe your company mission, values, and what makes your organization special.
-              </p>
-            </div>
+    <div id="companyDisplayAbout">
+      <div class="company-section-title">About Company</div>
+      <p id="dCompanyDesc">Describe your company mission...</p>
+    </div>
 
-            <div id="companyEditMode" style="display: none; margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
-              <div class="company-section-title">Edit Company Details</div>
-              <div class="form-group">
-                <label>Company Name</label>
-                <input type="text" id="eCompanyName" class="edit-input" style="width:100%; margin-bottom:1rem;">
-              </div>
-              <div class="form-group">
-                <label>About Description</label>
-                <textarea id="eCompanyDesc" rows="4" style="width:100%; margin-bottom:1rem;"></textarea>
-              </div>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <div class="form-group">
-                  <label>Headquarters</label>
-                  <input type="text" id="eHeadquarters" class="edit-input" list="citySuggestions" oninput="handleCityInput(this.value)">
-                  <datalist id="citySuggestions"></datalist>
-                </div>
-                <div class="form-group">
-                  <label>Team Size</label>
-                  <input type="text" id="eTeamSize" class="edit-input">
-                </div>
-                <div class="form-group">
-                  <label>Industry</label>
-                  <input type="text" id="eIndustry" class="edit-input">
-                </div>
-                <div class="form-group">
-                  <label>Website</label>
-                  <input type="text" id="eWebsite" class="edit-input">
-                </div>
-              </div>
-            </div>
+    <div id="companyEditMode" style="display: none; margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+      <div class="company-section-title">Edit Company Details</div>
+      <div class="form-group">
+        <label>Company Name</label>
+        <input type="text" id="eCompanyName" class="edit-input" style="width:100%; margin-bottom:1rem;">
+      </div>
+      <div class="form-group">
+        <label>About Description</label>
+        <textarea id="eCompanyDesc" rows="4" style="width:100%; margin-bottom:1rem;"></textarea>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+  <label>Headquarters (City)</label>
+  <input type="text" id="eHeadquarters" class="edit-input" 
+         oninput="handleCityInput(this.value)" 
+         list="citySuggestions" 
+         autocomplete="off">
+  
+  <datalist id="citySuggestions"></datalist>
+</div>
+        <div class="form-group">
+          <label>Business ID (Y-Tunnus)</label>
+          <input type="text" id="eTeamSize" class="edit-input"> </div>
+        <div class="form-group">
+          <label>Website</label>
+          <input type="text" id="eWebsite" class="edit-input">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
            <div class="posting-item" id="posting-1">
             <div id="view-mode-1">
@@ -321,6 +320,13 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js"></script>
   <script src="js/auth.js"></script>
-  <script src="js/profile.js"></script> <script src="js/script.js"></script>
+  <script src="js/profile.js"></script>
+  <script src="js/script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(loadCompanyProfile, 200);
+    });
+  </script>
 </body>
+
 </html>
