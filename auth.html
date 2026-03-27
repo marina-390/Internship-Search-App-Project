@@ -548,7 +548,7 @@
     </div>
 
     <div class="footer-bottom">
-      <p>&copy; 2024 InternHub. All rights reserved. | Helping students find their next opportunity</p>
+      <p>&copy; 2026 InternHub. All rights reserved. | Helping students find their next opportunity</p>
     </div>
   </footer>
 
@@ -558,218 +558,257 @@
   <script src="js/auth.js"></script>
   <script src="js/profile.js"></script>
   <script src="js/script.js"></script>
-  <script>
+  
     // Switch between login and register tabs
-    function switchTab(tab) {
-    const loginForm = document.getElementById('loginForm');
+    <script>
+  /* ----------------------------------------------------------
+     TAB SWITCHING
+     ---------------------------------------------------------- */
+  function switchTab(tab) {
+    const loginForm   = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
-    const formTabs = document.querySelectorAll('.form-tab');
+    const tabs        = document.querySelectorAll('.form-tab');
 
     if (tab === 'login') {
-        loginForm.classList.add('active');
-        registerForm.classList.remove('active');
-        formTabs[0].classList.add('active');
-        formTabs[1].classList.remove('active');
+      loginForm.classList.add('active');
+      registerForm.classList.remove('active');
+      tabs[0].classList.add('active');
+      tabs[1].classList.remove('active');
     } else {
-        loginForm.classList.remove('active');
-        registerForm.classList.add('active');
-        formTabs[0].classList.remove('active');
-        formTabs[1].classList.add('active');
+      loginForm.classList.remove('active');
+      registerForm.classList.add('active');
+      tabs[0].classList.remove('active');
+      tabs[1].classList.add('active');
     }
-}
-    // Toggle password visibility
-    function togglePasswordVisibility(fieldId) {
-      const field = document.getElementById(fieldId);
-      if (field.type === 'password') {
-        field.type = 'text';
+  }
+
+  /* ----------------------------------------------------------
+     ROLE FIELD TOGGLE  (student vs company fields)
+     ---------------------------------------------------------- */
+  function toggleRoleFields() {
+    const role          = document.querySelector('input[name="role"]:checked').value;
+    const studentFields = document.getElementById('studentFields');
+    const companyFields = document.getElementById('companyFields');
+
+    if (role === 'student') {
+      studentFields.style.display = 'block';
+      companyFields.style.display = 'none';
+    } else {
+      studentFields.style.display = 'none';
+      companyFields.style.display = 'block';
+    }
+  }
+
+  /* ----------------------------------------------------------
+     PASSWORD VISIBILITY TOGGLE
+     ---------------------------------------------------------- */
+  function togglePasswordVisibility(fieldId) {
+    const field = document.getElementById(fieldId);
+    field.type  = field.type === 'password' ? 'text' : 'password';
+  }
+
+  /* ----------------------------------------------------------
+     LOGIN
+     DB columns used: Users.user_login, Users.user_password,
+                      Users.user_id, Users.role
+     ---------------------------------------------------------- */
+  async function handleLogin(event) {
+    event.preventDefault();
+
+    const email     = document.getElementById('loginEmail').value.trim();
+    const password  = document.getElementById('loginPassword').value;
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+
+    if (!email || !password) return;
+
+    submitBtn.disabled    = true;
+    submitBtn.textContent = 'Signing in...';
+
+    try {
+      // Look up user by user_login (= email)
+      const { data: user, error } = await supabaseClient
+        .from('Users')
+        .select('user_id, user_password, role')
+        .eq('user_login', email)
+        .single();
+
+      if (error || !user) {
+        alert('No account found with that email. Please register first.');
+        return;
+      }
+
+      // Verify hashed password with bcrypt
+      const match = dcodeIO.bcrypt.compareSync(password, user.user_password);
+      if (!match) {
+        alert('Incorrect password. Please try again.');
+        return;
+      }
+
+      // Persist session
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('userId',   user.user_id);
+      localStorage.setItem('userRole', user.role);
+      localStorage.setItem('userLogin', email);
+
+      // Redirect: role 1 = student, role 2 = employer, role 0 = admin
+      if (user.role === 1) {
+        window.location.href = 'student-profile.html';
+      } else if (user.role === 2) {
+        window.location.href = 'company-profile.html';
       } else {
-        field.type = 'password';
+        window.location.href = 'index.html';
       }
+
+    } catch (err) {
+      console.error('Login error:', err);
+      alert('An unexpected error occurred. Please try again.');
+    } finally {
+      submitBtn.disabled    = false;
+      submitBtn.textContent = 'Sign In';
+    }
+  }
+
+  /* ----------------------------------------------------------
+     REGISTRATION
+     Tables written:
+       Users             → user_login, user_password, role
+       student_profiles  → user_id, first_name, last_name,
+                           type_education   (university field)
+                           NOTE: major / graduationYear have NO
+                           matching columns in the DB schema —
+                           those form fields are display-only
+                           and are not saved.
+       Companies         → user_id, company_name, website
+                           NOTE: jobTitle / companySize have NO
+                           matching columns in the DB schema —
+                           those form fields are display-only.
+     ---------------------------------------------------------- */
+  async function handleRegister(event) {
+    event.preventDefault();
+
+    const firstName       = document.getElementById('firstName').value.trim();
+    const lastName        = document.getElementById('lastName').value.trim();
+    const email           = document.getElementById('regEmail').value.trim();
+    const password        = document.getElementById('regPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const roleValue       = document.querySelector('input[name="role"]:checked').value;
+    const submitBtn       = event.target.querySelector('button[type="submit"]');
+
+    // Basic validation
+    if (!firstName || !lastName) {
+      alert('Please enter your first and last name.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      alert('Passwords do not match.');
+      return;
+    }
+    if (password.length < 6) {
+      alert('Password must be at least 6 characters.');
+      return;
     }
 
-    // Handle login form submission
-    async function handleLogin(event) {
-      event.preventDefault();
-      const email = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPassword').value;
-      const submitBtn = event.target.querySelector('button[type="submit"]');
+    // role: 1 = student, 2 = employer  (matches Users.role INTEGER)
+    const role = roleValue === 'student' ? 1 : 2;
 
-      if (!email || !password) return;
+    submitBtn.disabled    = true;
+    submitBtn.textContent = 'Creating account...';
 
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Signing in...';
+    try {
+      // Check for duplicate email
+      const { data: existing } = await supabaseClient
+        .from('Users')
+        .select('user_id')
+        .eq('user_login', email)
+        .maybeSingle();
 
-      try {
-        // Find user by login
-        const { data: user, error } = await supabaseClient
-          .from('Users')
-          .select('*')
-          .eq('user_login', email)
-          .single();
-
-        if (error || !user) {
-          alert('User not found. Check your email or register.');
-          return;
-        }
-
-        // Verify password
-        const passwordMatch = dcodeIO.bcrypt.compareSync(password, user.user_password);
-        if (!passwordMatch) {
-          alert('Wrong password.');
-          return;
-        }
-
-        // Save session to localStorage
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('userId', user.user_id);
-        localStorage.setItem('userRole', user.role);
-        localStorage.setItem('userLogin', user.user_login);
-
-        // Redirect based on role
-        if (user.role === 1) {
-          window.location.href = 'student-profile.html';
-        } else if (user.role === 2) {
-          window.location.href = 'company-profile.html';
-        } else {
-          // admin (role 0) — for now redirect to index
-          window.location.href = 'index.html';
-        }
-      } catch (err) {
-        console.error('Login error:', err);
-        alert('An error occurred. Please try again.');
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Sign In';
-      }
-    }
-
-    // Handle register form submission
-    async function handleRegister(event) {
-      event.preventDefault();
-      const firstName = document.getElementById('firstName').value.trim();
-      const lastName = document.getElementById('lastName').value.trim();
-      const email = document.getElementById('regEmail').value.trim();
-      const password = document.getElementById('regPassword').value;
-      const confirmPassword = document.getElementById('confirmPassword').value;
-      const roleValue = document.querySelector('input[name="role"]:checked').value;
-      const submitBtn = event.target.querySelector('button[type="submit"]');
-
-      // Validation
-      if (password !== confirmPassword) {
-        alert('Passwords do not match!');
-        return;
-      }
-      if (password.length < 6) {
-        alert('Password must be at least 6 characters long!');
+      if (existing) {
+        alert('An account with this email already exists. Please log in.');
         return;
       }
 
-      const role = roleValue === 'student' ? 1 : 2;
+      // Hash password (bcrypt, 10 rounds)
+      const salt           = dcodeIO.bcrypt.genSaltSync(10);
+      const hashedPassword = dcodeIO.bcrypt.hashSync(password, salt);
 
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Creating account...';
+      // Insert into Users
+      const { data: newUser, error: userError } = await supabaseClient
+        .from('Users')
+        .insert({
+          user_login:    email,
+          user_password: hashedPassword,
+          role:          role
+          // user_token, created_at, updated_at are DB defaults
+        })
+        .select('user_id')
+        .single();
 
-      try {
-        // Check if user already exists
-        const { data: existing } = await supabaseClient
-          .from('Users')
-          .select('user_id')
-          .eq('user_login', email)
-          .single();
+      if (userError) {
+        console.error('User insert error:', userError);
+        alert('Registration failed: ' + userError.message);
+        return;
+      }
 
-        if (existing) {
-          alert('An account with this email already exists.');
-          return;
-        }
-
-        // Hash password
-        const salt = dcodeIO.bcrypt.genSaltSync(10);
-        const hashedPassword = dcodeIO.bcrypt.hashSync(password, salt);
-
-        // Create user in Users table
-        const { data: newUser, error: userError } = await supabaseClient
-          .from('Users')
+      // Create role-specific profile row
+      if (role === 1) {
+        // student_profiles
+        // Columns that exist in schema: user_id, first_name, last_name, type_education
+        // NOTE: major (form field) and graduationYear (form field) are NOT in the schema.
+        //       They are ignored here. Add columns to the DB if you need them.
+        const { error: profileError } = await supabaseClient
+          .from('student_profiles')
           .insert({
-            user_login: email,
-            user_password: hashedPassword,
-            role: role
-          })
-          .select()
-          .single();
+            user_id:        newUser.user_id,
+            first_name:     firstName,
+            last_name:      lastName,
+            type_education: document.getElementById('university').value.trim() || null
+            // is_open_to_offers defaults to TRUE in DB
+          });
 
-        if (userError) {
-          console.error('Registration error:', userError);
-          alert('Registration failed: ' + userError.message);
-          return;
+        if (profileError) {
+          console.error('Student profile error:', profileError);
+          // Non-fatal: user is created; they can fill profile later
         }
 
-        // Create profile based on role
-        if (role === 1) {
-          // Student profile
-          const { error: profileError } = await supabaseClient
-            .from('student_profiles')
-            .insert({
-              user_id: newUser.user_id,
-              first_name: firstName,
-              last_name: lastName,
-              type_education: document.getElementById('university')?.value || null
-            });
+      } else if (role === 2) {
+        // Companies
+        // Columns that exist in schema: user_id, company_name, website
+        // NOTE: jobTitle and companySize (form fields) are NOT columns in Companies.
+        //       They are ignored here. Add columns to the DB if you need them.
+        const { error: companyError } = await supabaseClient
+          .from('Companies')
+          .insert({
+            user_id:      newUser.user_id,
+            company_name: document.getElementById('companyName').value.trim()
+                            || (firstName + ' ' + lastName),
+            website:      document.getElementById('companyWebsite').value.trim() || null
+          });
 
-          if (profileError) {
-            console.error('Profile creation error:', profileError);
-          }
-        } else if (role === 2) {
-          // Company profile
-          const { error: companyError } = await supabaseClient
-            .from('Companies')
-            .insert({
-              user_id: newUser.user_id,
-              company_name: document.getElementById('companyName')?.value || firstName + ' ' + lastName,
-              website: document.getElementById('companyWebsite')?.value || null
-            });
-
-          if (companyError) {
-            console.error('Company creation error:', companyError);
-          }
+        if (companyError) {
+          console.error('Company profile error:', companyError);
+          // Non-fatal: user is created; they can fill profile later
         }
-
-        alert('Registration successful! Please sign in.');
-        event.target.reset();
-        switchTab('login');
-      } catch (err) {
-        console.error('Registration error:', err);
-        alert('An error occurred. Please try again.');
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Create Account';
       }
+
+      alert('Account created! Please sign in.');
+      event.target.reset();
+      toggleRoleFields(); // reset to student view after reset
+      switchTab('login');
+
+    } catch (err) {
+      console.error('Registration error:', err);
+      alert('An unexpected error occurred. Please try again.');
+    } finally {
+      submitBtn.disabled    = false;
+      submitBtn.textContent = 'Create Account';
     }
+  }
 
-    const { error } = await supabaseClient
-    .from('Companies')
-    .upsert({
-        user_id: session.userId, 
-        company_name: document.getElementById('eCompanyName').value,
-        city: document.getElementById('eHeadquarters').value,
-        y_tunnus: document.getElementById('eTeamSize').value,
-        website: document.getElementById('eWebsite').value,
-        description: document.getElementById('eCompanyDesc').value
-    }, { onConflict: 'user_id' }); 
-
-    // Toggle between student and company fields
-    function toggleRoleFields() {
-      const role = document.querySelector('input[name="role"]:checked').value;
-      const studentFields = document.getElementById('studentFields');
-      const companyFields = document.getElementById('companyFields');
-
-      if (role === 'student') {
-        studentFields.style.display = 'block';
-        companyFields.style.display = 'none';
-      } else {
-        studentFields.style.display = 'none';
-        companyFields.style.display = 'block';
-      }
-    }
-  </script>
-</body>
-</html>
+  /* ----------------------------------------------------------
+     URL param: auto-switch tab on page load
+     ---------------------------------------------------------- */
+  window.addEventListener('DOMContentLoaded', function () {
+    const params = new URLSearchParams(window.location.search);
+    switchTab(params.get('mode') === 'register' ? 'register' : 'login');
+  });
+</script>

@@ -1,10 +1,10 @@
 /* ==========================================
-   AUTH HELPERS (work with Supabase data)
+   AUTH HELPERS
    ========================================== */
 
-// Check if user is logged in
+  // Check if user is logged in
 function isLoggedIn() {
-  return localStorage.getItem('isLoggedIn') === 'true' && localStorage.getItem('userId');
+  return localStorage.getItem('isLoggedIn') === 'true' && !!localStorage.getItem('userId');
 }
 
 // Get current user session info from localStorage
@@ -12,8 +12,8 @@ function getCurrentSession() {
   if (!isLoggedIn()) return null;
   return {
     userId: parseInt(localStorage.getItem('userId')),
-    role: parseInt(localStorage.getItem('userRole')),
-    login: localStorage.getItem('userLogin')
+    role:   parseInt(localStorage.getItem('userRole')),
+    login:  localStorage.getItem('userLogin')
   };
 }
 
@@ -26,26 +26,6 @@ function requireAuth() {
   return getCurrentSession();
 }
 
-function switchTab(tab) {
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
-    const formTabs = document.querySelectorAll('.form-tab');
-
-    if (tab === 'login') {
-        loginForm.classList.add('active');
-        registerForm.classList.remove('active');
-        
-        formTabs[0].classList.add('active');
-        formTabs[1].classList.remove('active');
-    } else {
-        loginForm.classList.remove('active');
-        registerForm.classList.add('active');
-        
-        formTabs[0].classList.remove('active');
-        formTabs[1].classList.add('active');
-    }
-}
-// Logout
 function logout(event) {
   event.preventDefault();
   localStorage.removeItem('isLoggedIn');
@@ -55,13 +35,68 @@ function logout(event) {
   window.location.href = 'index.html';
 }
 
-window.addEventListener('load', function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const mode = urlParams.get('mode');
+function checkCompanyAuth() {
+  const session = getCurrentSession();
+  if (!session) {
+    window.location.href = 'auth.html?mode=login';
+  } else if (session.role === 2) {
+    window.location.href = 'company-profile.html';
+  } else {
+    alert('Only employer accounts can post internships.');
+  }
+}
 
-    if (mode === 'register') {
-        switchTab('register');
-    } else {
-        switchTab('login'); 
-    }
+/* ----------------------------------------------------------
+   TAB SWITCHING
+   ---------------------------------------------------------- */
+function switchTab(tab) {
+  const loginForm    = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+  const tabs         = document.querySelectorAll('.form-tab');
+
+  if (!loginForm || !registerForm) return;
+
+  if (tab === 'login') {
+    loginForm.classList.add('active');
+    registerForm.classList.remove('active');
+    if (tabs[0]) tabs[0].classList.add('active');
+    if (tabs[1]) tabs[1].classList.remove('active');
+  } else {
+    loginForm.classList.remove('active');
+    registerForm.classList.add('active');
+    if (tabs[0]) tabs[0].classList.remove('active');
+    if (tabs[1]) tabs[1].classList.add('active');
+  }
+}
+
+/* ----------------------------------------------------------
+   ROLE FIELD TOGGLE
+   Shows student fields (university) OR company fields,
+   never both at the same time.
+   ---------------------------------------------------------- */
+function toggleRoleFields() {
+  const roleInput     = document.querySelector('input[name="role"]:checked');
+  const studentFields = document.getElementById('studentFields');
+  const companyFields = document.getElementById('companyFields');
+
+  if (!roleInput || !studentFields || !companyFields) return;
+
+  if (roleInput.value === 'student') {
+    studentFields.style.display = 'block';
+    companyFields.style.display = 'none';
+  } else {
+    studentFields.style.display = 'none';
+    companyFields.style.display = 'block';
+  }
+}
+
+/* ----------------------------------------------------------
+   ON PAGE LOAD
+   - Switch to correct tab based on URL param
+   - Show correct role fields based on selected radio
+   ---------------------------------------------------------- */
+document.addEventListener('DOMContentLoaded', function () {
+  const params = new URLSearchParams(window.location.search);
+  switchTab(params.get('mode') === 'register' ? 'register' : 'login');
+  toggleRoleFields(); // ensure correct fields shown on first load
 });
