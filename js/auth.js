@@ -29,17 +29,20 @@ function requireAuth() {
 function switchTab(tab) {
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
-    const tabs = document.querySelectorAll('.auth-tab');
+    const formTabs = document.querySelectorAll('.form-tab');
 
-    tabs.forEach(t => t.classList.remove('active'));
-    
-    const loginBtn = document.getElementById('loginBtn');
-    if (loginBtn) {
-        loginBtn.style.display = 'none';
+    if (tab === 'login') {
+        loginForm.classList.add('active');
+        registerForm.classList.remove('active');
+        
+        formTabs[0].classList.add('active');
+        formTabs[1].classList.remove('active');
     } else {
-        loginForm.style.display = 'none';
-        registerForm.style.display = 'block';
-        document.querySelector('[onclick="switchTab(\'register\')"]').classList.add('active');
+        loginForm.classList.remove('active');
+        registerForm.classList.add('active');
+        
+        formTabs[0].classList.remove('active');
+        formTabs[1].classList.add('active');
     }
 }
 // Logout
@@ -52,7 +55,7 @@ function logout(event) {
   window.location.href = 'index.html';
 }
 
-window.onload = function() {
+window.addEventListener('load', function() {
     const urlParams = new URLSearchParams(window.location.search);
     const mode = urlParams.get('mode');
 
@@ -61,4 +64,4 @@ window.onload = function() {
     } else {
         switchTab('login'); 
     }
-};
+});
