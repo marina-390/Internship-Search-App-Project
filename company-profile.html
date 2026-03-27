@@ -155,16 +155,54 @@
   <datalist id="citySuggestions"></datalist>
 </div>
         <div class="form-group">
-          <label>Business ID (Y-Tunnus)</label>
-          <input type="text" id="eTeamSize" class="edit-input"> </div>
+<label>Business ID (Y-Tunnus)</label>
+          <input type="text" id="eTeamSize" class="edit-input" list="prhSuggestions" autocomplete="off"> 
+          <small id="prhStatus" style="font-size: 0.8rem; color: var(--text-light); margin-top: 0.25rem;"></small>
+          <datalist id="prhSuggestions"></datalist>
+        </div>
         <div class="form-group">
           <label>Website</label>
           <input type="text" id="eWebsite" class="edit-input">
         </div>
+        <!-- TEAM EDIT SECTION -->
+        <div class="form-group" style="grid-column: 1 / -1; margin-top: 1rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h4 style="margin: 0;">Our Team</h4>
+        <button type="button" class="btn btn-small btn-primary" id="addMemberToggleBtn" onclick="showAddMemberForm()">➕ Add New Member</button>
+    </div>
+
+    <div id="newMemberForm" style="display: none; background: #f9fafb; padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <input type="text" id="nmName" placeholder="Full Name" class="form-control">
+            <input type="text" id="nmTitle" placeholder="Job Title (e.g. CEO)" class="form-control">
+            <input type="email" id="nmEmail" placeholder="Email Address" class="form-control">
+            <input type="text" id="nmPhone" placeholder="Phone Number" class="form-control">
+        </div>
+        <div style="margin-top: 10px; display: flex; gap: 10px;">
+            <button type="button" class="btn btn-small btn-primary" onclick="saveNewTeamMember()">Confirm Add</button>
+            <button type="button" class="btn btn-small" style="background:#ccc;" onclick="hideAddMemberForm()">Cancel</button>
+        </div>
+    </div>
+
+    <div id="teamMembersList"></div>
+</div>
       </div>
     </div>
-  </div>
-</div>
+  <div class="card">
+
+
+    <div class="card-header">
+        <h3 class="card-title">OUR TEAM</h3>
+    </div>
+    <div class="card-content" id="displayTeamList">
+        <p style="color: var(--text-light); text-align: center;">No team members listed.</p>
+    </div>
+
+
+          </div>
+        </div>
+      </div>
+        </div>
 
            <div class="posting-item" id="posting-1">
             <div id="view-mode-1">
@@ -179,31 +217,10 @@
 
             <div id="edit-mode-1" style="display: none; margin-top: 10px;">
               <input type="text" id="input-title-1" class="form-control" style="margin-bottom: 5px;">
-              <button class="btn-save" onclick="savePost(1)" style="background: green; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Save</button>
+              <button type="button" onclick="editTeamMember('${member.id}')" class="btn-small">
+   Edit
+</button>
               <button class="btn-cancel" onclick="togglePostEdit(1, false)" style="background: #ccc; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Cancel</button>
-            </div>
-          </div>
-        </div>
-
-            <!-- Company Details -->
-            <div class="company-section-title">Company Details</div>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
-              <div>
-                <p style="margin: 0; color: var(--text-light); font-size: 0.875rem;">FOUNDED</p>
-                <p style="margin: 0.5rem 0; font-weight: 600;">2015</p>
-              </div>
-              <div>
-                <p style="margin: 0; color: var(--text-light); font-size: 0.875rem;">HEADQUARTERS</p>
-                <p style="margin: 0.5rem 0; font-weight: 600;">San Francisco, CA</p>
-              </div>
-              <div>
-                <p style="margin: 0; color: var(--text-light); font-size: 0.875rem;">INDUSTRY</p>
-                <p style="margin: 0.5rem 0; font-weight: 600;">Technology</p>
-              </div>
-              <div>
-                <p style="margin: 0; color: var(--text-light); font-size: 0.875rem;">WEBSITE</p>
-                <p style="margin: 0.5rem 0; font-weight: 600;"><a href="#" class="text-primary">www.company.com</a></p>
-              </div>
             </div>
           </div>
         </div>
@@ -220,48 +237,6 @@
               <button class="btn btn-primary" style="width: 100%;" onclick="alert('Post job feature')">
                 ➕ Post New Position
               </button>
-            </div>
-          </div>
-
-          <!-- Analytics Card -->
-          <div class="card" style="margin-bottom: 2rem;">
-            <div class="card-header">
-              <h3 class="card-title">Analytics</h3>
-            </div>
-            <div class="card-content">
-              <div style="margin-bottom: 1.5rem;">
-                <p style="margin: 0; color: var(--text-light); font-size: 0.875rem;">TOTAL APPLICATIONS</p>
-                <p style="margin: 0.5rem 0; font-weight: 600; font-size: 1.5rem;">42</p>
-              </div>
-              <div style="margin-bottom: 1.5rem;">
-                <p style="margin: 0; color: var(--text-light); font-size: 0.875rem;">PROFILE VIEWS</p>
-                <p style="margin: 0.5rem 0; font-weight: 600; font-size: 1.5rem;">238</p>
-              </div>
-              <div>
-                <p style="margin: 0; color: var(--text-light); font-size: 0.875rem;">ACTIVE POSTINGS</p>
-                <p style="margin: 0.5rem 0; font-weight: 600; font-size: 1.5rem;">2</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Recent Applications Card -->
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">Recent Applications</h3>
-            </div>
-            <div class="card-content">
-              <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
-                <p style="margin: 0; font-weight: 600;">John Doe</p>
-                <p style="margin: 0.5rem 0; font-size: 0.875rem; color: var(--text-light);">Frontend Developer Intern</p>
-              </div>
-              <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
-                <p style="margin: 0; font-weight: 600;">Jane Smith</p>
-                <p style="margin: 0.5rem 0; font-size: 0.875rem; color: var(--text-light);">Backend Developer Intern</p>
-              </div>
-              <div>
-                <p style="margin: 0; font-weight: 600;">Alex Johnson</p>
-                <p style="margin: 0.5rem 0; font-size: 0.875rem; color: var(--text-light);">Frontend Developer Intern</p>
-              </div>
             </div>
           </div>
         </div>

@@ -5,9 +5,11 @@ const DIGITRANSIT_API_KEY = '4346b471f4ea41cb923eb2b40556c495';
 
 // Current profile data & categories & links
 let currentProfile = null;
+let currentTeam = [];
 let allCategories = [];
 let selectedCategoryIds = [];
 let currentLinks = [];
+let editingMemberId = null;
 
 // ==========================================
 // LOAD PROFILE
@@ -171,28 +173,267 @@ function setField(id, value) {
 // COMPANY PROFILE LOGIC
 // ==========================================
 
-async function loadCompanyProfile() {
-    const session = getCurrentSession();
-    if (!session) return;
+async function loadCompanyTeam() {
+  if (!currentProfile) return;
 
-    try {
-        const { data: profile, error } = await supabaseClient
-            .from('Companies') 
-            .select('*')
-            .eq('user_id', session.userId)
-            .single();
+  const { data: team, error } = await supabaseClient
+    .from('company_team')
+    .select('*')
+.eq('company_id', parseInt(currentProfile.company_id))
 
-        if (error) throw error;
-        if (profile) {
-            currentProfile = profile; 
-            fillCompanyDisplay(profile);
-            fillCompanyLogo(profile);
-        }
-    } catch (err) {
-        console.error('Error loading company:', err.message);
+    .order('created_at');
+  if (error) console.error('Load team error:', error);
+  else currentTeam = team || [];
+}
+
+/**
+ * Fills both the Edit Mode list and the Public Display card
+ */
+function fillTeamDisplay() {
+    const editContainer = document.getElementById('teamMembersList');
+    const displayContainer = document.getElementById('displayTeamList');
+    
+    // Helper to generate the HTML for each member
+    const generateHTML = (member, isEditMode) => `
+        <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <p style="margin: 0; font-weight: 600; font-size: 1.1rem;">${member.name}</p>
+                    <p style="margin: 0.2rem 0; color: var(--primary-color); font-weight: 500;">${member.job_title}</p>
+                    ${member.email ? `<p style="margin: 0; font-size: 0.85rem; color: var(--text-light);">📧 ${member.email}</p>` : ''}
+                    ${member.phone ? `<p style="margin: 0; font-size: 0.85rem; color: var(--text-light);">📞 ${member.phone}</p>` : ''}
+                </div>
+                ${isEditMode ? `
+                <div style="display: flex; gap: 5px;">
+                    <button onclick="editTeamMember('${member.id}')" class="btn-small" style="background: var(--secondary-color); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Edit</button>
+                    <button onclick="deleteTeamMember('${member.id}')" class="btn-small" style="background:#ef4444; color:white; border:none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Delete</button>
+                </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+
+    if (editContainer) {
+        editContainer.innerHTML = currentTeam.length ? currentTeam.map(m => generateHTML(m, true)).join('') : '<p>No members yet.</p>';
+    }
+
+    if (displayContainer) {
+        displayContainer.innerHTML = currentTeam.length ? currentTeam.map(m => generateHTML(m, false)).join('') : '<p>No members listed.</p>';
     }
 }
 
+/* ==========================================
+   TEAM MANAGEMENT LOGIC
+   ========================================== */
+
+
+/**
+ * Shows the inline form and hides the "Add" button
+ */
+function showAddMemberForm() {
+    document.getElementById('newMemberForm').style.display = 'block';
+    document.getElementById('addMemberToggleBtn').style.display = 'none';
+}
+
+/**
+ * Hides the form, clears inputs, and resets the "Edit" state
+ */
+function hideAddMemberForm() {
+    document.getElementById('newMemberForm').style.display = 'none';
+    document.getElementById('addMemberToggleBtn').style.display = 'inline-block';
+    
+    // Reset state
+    editingMemberId = null;
+    
+    // Reset button text
+    const confirmBtn = document.querySelector('#newMemberForm button[onclick="saveNewTeamMember()"]');
+    if (confirmBtn) confirmBtn.innerText = "Confirm Add";
+
+    // Clear all inputs
+    ['nmName', 'nmTitle', 'nmEmail', 'nmPhone'].forEach(id => {
+        document.getElementById(id).value = '';
+    });
+}
+
+/**
+ * Populates the form with existing data to Edit
+ */
+function editTeamMember(memberId) {
+    const member = currentTeam.find(m => m.id === memberId);
+    if (!member) return;
+
+    // 1. Set the ID we are editing
+    editingMemberId = memberId;
+
+    // 2. Open the form
+    showAddMemberForm();
+
+    // 3. Fill the inputs with current data
+    document.getElementById('nmName').value = member.name || '';
+    document.getElementById('nmTitle').value = member.job_title || '';
+    document.getElementById('nmEmail').value = member.email || '';
+    document.getElementById('nmPhone').value = member.phone || '';
+
+    // 4. Change button text to "Update"
+    const confirmBtn = document.querySelector('#newMemberForm button[onclick="saveNewTeamMember()"]');
+    if (confirmBtn) confirmBtn.innerText = "Update Member";
+    
+    // Optional: Scroll to the form
+    document.getElementById('newMemberForm').scrollIntoView({ behavior: 'smooth' });
+}
+
+/**
+ * Saves either a NEW member or UPDATES an existing one
+ */
+async function saveNewTeamMember() {
+    const name = document.getElementById('nmName').value.trim();
+    const title = document.getElementById('nmTitle').value.trim();
+    const email = document.getElementById('nmEmail').value.trim();
+    const phone = document.getElementById('nmPhone').value.trim();
+
+    if (!name || !title) {
+        alert("Name and Job Title are required.");
+        return;
+    }
+
+    const memberData = {
+        company_id: parseInt(currentProfile.company_id),
+        name: name,
+        job_title: title,
+        email: email,
+        phone: phone
+    };
+
+    try {
+        if (editingMemberId) {
+            // --- MODE: UPDATE ---
+            const { data, error } = await supabaseClient
+                .from('company_team')
+                .update(memberData)
+                .eq('id', editingMemberId)
+                .select();
+
+            if (error) throw error;
+
+            // Update the local list
+            const index = currentTeam.findIndex(m => m.id === editingMemberId);
+            currentTeam[index] = data[0];
+            alert("Member updated successfully!");
+        } else {
+            // --- MODE: INSERT ---
+            const { data, error } = await supabaseClient
+                .from('company_team')
+                .insert([memberData])
+                .select();
+
+            if (error) throw error;
+
+            currentTeam.push(data[0]);
+            alert("Member added successfully!");
+        }
+
+        // Refresh UI and close form
+        fillTeamDisplay();
+        hideAddMemberForm();
+
+    } catch (err) {
+        console.error("Database Error:", err.message);
+        alert("Error: " + err.message);
+    }
+}
+
+/**
+ * Deletes member from DB and UI
+ */
+async function deleteTeamMember(id) {
+    if (!confirm("Are you sure you want to remove this member?")) return;
+
+    try {
+        const { error } = await supabaseClient
+            .from('company_team')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+
+        currentTeam = currentTeam.filter(m => m.id !== id);
+        fillTeamDisplay();
+    } catch (err) {
+        console.error("Delete Error:", err);
+    }
+}
+
+async function loadCompanyProfile() {
+  const session = getCurrentSession();
+  if (!session) return;
+
+  try {
+    const { data: profile, error } = await supabaseClient
+      .from('Companies') 
+      .select('*')
+      .eq('user_id', session.userId)
+      .single();
+
+    if (error) throw error;
+    if (profile) {
+      currentProfile = profile; 
+      fillCompanyDisplay(profile);
+      fillCompanyLogo(profile);
+      await loadCompanyTeam();
+      fillTeamDisplay();
+    }
+  } catch (err) {
+    console.error('Error loading company:', err.message);
+  }
+}
+let prhSearchTimeout;
+
+async function handlePRHSearch(query) {
+    const datalist = document.getElementById('prhSuggestions');
+    const status = document.getElementById('prhStatus');
+    const cleanQuery = query.trim();
+
+    if (!cleanQuery || cleanQuery.length < 3) {
+        if (datalist) datalist.innerHTML = '';
+        return;
+    }
+
+    clearTimeout(prhSearchTimeout);
+
+    prhSearchTimeout = setTimeout(async () => {
+        try {
+            if (status) status.textContent = "Searching Registry...";
+
+            const isNumeric = /^\d+$/.test(cleanQuery.replace('-', ''));
+            const param = isNumeric ? `businessId=${cleanQuery}` : `name=${encodeURIComponent(cleanQuery)}`;
+            const targetUrl = `https://avoindata.prh.fi/bis/v1?${param}&maxResults=10`;
+            
+            // Use a stable proxy
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+            
+            const response = await fetch(proxyUrl);
+            const proxyData = await response.json();
+            const data = JSON.parse(proxyData.contents); // AllOrigins wraps the result in 'contents'
+
+            if (datalist) datalist.innerHTML = ''; 
+
+            if (data.results && data.results.length > 0) {
+                data.results.forEach(company => {
+                    const option = document.createElement('option');
+                    option.value = company.businessId; 
+                    option.textContent = company.name; 
+                    datalist.appendChild(option);
+                });
+                if (status) status.textContent = `Found ${data.results.length} matches`;
+            } else {
+                if (status) status.textContent = "No matches found.";
+            }
+        } catch (err) {
+            console.error("PRH API Error:", err);
+            if (status) status.textContent = "Search Error. Use manual entry.";
+        }
+    }, 400);
+}
 async function saveCompanyProfile() {
     const session = getCurrentSession();
     if (!session || !currentProfile) return;
@@ -248,8 +489,7 @@ function fillCompanyDisplay(profile) {
         document.getElementById('dHeadquarters').innerText = profile.city || '';
 
     // FIX THIS LINE: Use dYTunnus if that is what is in your HTML
-    const yTunnusEl = document.getElementById('dYTunnus') || document.getElementById('dTeamSize');
-    if(yTunnusEl) yTunnusEl.innerText = profile.y_tunnus || '';
+    const teamSizeEl = document.getElementById('dTeamSize');
 }
 
 async function uploadCompanyLogo(input) {
@@ -573,6 +813,57 @@ async function saveProfile() {
       alert('Error saving profile: ' + profileError.message);
       return;
     }
+
+    // This function runs whenever you select an item from the datalist
+document.getElementById('eTeamSize').addEventListener('change', async function() {
+    const selectedId = this.value.trim();
+
+    // Only run if it looks like a real Y-tunnus (e.g., 1234567-8)
+    if (!/^\d{7}-\d$/.test(selectedId)) return;
+
+    try {
+        const status = document.getElementById('prhStatus');
+        if (status) status.textContent = "Fetching company details...";
+
+        // Robust proxy with fallback
+        const targetUrl = `https://avoindata.prh.fi/bis/v1/${selectedId}`;
+        const proxies = [
+            `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
+            `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`
+        ];
+        let lastError;
+        for (const proxyUrl of proxies) {
+            try {
+                const response = await fetch(proxyUrl, { signal: AbortSignal.timeout(10000) });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const proxyData = await response.json();
+                const data = JSON.parse( (proxyData.contents || proxyData) );
+                break; // Success, use data
+            } catch (err) {
+                lastError = err;
+                continue;
+            }
+        }
+        if (lastError) throw lastError;
+
+        if (data.results && data.results[0]) {
+            const company = data.results[0];
+
+            // AUTO-FILL THE OTHER VARIABLES
+            document.getElementById('eCompanyName').value = company.name || '';
+            
+            // regOffice is usually the City in the PRH API
+            if (company.regOffice) {
+                document.getElementById('eHeadquarters').value = company.regOffice;
+            }
+
+            if (status) status.textContent = "✅ Details loaded for " + company.name;
+        }
+    } catch (err) {
+        console.error("Auto-fill error:", err);
+        if (status) status.textContent = `Auto-fill failed: ${err.message}`;
+    }
+});
 
     // Update categories: delete old, insert new
     await supabaseClient
