@@ -36,27 +36,22 @@ function checkCompanyAuth() {
         window.location.href = 'auth.html?mode=login';
     }
 }
-// Initialize User Menu (replaces addLogoutButton)
 function initUserMenu() {
   const navMenu = document.querySelector('.nav-menu');
   if (!navMenu) return;
 
   const session = getCurrentSession();
+  
+  const existingMenus = navMenu.querySelectorAll('.user-menu');
+  existingMenus.forEach(menu => menu.remove());
+
   const loginLi = Array.from(navMenu.children).find(li => 
-    li.querySelector('a[href="auth.html"], .login-link')
+    li.querySelector('a[href="auth.html"], .nav-link[href*="auth.html"]')
   );
 
   if (session) {
-    // Hide login/register
     if (loginLi) loginLi.style.display = 'none';
 
-    // Remove existing user menu or logout
-    const existingUserMenu = navMenu.querySelector('.user-menu');
-    const existingLogout = navMenu.querySelector('.logout-link');
-    if (existingUserMenu) existingUserMenu.remove();
-    if (existingLogout) existingLogout.closest('li').remove();
-
-    // Create new user menu
     const userLi = document.createElement('li');
     userLi.className = 'nav-item user-menu';
 
@@ -75,22 +70,10 @@ function initUserMenu() {
         </ul>
       `;
       navMenu.appendChild(userLi);
-    }).catch(() => {
-      // Fallback without photo/name
-      userLi.innerHTML = `
-        <div class="user-avatar" onclick="toggleUserDropdown(event)" title="${session.login}">
-          ${session.login.charAt(0).toUpperCase()}
-        </div>
-        <ul class="user-dropdown" id="userDropdown">
-          <li><a href="${getProfileUrl(session.role)}">Profile</a></li>
-          <li><a href="#" onclick="logout(event)">Logout</a></li>
-        </ul>
-      `;
-      navMenu.appendChild(userLi);
     });
   } else {
-    // Show login/register
-    if (loginLi) loginLi.style.display = '';
+    if (loginLi) loginLi.style.display = 'block';
+
     
     // Remove user menu
     const existingUserMenu = navMenu.querySelector('.user-menu');
@@ -98,7 +81,6 @@ function initUserMenu() {
   }
 }
 
-// Toggle user dropdown
 function toggleUserDropdown(event) {
   event.stopPropagation();
   const dropdown = document.getElementById('userDropdown');
