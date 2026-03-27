@@ -163,7 +163,7 @@
           <!-- Login Form -->
           <div id="loginForm" class="auth-form-wrapper active">
             <h2 style="margin-bottom: 1.5rem;">Welcome Back</h2>
-            <form onsubmit="handleLogin(event)">
+            <form onsubmit="handleLogin(event); return false;">
               <div class="form-group">
                 <label for="loginEmail">Email Address</label>
                 <input 
@@ -745,16 +745,7 @@
       }
     }
 
-    const { error } = await supabaseClient
-    .from('Companies')
-    .upsert({
-        user_id: session.userId, 
-        company_name: document.getElementById('eCompanyName').value,
-        city: document.getElementById('eHeadquarters').value,
-        y_tunnus: document.getElementById('eTeamSize').value,
-        website: document.getElementById('eWebsite').value,
-        description: document.getElementById('eCompanyDesc').value
-    }, { onConflict: 'user_id' }); 
+
 
     // Toggle between student and company fields
     function toggleRoleFields() {
@@ -770,6 +761,7 @@
         companyFields.style.display = 'block';
       }
     }
+    
   </script>
 </body>
 </html>
