@@ -116,7 +116,8 @@
           <h2 id="dCompanyName">Company Name</h2>
           <p id="dCompanyEmail">industry@company.com</p>
           <p>📍 <span id="dHeadquarters">Location</span></p>
-          <p>👥 <span id="dTeamSize">Business ID</span></p> <p>🌐 <span id="dWebsite">www.company.com</span></p>
+          <p>👥 <span id="dTeamSize">Business ID</span></p> 
+          <p>🌐 <span id="dWebsite">www.company.com</span></p>
         </div>
       </div>
       
@@ -138,31 +139,32 @@
       <div class="company-section-title">Edit Company Details</div>
       <div class="form-group">
         <label>Company Name</label>
-        <input type="text" id="eCompanyName" class="edit-input" style="width:100%; margin-bottom:1rem;">
+        <input type="text" id="eCompanyName" class="edit-input" style="width:100%; margin-bottom:1rem;" placeholder="Company">
       </div>
       <div class="form-group">
-        <label>About Description</label>
-        <textarea id="eCompanyDesc" rows="4" style="width:100%; margin-bottom:1rem;"></textarea>
+        <label>About Company</label>
+        <textarea id="eCompanyDesc" rows="4" style="width:100%; margin-bottom:1rem;" placeholder="Write somthing about your company"></textarea>
       </div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
         <div class="form-group">
-  <label>Headquarters (City)</label>
-  <input type="text" id="eHeadquarters" class="edit-input" 
-         oninput="handleCityInput(this.value)" 
-         list="citySuggestions" 
-         autocomplete="off">
-  
-  <datalist id="citySuggestions"></datalist>
-</div>
+          <label>Location</label>
+          <input type="text" 
+       id="eHeadquarters" 
+       list="citySuggestions" 
+       oninput="handleCityInput(this.value)" 
+       autocomplete="off"
+       placeholder="Kokkola">
+          <datalist id="citySuggestions"></datalist>
+          </div>
         <div class="form-group">
 <label>Business ID (Y-Tunnus)</label>
-          <input type="text" id="eTeamSize" class="edit-input" list="prhSuggestions" autocomplete="off"> 
+          <input type="text" id="eTeamSize" class="edit-input" list="prhSuggestions" autocomplete="off" placeholder="23456-7"> 
           <small id="prhStatus" style="font-size: 0.8rem; color: var(--text-light); margin-top: 0.25rem;"></small>
           <datalist id="prhSuggestions"></datalist>
         </div>
         <div class="form-group">
           <label>Website</label>
-          <input type="text" id="eWebsite" class="edit-input">
+          <input type="text" id="eWebsite" class="edit-input" placeholder="www.company.com">
         </div>
         <!-- TEAM EDIT SECTION -->
         <div class="form-group" style="grid-column: 1 / -1; margin-top: 1rem;">
@@ -218,8 +220,8 @@
             <div id="edit-mode-1" style="display: none; margin-top: 10px;">
               <input type="text" id="input-title-1" class="form-control" style="margin-bottom: 5px;">
               <button type="button" onclick="editTeamMember('${member.id}')" class="btn-small">
-   Edit
-</button>
+                Edit
+             </button>
               <button class="btn-cancel" onclick="togglePostEdit(1, false)" style="background: #ccc; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Cancel</button>
             </div>
           </div>
