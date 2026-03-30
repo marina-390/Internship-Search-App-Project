@@ -330,16 +330,6 @@
               <!-- Company Fields -->
               <div id="companyFields" style="display: none;">
                 <div class="form-group">
-                  <label for="companyName">Company Name</label>
-                  <input 
-                    type="text" 
-                    id="companyName" 
-                    name="companyName" 
-                    placeholder="Your company name"
-                  />
-                </div>
-
-                <div class="form-group">
                   <label for="jobTitle">Your Job Title</label>
                   <input 
                     type="text" 
@@ -348,17 +338,12 @@
                     placeholder="e.g., HR Manager, Recruiter"
                   />
                 </div>
-
+                
                 <div class="form-group">
-                  <label for="companySize">Company Size</label>
-                  <select id="companySize" name="companySize">
-                    <option value="">Select company size</option>
-                    <option value="1-50">1-50 employees</option>
-                    <option value="51-200">51-200 employees</option>
-                    <option value="201-1000">201-1,000 employees</option>
-                    <option value="1001+">1,001+ employees</option>
-                  </select>
+                  <label for="companyName">Company Name</label>
+                  <input type="text" id="companyName" name="companyName" placeholder="Your company name" />
                 </div>
+              
 
                 <div class="form-group">
                   <label for="companyWebsite">Company Website</label>
@@ -683,127 +668,99 @@
                            matching columns in the DB schema —
                            those form fields are display-only.
      ---------------------------------------------------------- */
-  async function handleRegister(event) {
+     async function handleRegister(event) {
     event.preventDefault();
 
-    const firstName       = document.getElementById('firstName').value.trim();
-    const lastName        = document.getElementById('lastName').value.trim();
-    const email           = document.getElementById('regEmail').value.trim();
-    const password        = document.getElementById('regPassword').value;
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName = document.getElementById('lastName').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPassword').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
-    const roleValue       = document.querySelector('input[name="role"]:checked').value;
-    const submitBtn       = event.target.querySelector('button[type="submit"]');
+    const roleValue = document.querySelector('input[name="role"]:checked').value;
+    const submitBtn = event.target.querySelector('button[type="submit"]');
 
-    // Basic validation
-    if (!firstName || !lastName) {
-      alert('Please enter your first and last name.');
-      return;
-    }
-    if (password !== confirmPassword) {
-      alert('Passwords do not match.');
-      return;
-    }
-    if (password.length < 6) {
-      alert('Password must be at least 6 characters.');
-      return;
-    }
-
-    // role: 1 = student, 2 = employer  (matches Users.role INTEGER)
+    // Role: 1 = student, 2 = employer
     const role = roleValue === 'student' ? 1 : 2;
 
-    submitBtn.disabled    = true;
+    // Basic validation
+    if (password !== confirmPassword) {
+        alert('Passwords do not match.');
+        return;
+    }
+
+    submitBtn.disabled = true;
     submitBtn.textContent = 'Creating account...';
 
     try {
-      // Check for duplicate email
-      const { data: existing } = await supabaseClient
-        .from('Users')
-        .select('user_id')
-        .eq('user_login', email)
-        .maybeSingle();
+        // 1. Create the User in the 'Users' table
+        const salt = dcodeIO.bcrypt.genSaltSync(10);
+        const hashedPassword = dcodeIO.bcrypt.hashSync(password, salt);
 
-      if (existing) {
-        alert('An account with this email already exists. Please log in.');
-        return;
-      }
+        const { data: newUser, error: userError } = await supabaseClient
+            .from('Users')
+            .insert({
+                user_login: email,
+                user_password: hashedPassword,
+                role: role
+            })
+            .select('user_id')
+            .single();
 
-      // Hash password (bcrypt, 10 rounds)
-      const salt           = dcodeIO.bcrypt.genSaltSync(10);
-      const hashedPassword = dcodeIO.bcrypt.hashSync(password, salt);
+        if (userError) throw userError;
 
-      // Insert into Users
-      const { data: newUser, error: userError } = await supabaseClient
-        .from('Users')
-        .insert({
-          user_login:    email,
-          user_password: hashedPassword,
-          role:          role
-          // user_token, created_at, updated_at are DB defaults
-        })
-        .select('user_id')
-        .single();
+        // 2. Role-specific logic
+        if (role === 1) {
+            // Student Profile Logic
+            await supabaseClient.from('student_profiles').insert({
+                user_id: newUser.user_id,
+                first_name: firstName,
+                last_name: lastName,
+                type_education: document.getElementById('university').value.trim() || null
+            });
 
-      if (userError) {
-        console.error('User insert error:', userError);
-        alert('Registration failed: ' + userError.message);
-        return;
-      }
+        } else if (role === 2) {
+            // COMPANY LOGIC
+            const companyName = document.getElementById('companyName').value.trim() || (firstName + " " + lastName);
+            const jobTitle = document.getElementById('jobTitle').value.trim() || "Administrator";
 
-      // Create role-specific profile row
-      if (role === 1) {
-        // student_profiles
-        // Columns that exist in schema: user_id, first_name, last_name, type_education
-        // NOTE: major (form field) and graduationYear (form field) are NOT in the schema.
-        //       They are ignored here. Add columns to the DB if you need them.
-        const { error: profileError } = await supabaseClient
-          .from('student_profiles')
-          .insert({
-            user_id:        newUser.user_id,
-            first_name:     firstName,
-            last_name:      lastName,
-            type_education: document.getElementById('university').value.trim() || null
-            // is_open_to_offers defaults to TRUE in DB
-          });
+            // A. Create the Company Entry
+            const { data: newCompany, error: compError } = await supabaseClient
+                .from('Companies')
+                .insert({
+                    user_id: newUser.user_id,
+                    company_name: companyName,
+                    website: document.getElementById('companyWebsite').value.trim() || null
+                })
+                .select('company_id')
+                .single();
 
-        if (profileError) {
-          console.error('Student profile error:', profileError);
-          // Non-fatal: user is created; they can fill profile later
+            if (compError) throw compError;
+
+            // B. AUTOMATICALLY ADD REGISTERING USER TO THE TEAM
+            // This links the name and job title from the form to the team table
+            const { error: teamError } = await supabaseClient
+                .from('company_team')
+                .insert({
+                    company_id: newCompany.company_id,
+                    name: `${firstName} ${lastName}`,
+                    job_title: jobTitle,
+                    email: email
+                });
+
+            if (teamError) console.error("Team auto-add failed:", teamError);
         }
 
-      } else if (role === 2) {
-        // Companies
-        // Columns that exist in schema: user_id, company_name, website
-        // NOTE: jobTitle and companySize (form fields) are NOT columns in Companies.
-        //       They are ignored here. Add columns to the DB if you need them.
-        const { error: companyError } = await supabaseClient
-          .from('Companies')
-          .insert({
-            user_id:      newUser.user_id,
-            company_name: document.getElementById('companyName').value.trim()
-                            || (firstName + ' ' + lastName),
-            website:      document.getElementById('companyWebsite').value.trim() || null
-          });
-
-        if (companyError) {
-          console.error('Company profile error:', companyError);
-          // Non-fatal: user is created; they can fill profile later
-        }
-      }
-
-      alert('Account created! Please sign in.');
-      event.target.reset();
-      toggleRoleFields(); // reset to student view after reset
-      switchTab('login');
+        alert('Account created successfully! You can now sign in.');
+        switchTab('login');
 
     } catch (err) {
-      console.error('Registration error:', err);
-      alert('An unexpected error occurred. Please try again.');
+        console.error('Registration error:', err);
+        alert('Registration failed: ' + err.message);
     } finally {
-      submitBtn.disabled    = false;
-      submitBtn.textContent = 'Create Account';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create Account';
     }
-  }
-
+}
   /* ----------------------------------------------------------
      URL param: auto-switch tab on page load
      ---------------------------------------------------------- */

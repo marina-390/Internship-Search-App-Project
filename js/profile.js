@@ -5,11 +5,11 @@ const DIGITRANSIT_API_KEY = '4346b471f4ea41cb923eb2b40556c495';
 
 // Current profile data & categories & links
 let currentProfile = null;
-let currentTeam = [];
+let currentTeam = []; 
+let editingMemberId = null;
 let allCategories = [];
 let selectedCategoryIds = [];
 let currentLinks = [];
-let editingMemberId = null;
 
 // ==========================================
 // LOAD PROFILE
@@ -259,29 +259,30 @@ function hideAddMemberForm() {
  * Populates the form with existing data to Edit
  */
 function editTeamMember(memberId) {
-    const member = currentTeam.find(m => m.id === memberId);
-    if (!member) return;
+  console.log("Editing member with ID:", memberId); // Debugging
+  
+  // Convert both to strings to ensure they match
+  const member = currentTeam.find(m => String(m.id) === String(memberId));
+  
+  if (!member) {
+      console.error("Member not found in currentTeam array. Check if currentTeam is populated.");
+      return;
+  }
 
-    // 1. Set the ID we are editing
-    editingMemberId = memberId;
+  // The rest of your code...
+  editingMemberId = memberId;
+  showAddMemberForm();
 
-    // 2. Open the form
-    showAddMemberForm();
+  document.getElementById('nmName').value = member.name || '';
+  document.getElementById('nmTitle').value = member.job_title || '';
+  document.getElementById('nmEmail').value = member.email || '';
+  document.getElementById('nmPhone').value = member.phone || '';
 
-    // 3. Fill the inputs with current data
-    document.getElementById('nmName').value = member.name || '';
-    document.getElementById('nmTitle').value = member.job_title || '';
-    document.getElementById('nmEmail').value = member.email || '';
-    document.getElementById('nmPhone').value = member.phone || '';
-
-    // 4. Change button text to "Update"
-    const confirmBtn = document.querySelector('#newMemberForm button[onclick="saveNewTeamMember()"]');
-    if (confirmBtn) confirmBtn.innerText = "Update Member";
-    
-    // Optional: Scroll to the form
-    document.getElementById('newMemberForm').scrollIntoView({ behavior: 'smooth' });
+  const confirmBtn = document.querySelector('#newMemberForm button[onclick="saveNewTeamMember()"]');
+  if (confirmBtn) confirmBtn.innerText = "Update Member";
+  
+  document.getElementById('newMemberForm').scrollIntoView({ behavior: 'smooth' });
 }
-
 /**
  * Saves either a NEW member or UPDATES an existing one
  */
@@ -644,23 +645,20 @@ function fillApplications(applications) {
     `;
   }).join('');
 }
+
 async function handleCityInput(query) {
-    console.log("Typing detected:", query);
     const datalist = document.getElementById('citySuggestions');
     if (!datalist) return;
 
+    // 1. CLEAR list immediately if query is too short
     if (!query || query.length < 2) {
         datalist.innerHTML = ''; 
         return;
     }
 
-    // FIX 1: Define the Set at the very beginning
-    const uniqueCities = new Set();
-
     try {
-        // FIX 2: Using a more stable version of the URL
-        // We removed 'layers' for a moment to see if that's causing the 400 error
-        const url = `https://api.digitransit.fi/geocoding/v1/autocomplete?text=${encodeURIComponent(query)}&boundary.country=FIN&size=15`;
+        // Broad search for speed, we filter the "city" part manually below
+        const url = `https://api.digitransit.fi/geocoding/v1/autocomplete?text=${encodeURIComponent(query)}&boundary.country=FIN&size=20`;
 
         const response = await fetch(url, {
             method: 'GET',
@@ -669,39 +667,38 @@ async function handleCityInput(query) {
             }
         });
 
-        // If the API returns 400, let's see why
-        if (!response.ok) {
-            console.error("API Error Status:", response.status);
-            return;
-        }
+        if (!response.ok) return;
 
         const data = await response.json();
-        console.log("API Response:", data);
+        const uniqueCities = new Set();
+        
+        // 2. Clear previous options before adding new ones
+        datalist.innerHTML = ''; 
 
-        datalist.innerHTML = '';
-
-        if (data.features && data.features.length > 0) {
+        if (data.features) {
             data.features.forEach(feature => {
                 const props = feature.properties;
                 
-                // FIX 3: Filter out anything with numbers (street addresses)
-                // This keeps only names like "Kokkola" and skips "Kokkolantie 5"
-                const hasNumber = /\d/.test(props.name);
-                
-                if (!hasNumber) {
-                    const cityName = props.name;
-                    if (!uniqueCities.has(cityName)) {
-                        uniqueCities.add(cityName);
-                        const option = document.createElement('option');
-                        option.value = cityName;
-                        datalist.appendChild(option);
-                    }
+                // 3. PRIORITY: Take the 'locality' (this is the actual City name)
+                const cityName = props.locality || props.name;
+
+                // 4. FILTER: If it has a number or a street ending, SKIP IT
+                const hasNumber = /\d/.test(cityName);
+                const isStreet = cityName.toLowerCase().endsWith('tie') || 
+                                 cityName.toLowerCase().endsWith('katu') || 
+                                 cityName.toLowerCase().endsWith('kuja');
+
+                if (!hasNumber && !isStreet && !uniqueCities.has(cityName)) {
+                    uniqueCities.add(cityName);
+                    
+                    const option = document.createElement('option');
+                    option.value = cityName;
+                    datalist.appendChild(option);
                 }
             });
-            console.log("Filtered Results:", Array.from(uniqueCities));
         }
     } catch (err) {
-        console.error('Script Error:', err);
+        console.error('City Search Error:', err);
     }
 }
 // ==========================================

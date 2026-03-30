@@ -77,7 +77,6 @@ function switchTab(tab) {
 function toggleRoleFields() {
   const roleInput     = document.querySelector('input[name="role"]:checked');
   const studentFields = document.getElementById('studentFields');
-  const companyFields = document.getElementById('companyFields');
 
   if (!roleInput || !studentFields || !companyFields) return;
 
