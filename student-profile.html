@@ -579,12 +579,15 @@
               <label for="cvUpload" class="btn btn-secondary" style="width:100%; margin-bottom:0.75rem; display:block; text-align:center; cursor:pointer;">
                 Upload CV (PDF)
               </label>
-              <input type="file" id="cvUpload" accept=".pdf,.doc,.docx" style="display:none;" onchange="uploadCV(this)" />
-              <button class="btn btn-primary" style="width: 100%;" onclick="downloadCV()" id="downloadCvBtn" disabled>
-                Download CV
-              </button>
+            
+              <input 
+                type="file" 
+                id="cvUpload" 
+                accept=".pdf" 
+                style="display:none;" 
+                onchange="uploadCV(this)" 
+              />
             </div>
-          </div>
 
           <!-- Applications Card -->
           <div class="card" style="margin-bottom: 2rem;">

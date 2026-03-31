@@ -1220,57 +1220,115 @@ async function uploadAvatar(input) {
 // ==========================================
 // CV FILE (Supabase Storage: practice-files)
 // ==========================================
+// 1. THE UPLOAD FUNCTION
 async function uploadCV(input) {
   const file = input.files[0];
   if (!file || !currentProfile) return;
 
-  const session = getCurrentSession();
-  if (!session) return;
-
-  // Max 10MB
-  if (file.size > 10 * 1024 * 1024) {
-    alert('CV must be under 10 MB.');
-    return;
-  }
-
-  const ext = file.name.split('.').pop();
-  const filePath = `user_${session.userId}/cv.${ext}`;
+  const BUCKET_NAME = 'practice-files'; 
+  
+  const safeName = file.name.replace(/[^a-z0-9.]/gi, '_').toLowerCase();
+  const filePath = `user_${currentProfile.id}/${Date.now()}_${safeName}`;
 
   try {
-    const { error: uploadError } = await supabaseClient.storage
-      .from('practice-files')
-      .upload(filePath, file, { upsert: true });
+    const infoDiv = document.getElementById('cvFileInfo');
+    if (infoDiv) infoDiv.innerHTML = '<p class="text-muted">Uploading...</p>';
 
-    if (uploadError) {
-      alert('Upload error: ' + uploadError.message);
-      return;
-    }
 
-    const { data } = supabaseClient.storage
-      .from('practice-files')
+    const { data: uploadData, error: uploadError } = await supabaseClient.storage
+      .from(BUCKET_NAME)
+      .upload(filePath, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data: urlData } = supabaseClient.storage
+      .from(BUCKET_NAME)
       .getPublicUrl(filePath);
 
-    const cvUrl = data.publicUrl;
-
-    await supabaseClient
+    const { error: dbError } = await supabaseClient
       .from('student_profiles')
-      .update({
-        cv_url: cvUrl,
-        cv_original_name: file.name,
-        updated_at: new Date().toISOString()
+      .update({ 
+        cv_url: urlData.publicUrl,
+        cv_original_name: file.name
       })
       .eq('id', currentProfile.id);
 
-    currentProfile.cv_url = cvUrl;
+    if (dbError) throw dbError;
+
+
+    currentProfile.cv_url = urlData.publicUrl;
     currentProfile.cv_original_name = file.name;
-    fillCvInfo(currentProfile);
-    alert('CV uploaded successfully!');
+
+    renderCVList(); 
+    alert('CV Uploaded successfully!');
+
   } catch (err) {
-    console.error('CV upload error:', err);
-    alert('Failed to upload CV.');
+    console.error('Upload Error:', err);
+    alert('Note: ' + err.message);
+    renderCVList(); 
   }
 }
 
+// 3. THE DELETE FUNCTION
+async function deleteCV() {
+  if (!confirm("Are you sure you want to remove this CV?")) return;
+
+  try {
+    const { error } = await supabaseClient
+      .from('student_profiles')
+      .update({ 
+        cv_url: null, 
+        cv_original_name: null 
+      })
+      .eq('id', currentProfile.id);
+
+    if (error) throw error;
+
+    currentProfile.cv_url = null;
+    currentProfile.cv_original_name = null;
+    
+    renderCVList();
+    alert("CV removed from profile.");
+    
+  } catch (err) {
+    console.error("Delete error:", err);
+    alert("Failed to delete: " + err.message);
+  }
+}
+
+// 4. ALIAS FOR COMPATIBILITY
+function fillCvInfo() {
+    renderCVList();
+}
+
+function renderCVList() {
+  const container = document.getElementById('cvFileInfo');
+  if (!container || !currentProfile || !currentProfile.cv_url) {
+    if (container) container.innerHTML = '<p class="text-muted">No CV uploaded yet.</p>';
+    return;
+  }
+
+  container.innerHTML = `
+    <div style="display: flex; align-items: center; justify-content: space-between; background: #f8f9fa; padding: 12px; border-radius: 8px; border: 1px solid #dee2e6;">
+      <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
+        <span>📄</span>
+        <span style="font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">
+          ${currentProfile.cv_original_name || 'Resume.pdf'}
+        </span>
+      </div>
+      <div style="display: flex; gap: 6px;">
+        <a href="${currentProfile.cv_url}" target="_blank" 
+           style="background: #007bff; color: white; padding: 4px 10px; border-radius: 4px; text-decoration: none; font-size: 0.8rem;">
+           Download
+        </a>
+        <button onclick="deleteCV()" 
+           style="background: #dc3545; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+           ✕
+        </button>
+      </div>
+    </div>
+  `;
+}
 // ==========================================
 // DOWNLOAD CV
 // ==========================================
