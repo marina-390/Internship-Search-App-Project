@@ -503,6 +503,8 @@ async function saveCompanyProfile() {
     const session = getCurrentSession();
     if (!session || !currentProfile) return;
 
+    const newBusinessId = document.getElementById('eTeamSize').value;
+
     const saveBtn = document.querySelector('[onclick="saveCompanyProfile()"]');
     saveBtn.disabled = true;
     saveBtn.textContent = 'Saving...';
@@ -513,7 +515,7 @@ async function saveCompanyProfile() {
         description: document.getElementById('eCompanyDesc').value.trim(),
         website: document.getElementById('eWebsite').value.trim(),
         city: document.getElementById('eHeadquarters').value.trim(), 
-        y_tunnus: document.getElementById('eTeamSize').value.trim(),
+        y_tunnus: newBusinessId,
         updated_at: new Date().toISOString()
     };
 
@@ -553,8 +555,8 @@ function fillCompanyDisplay(profile) {
     if(document.getElementById('dHeadquarters')) 
         document.getElementById('dHeadquarters').innerText = profile.city || '';
 
-    // FIX THIS LINE: Use dYTunnus if that is what is in your HTML
-    const teamSizeEl = document.getElementById('dTeamSize');
+    if(document.getElementById('dTeamSize'))
+        document.getElementById('dTeamSize').innerText = profile.y_tunnus || 'Not set';
 }
 
 async function uploadCompanyLogo(input) {
