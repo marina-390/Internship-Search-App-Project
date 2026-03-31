@@ -675,12 +675,17 @@
         // 2. Role-specific logic
         if (role === 1) {
             // Student Profile Logic
-            await supabaseClient.from('student_profiles').insert({
-                user_id: newUser.user_id,
-                first_name: firstName,
-                last_name: lastName,
-                type_education: document.getElementById('university').value.trim() || null
-            });
+            const eduLevel = document.getElementById('eduType').value;
+            const { error: profileError } = await supabaseClient
+                .from('student_profiles')
+                .insert({
+                    user_id: newUser.user_id,
+                    first_name: firstName,
+                    last_name: lastName,
+                    type_education: eduLevel || null
+                });
+            
+            if (profileError) throw profileError;
 
         } else if (role === 2) {
             // COMPANY LOGIC
