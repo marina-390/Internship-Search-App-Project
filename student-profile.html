@@ -13,6 +13,44 @@
       margin-bottom: 2rem;
     }
 
+    .edu-edit-row {
+      display: grid;
+      grid-template-columns: 150px 1fr 100px auto;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      align-items: start;
+      background: #f9f9f9;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      border: 1px solid var(--border-color);
+    }
+
+    .edu-display-item {
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .edu-display-item:last-child {
+      border-bottom: none;
+    }
+
+    .edu-institution {
+      font-weight: 700;
+      display: block;
+    }
+
+    .edu-meta {
+      font-size: 0.85rem;
+      color: var(--text-light);
+    }
+
+    @media (max-width: 768px) {
+      .edu-edit-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .profile-avatar {
       width: 150px;
       height: 150px;
@@ -416,7 +454,9 @@
 
               <div class="profile-field">
                 <div class="profile-field-label">Education</div>
-                <div class="profile-field-value" id="dEducation">-</div>
+                <div id="dEducationList">
+                  <span class="profile-field-value empty">No education added</span>
+                </div>
               </div>
 
               <div class="profile-section-title">About Me</div>
@@ -482,10 +522,12 @@
                 <datalist id="citySuggestions"></datalist>
               </div>
 
-              <div class="form-group">
-                <label for="eEducation">Education</label>
-                <input type="text" id="eEducation" class="edit-input" placeholder="e.g. KPEDU, IT" />
-              </div>
+              <div class="profile-section-title">Education History</div>
+                <div id="eEducationContainer">
+                  </div>
+                <button type="button" class="btn btn-small btn-secondary" onclick="addEducationRow()" style="margin-bottom: 2rem;">
+                  + Add Education
+                </button>
 
               <div class="profile-section-title">About Me</div>
               <div class="form-group">

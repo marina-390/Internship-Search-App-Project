@@ -138,6 +138,13 @@ function fillDisplayMode(profile, session) {
     openEl.className = 'profile-field-value';
   }
 
+  if (profile.education_history) {
+    updateEducationDisplay(profile.education_history);
+} else if (profile.type_education) {
+    // Fallback if you only have the old single string
+    updateEducationDisplay([{ name: profile.type_education, year: '' }]);
+}
+
   // Categories
   const catContainer = document.getElementById('dCategories');
   if (catContainer) {
@@ -167,6 +174,63 @@ function setField(id, value) {
     el.textContent = 'Not specified';
     el.className = 'profile-field-value empty';
   }
+}
+
+// Function to add a new education input row
+function addEducationRow(data = { type: '', name: '', year: '' }) {
+  const container = document.getElementById('eEducationContainer');
+  const row = document.createElement('div');
+  row.className = 'edu-edit-row';
+  
+  row.innerHTML = `
+      <select class="edit-select edu-type">
+          <option value="University" ${data.type === 'University' ? 'selected' : ''}>University</option>
+          <option value="Vocational" ${data.type === 'Vocational' ? 'selected' : ''}>Vocational</option>
+          <option value="High School" ${data.type === 'High School' ? 'selected' : ''}>High School</option>
+          <option value="Other" ${data.type === 'Other' ? 'selected' : ''}>Other</option>
+      </select>
+      <input type="text" class="edit-input edu-name" placeholder="Institution Name" value="${data.name}" />
+      <input type="number" class="edit-input edu-year" placeholder="Year" value="${data.year}" min="1900" max="2099" />
+      <button type="button" class="link-remove-btn" onclick="this.parentElement.remove()">✕</button>
+  `;
+  
+  container.appendChild(row);
+}
+
+// Update your saveProfile function to collect this data
+function getEducationData() {
+  const rows = document.querySelectorAll('.edu-edit-row');
+  const educationEntries = [];
+  
+  rows.forEach(row => {
+      const type = row.querySelector('.edu-type').value;
+      const name = row.querySelector('.edu-name').value;
+      const year = row.querySelector('.edu-year').value;
+      
+      if (name) {
+          educationEntries.push({ type, name, year });
+      }
+  });
+  
+  return educationEntries;
+}
+
+// Update your display function to show the list
+function updateEducationDisplay(eduData) {
+  const displayContainer = document.getElementById('dEducationList');
+  if (!displayContainer) return;
+
+  if (!eduData || eduData.length === 0) {
+      displayContainer.innerHTML = '<span class="profile-field-value empty">No education added</span>';
+      return;
+  }
+
+  displayContainer.innerHTML = eduData.map(edu => `
+      <div class="edu-display-item" style="margin-bottom: 10px;">
+          <div style="font-weight: 600; color: var(--primary-color);">${edu.name}</div>
+          <div style="font-size: 0.9rem; color: #666;">${edu.type} ${edu.year ? '• ' + edu.year : ''}</div>
+      </div>
+  `).join('');
 }
 
 // ==========================================
@@ -719,12 +783,22 @@ function enterEditMode() {
   document.getElementById('eBirthDate').value = currentProfile.birth_date || '';
   document.getElementById('ePhone').value = currentProfile.phone || '';
   document.getElementById('eCity').value = currentProfile.city || '';
-  document.getElementById('eEducation').value = currentProfile.type_education || '';
   document.getElementById('eAbout').value = currentProfile.about || '';
   document.getElementById('ePracticeStart').value = currentProfile.practice_start || '';
   document.getElementById('ePracticeEnd').value = currentProfile.practice_end || '';
   document.getElementById('eOpenToOffers').checked = currentProfile.is_open_to_offers;
 
+  const container = document.getElementById('eEducationContainer');
+  if (container) {
+    container.innerHTML = ''; 
+    if (currentProfile.education_history && currentProfile.education_history.length > 0) {
+      currentProfile.education_history.forEach(edu => {
+        addEducationRow(edu); 
+      });
+    } else {
+      addEducationRow(); 
+    }
+  }
   // Render selected categories
   renderSelectedCategories();
   buildCategoryDropdown();
@@ -786,13 +860,17 @@ async function saveProfile() {
   saveBtn.textContent = 'Saving...';
 
   try {
+
+    const educationEntries = getEducationData();
+
     const updates = {
       first_name: document.getElementById('eFirstName').value.trim() || null,
       last_name: document.getElementById('eLastName').value.trim() || null,
       birth_date: document.getElementById('eBirthDate').value || null,
       phone: document.getElementById('ePhone').value.trim() || null,
       city: document.getElementById('eCity').value.trim() || null,
-      type_education: document.getElementById('eEducation').value.trim() || null,
+      education_history: educationEntries,
+      type_education: educationEntries.length > 0 ? educationEntries[0].name : null,
       about: document.getElementById('eAbout').value.trim() || null,
       practice_start: document.getElementById('ePracticeStart').value || null,
       practice_end: document.getElementById('ePracticeEnd').value || null,
@@ -807,60 +885,8 @@ async function saveProfile() {
       .eq('id', currentProfile.id);
 
     if (profileError) {
-      alert('Error saving profile: ' + profileError.message);
-      return;
+      throw new Error('Error saving profile: ' + profileError.message);
     }
-
-    // This function runs whenever you select an item from the datalist
-document.getElementById('eTeamSize').addEventListener('change', async function() {
-    const selectedId = this.value.trim();
-
-    // Only run if it looks like a real Y-tunnus (e.g., 1234567-8)
-    if (!/^\d{7}-\d$/.test(selectedId)) return;
-
-    try {
-        const status = document.getElementById('prhStatus');
-        if (status) status.textContent = "Fetching company details...";
-
-        // Robust proxy with fallback
-        const targetUrl = `https://avoindata.prh.fi/bis/v1/${selectedId}`;
-        const proxies = [
-            `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
-            `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`
-        ];
-        let lastError;
-        for (const proxyUrl of proxies) {
-            try {
-                const response = await fetch(proxyUrl, { signal: AbortSignal.timeout(10000) });
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                const proxyData = await response.json();
-                const data = JSON.parse( (proxyData.contents || proxyData) );
-                break; // Success, use data
-            } catch (err) {
-                lastError = err;
-                continue;
-            }
-        }
-        if (lastError) throw lastError;
-
-        if (data.results && data.results[0]) {
-            const company = data.results[0];
-
-            // AUTO-FILL THE OTHER VARIABLES
-            document.getElementById('eCompanyName').value = company.name || '';
-            
-            // regOffice is usually the City in the PRH API
-            if (company.regOffice) {
-                document.getElementById('eHeadquarters').value = company.regOffice;
-            }
-
-            if (status) status.textContent = "✅ Details loaded for " + company.name;
-        }
-    } catch (err) {
-        console.error("Auto-fill error:", err);
-        if (status) status.textContent = `Auto-fill failed: ${err.message}`;
-    }
-});
 
     // Update categories: delete old, insert new
     await supabaseClient
@@ -873,29 +899,32 @@ document.getElementById('eTeamSize').addEventListener('change', async function()
         student_id: currentProfile.id,
         category_id: catId
       }));
-      await supabaseClient
+      const { error: catError } = await supabaseClient
         .from('student_categories')
         .insert(rows);
+      
+      if (catError) console.error("Category save error:", catError);
     }
-
     // Save links
     await saveLinks();
 
-    // Update local data
+    // 6. UPDATE LOCAL STATE AND REFRESH UI
     Object.assign(currentProfile, updates);
 
-    // Refresh display
     fillDisplayMode(currentProfile, session);
+    updateEducationDisplay(educationEntries);
     cancelEditMode();
+    
+    alert('Profile saved successfully!');
+
   } catch (err) {
     console.error('Save error:', err);
-    alert('An error occurred while saving.');
+    alert(err.message || 'An error occurred while saving.');
   } finally {
     saveBtn.disabled = false;
     saveBtn.textContent = 'Save';
   }
 }
-
 // ==========================================
 // CATEGORY SEARCH & SELECTION
 // ==========================================
@@ -1191,20 +1220,6 @@ async function uploadAvatar(input) {
 // ==========================================
 // CV FILE (Supabase Storage: practice-files)
 // ==========================================
-function fillCvInfo(profile) {
-  const container = document.getElementById('cvFileInfo');
-  const downloadBtn = document.getElementById('downloadCvBtn');
-  if (!container) return;
-
-  if (profile.cv_url && profile.cv_original_name) {
-    container.innerHTML = `<p style="font-weight:600;">${profile.cv_original_name}</p>`;
-    if (downloadBtn) downloadBtn.disabled = false;
-  } else {
-    container.innerHTML = '<p class="text-muted">No CV uploaded yet.</p>';
-    if (downloadBtn) downloadBtn.disabled = true;
-  }
-}
-
 async function uploadCV(input) {
   const file = input.files[0];
   if (!file || !currentProfile) return;

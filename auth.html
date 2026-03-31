@@ -121,7 +121,6 @@
   </style>
 </head>
 <body>
-  <!-- Navigation Bar -->
   <nav>
     <div class="nav-container">
       <a href="index.html" class="logo">InternHub</a>
@@ -141,7 +140,6 @@
     </div>
   </nav>
 
-  <!-- Page Header -->
   <section class="section" style="background: linear-gradient(135deg, var(--primary-color) 0%, #667eea 100%); color: white; padding: 3rem 1rem;">
     <div class="container text-center">
       <h1 style="color: white; margin-bottom: 0.5rem;">Join InternHub</h1>
@@ -149,18 +147,15 @@
     </div>
   </section>
 
-  <!-- Auth Forms -->
   <section class="section">
     <div class="container">
       <div class="auth-container">
-        <!-- Login Section -->
         <div class="form-container">
           <div class="form-tabs">
             <button class="form-tab active" onclick="switchTab('login')">Login</button>
             <button class="form-tab" onclick="switchTab('register')">Register</button>
           </div>
 
-          <!-- Login Form -->
           <div id="loginForm" class="auth-form-wrapper active">
             <h2 style="margin-bottom: 1.5rem;">Welcome Back</h2>
             <form onsubmit="handleLogin(event); return false;">
@@ -227,11 +222,9 @@
             </p>
           </div>
 
-          <!-- Register Form -->
           <div id="registerForm" class="auth-form-wrapper">
             <h2 style="margin-bottom: 1.5rem;">Create Your Account</h2>
             <form onsubmit="handleRegister(event)">
-              <!-- Role Selection -->
               <div class="form-group" style="margin-bottom: 1.5rem;">
                 <label style="margin-bottom: 1rem;">I am a...</label>
                 <div style="display: flex; gap: 1rem;">
@@ -292,43 +285,29 @@
                 />
               </div>
 
-              <!-- Student Fields -->
               <div id="studentFields">
-                <div class="form-group">
-                  <label for="university">University/School</label>
-                  <input 
-                    type="text" 
-                    id="university" 
-                    name="university" 
-                    placeholder="Your university name"
-                  />
-                </div>
+                <div class="form-row">
+                  <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="eduType">Education Level</label>
+                    <select id="eduType" name="eduType">
+                      <option value="" disabled selected>Select level...</option>
+                      <option value="university">University / Applied Sciences</option>
+                      <option value="college">College / Vocational</option>
+                      <option value="school">High School / Secondary</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
 
-                <div class="form-group">
-                  <label for="major">Major</label>
-                  <input 
-                    type="text" 
-                    id="major" 
-                    name="major" 
-                    placeholder="e.g., Computer Science"
-                  />
-                </div>
-
-                <div class="form-group">
-                  <label for="graduationYear">Expected Graduation Year</label>
-                  <input 
-                    type="number" 
-                    id="graduationYear" 
-                    name="graduationYear" 
-                    placeholder="2025"
-                    min="2024"
-                    max="2035"
-                  />
-                </div>
-              </div>
-
-              <!-- Company Fields -->
-              <div id="companyFields" style="display: none;">
+                  <div class="form-group">
+                    <label for="major">Major</label>
+                    <input 
+                      type="text" 
+                      id="major" 
+                      name="major" 
+                      placeholder="e.g., Computer Science"
+                    />
+                  </div>
+                </div> </div> <div id="companyFields" style="display: none;">
                 <div class="form-group">
                   <label for="jobTitle">Your Job Title</label>
                   <input 
@@ -344,7 +323,6 @@
                   <input type="text" id="companyName" name="companyName" placeholder="Your company name" />
                 </div>
               
-
                 <div class="form-group">
                   <label for="companyWebsite">Company Website</label>
                   <input 
@@ -354,9 +332,7 @@
                     placeholder="https://www.yourcompany.com"
                   />
                 </div>
-              </div>
-
-              <div class="form-group">
+              </div> <div class="form-group">
                 <label for="regPassword">Password</label>
                 <div class="password-toggle">
                   <input 
@@ -428,65 +404,53 @@
         </div>
 
         <!-- Info Section -->
-        <div>
-          <h2 style="margin-bottom: 2rem;">Why Create an Account?</h2>
-          
-          <div class="card" style="margin-bottom: 2rem;">
-            <div class="card-header">
-              <h4 class="card-title">📝 Save Your Progress</h4>
+        <div class="benefits-section">
+          <h2 style="margin-bottom: 2rem; color: var(--text-color);">Why Join InternHub?</h2>
+        
+          <div class="benefits-grid" style="display: grid; gap: 1.5rem;">
+            
+            <div class="benefit-card" style="padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); background: white; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+              <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                <span style="font-size: 1.5rem;">📝</span>
+                <div>
+                  <h4 style="margin: 0 0 0.5rem 0; color: var(--primary-color);">Save Your Progress</h4>
+                  <p style="margin: 0; font-size: 0.9rem; color: var(--text-light); line-height: 1.4;">
+                    Save your applications and track your progress across multiple internship opportunities.
+                  </p>
+                </div>
+              </div>
             </div>
-            <div class="card-content">
-              Save your applications and track your progress across multiple internship opportunities.
+        
+            <div class="benefit-card" style="padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); background: white;">
+              <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                <span style="font-size: 1.5rem;">❤️</span>
+                <div>
+                  <h4 style="margin: 0 0 0.5rem 0; color: var(--primary-color);">Manage Favorites</h4>
+                  <p style="margin: 0; font-size: 0.9rem; color: var(--text-light); line-height: 1.4;">
+                    Bookmark positions you're interested in and organize them into lists for easy access.
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
-
-          <div class="card" style="margin-bottom: 2rem;">
-            <div class="card-header">
-              <h4 class="card-title">❤️ Manage Favorites</h4>
+        
+        
+            <div class="benefit-card" style="padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); background: white;">
+              <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                <span style="font-size: 1.5rem;">💼</span>
+                <div>
+                  <h4 style="margin: 0 0 0.5rem 0; color: var(--primary-color);">Build Your Profile</h4>
+                  <p style="margin: 0; font-size: 0.9rem; color: var(--text-light); line-height: 1.4;">
+                    Create a professional profile that employers can view when reviewing your applications.
+                  </p>
             </div>
-            <div class="card-content">
-              Bookmark positions you're interested in and organize them into lists for easy access.
-            </div>
-          </div>
-
-          <div class="card" style="margin-bottom: 2rem;">
-            <div class="card-header">
-              <h4 class="card-title">🔔 Get Notifications</h4>
-            </div>
-            <div class="card-content">
-              Receive job alerts when new positions matching your interests are posted.
-            </div>
-          </div>
-
-          <div class="card" style="margin-bottom: 2rem;">
-            <div class="card-header">
-              <h4 class="card-title">💼 Build Your Profile</h4>
-            </div>
-            <div class="card-content">
-              Create a professional profile that employers can view when reviewing your applications.
-            </div>
-          </div>
-
-          <div class="card" style="margin-bottom: 2rem;">
-            <div class="card-header">
-              <h4 class="card-title">📊 Application Analytics</h4>
-            </div>
-            <div class="card-content">
-              Track your application status and receive insights about your job search progress.
             </div>
           </div>
 
-          <div class="card">
-            <div class="card-header">
-              <h4 class="card-title">🎯 Personalized Recommendations</h4>
+              </div>
             </div>
-            <div class="card-content">
-              Get personalized internship suggestions based on your skills and preferences.
-            </div>
+        
           </div>
         </div>
-      </div>
-    </div>
   </section>
 
   <!-- Footer -->
