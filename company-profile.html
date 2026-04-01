@@ -78,6 +78,38 @@
         font-size: 2rem;
       }
     }
+
+    .modal-overlay {
+        display: none; 
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 10000;
+        overflow-y: auto;
+        padding: 2rem 1rem;
+    }
+    .modal-content {
+        background: #fff;
+        border-radius: 1rem;
+        max-width: 600px;
+        margin: 2rem auto;
+        padding: 2rem;
+        position: relative;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 1rem; right: 1rem;
+        background: none; border: none;
+        font-size: 1.5rem; cursor: pointer;
+        color: var(--text-light);
+    }
+
+    .form-group { margin-bottom: 1.2rem; }
+    .form-group label { display: block; margin-bottom: 0.4rem; font-weight: 600; }
+    .form-control { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 0.5rem; }
   </style>
 </head>
 <body>
@@ -110,8 +142,30 @@
 <div>
   <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
-      <div class="company-header" style="margin-bottom: 0;">
-        <div class="company-logo" id="companyLogoDiv">🏢</div>
+      <div class="company-header" style="margin-bottom: 0;">        
+          <div class="profile-avatar" id="profileAvatar" 
+          style="width: 120px; 
+                 height: 120px; 
+                 border: 1px solid #e2e8f0; 
+                 border-radius: 12px; 
+                 position: relative; 
+                 background: #ffffff; 
+                 display: flex; 
+                 align-items: center; 
+                 justify-content: center; 
+                 overflow: hidden;">
+       
+       <img id="avatarImg" src="" alt="" 
+            style="max-width: 90%; 
+                   max-height: 90%; 
+                   object-fit: contain; 
+                   display: none;" />
+          <span class="company-logo" id="avatarPlaceholder">🏢</span>
+          <label for="avatarUpload" style="position:absolute; bottom:0; right:0; background:var(--primary-color); color:white; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.1rem; border:2px solid white;">
+            +
+          </label>
+          <input type="file" id="avatarUpload" accept="image/*" style="display:none;" onchange="uploadLogo(this)" />
+        </div>
         <div id="companyDisplayHeader" class="company-info">
           <h2 id="dCompanyName">Company Name</h2>
           <p id="dCompanyEmail">industry@company.com</p>
@@ -206,24 +260,11 @@
       </div>
         </div>
 
-           <div class="posting-item" id="posting-1">
-            <div id="view-mode-1">
-              <h4 id="title-1">Frontend Developer Intern</h4>
-              <p class="applications">📊 12 Applications</p>
-              <p style="font-size: 0.875rem; margin: 0.5rem 0 0 0;">
-                <a href="internship-detail.html?id=1" class="text-primary">View Posting</a> | 
-                <a href="javascript:void(0)" onclick="togglePostEdit(1, true)" class="text-primary">Edit</a> | 
-                <a href="#" class="text-primary">Close</a>
-              </p>
-            </div>
-
-            <div id="edit-mode-1" style="display: none; margin-top: 10px;">
-              <input type="text" id="input-title-1" class="form-control" style="margin-bottom: 5px;">
-              <button type="button" onclick="editTeamMember('${member.id}')" class="btn-small">
-                Edit
-             </button>
-              <button class="btn-cancel" onclick="togglePostEdit(1, false)" style="background: #ccc; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Cancel</button>
-            </div>
+        <div class="company-section-title">Current Postings</div>
+    
+        <div id="companyPostingsList">
+            <p style="text-align:center; color:gray; padding: 20px;">Loading your postings...</p>
+        </div>
           </div>
         </div>
 
@@ -236,15 +277,79 @@
             </div>
             <div class="card-content">
               <p class="text-muted mb-3">Create a new internship opportunity for your company.</p>
-              <button class="btn btn-primary" style="width: 100%;" onclick="alert('Post job feature')">
+              <button class="btn btn-primary" style="width: 100%;" onclick="openPostModal()">
                 ➕ Post New Position
-              </button>
+            </button>
             </div>
           </div>
         </div>
       </div>
     </div>
   </section>
+
+  <div id="postJobModal" class="modal-overlay">
+    <div class="modal-content">
+      <input type="hidden" id="editPositionId" value="">
+        <button onclick="closePostModal()" class="modal-close">&times;</button>
+        <h2 id="modalTitle" style="margin-bottom: 1.5rem;">Create New Internship</h2>
+
+        <div class="form-group">
+            <label>Job Title *</label>
+            <input type="text" id="pTitle" class="form-control" placeholder="e.g. Frontend Developer Intern">
+        </div>
+
+        <div class="form-group">
+            <label>Description *</label>
+            <textarea id="pDesc" class="form-control" rows="4" placeholder="Describe the role and responsibilities..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Requirements</label>
+          <textarea id="pReqs" class="form-control" rows="2" placeholder="Skills, tools..."></textarea>
+      </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label>Start Date</label>
+                <input type="date" id="pStart" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>End Date</label>
+                <input type="date" id="pEnd" class="form-control">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                <input type="checkbox" id="pOpenEnded" onchange="document.getElementById('pEnd').disabled = this.checked"> 
+                This position is open-ended (no fixed end date)
+            </label>
+        </div>
+
+        <div class="form-group">
+            <label>Category *</label>
+            <select id="pCategory" class="form-control">
+                <option value="">Select a category...</option>
+                </select>
+        </div>
+        <div class="form-group">
+          <label>Visibility</label>
+          <select id="pStatus" class="form-control">
+              <option value="active">Active</option>
+              <option value="draft">Draft</option>
+          </select>
+      </div>
+
+      <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+        <button class="btn btn-secondary" onclick="closePostModal()">Cancel</button>
+        
+        <button class="btn btn-primary" id="submitPostBtn" onclick="submitPosition()">Post Position</button>
+        </div>
+    </div>
+        
+        <p id="postError" style="color: #ff4444; margin-top: 1rem; display: none; font-size: 0.9rem;"></p>
+    </div>
+</div>
 
   <!-- Footer -->
   <footer>
