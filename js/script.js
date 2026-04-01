@@ -56,13 +56,17 @@ function initUserMenu() {
     userLi.className = 'nav-item user-menu';
 
     getUserData(session.userId).then(userData => {
-      const avatarInitials = userData.name ? 
-        userData.name.charAt(0).toUpperCase() : 
-        session.login.charAt(0).toUpperCase();
+      const displayName = userData.name || session.login;
+      const avatarInitials = displayName.charAt(0).toUpperCase();
+      const isCompany = session.role === 2;
+      const fallbackIcon = isCompany ? '🏢' : avatarInitials;
       
       userLi.innerHTML = `
-        <div class="user-avatar" onclick="toggleUserDropdown(event)" title="${userData.name || session.login}">
-          ${userData.photo_url ? `<img src="${userData.photo_url}" alt="Profile">` : avatarInitials}
+        <div class="user-avatar" style="color:'white'" onclick="toggleUserDropdown(event)" title="${displayName}">
+          ${userData.avatar_url ? 
+            `<img src="${userData.avatar_url}" alt="${isCompany ? 'Company Logo' : 'Profile'}">` : 
+            fallbackIcon
+          }
         </div>
         <ul class="user-dropdown" id="userDropdown">
           <li><a href="${getProfileUrl(session.role)}">Profile</a></li>
@@ -103,23 +107,43 @@ function getProfileUrl(role) {
   return role === 2 ? 'company-profile.html' : 'student-profile.html';
 }
 
-// Get user data (photo, name) - sync fallback to local
+// Get user data (photo/logo, name) - supports both students/companies
 async function getUserData(userId) {
+  const session = getCurrentSession();
+  if (!session) return { name: null, avatar_url: null };
+  
   try {
     if (typeof supabaseClient === 'undefined') throw new Error('No Supabase');
     
-    const { data: profile } = await supabaseClient
-      .from('student_profiles')
-      .select('first_name, last_name, photo_url')
-      .eq('user_id', userId)
-      .single();
-
-    return {
-      name: profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || null : null,
-      photo_url: profile?.photo_url || null
-    };
+    let profile = null;
+    let name = null;
+    let avatar_url = null;
+    
+    if (session.role === 2) {
+      // Company: fetch from Companies table
+      const { data } = await supabaseClient
+        .from('Companies')
+        .select('company_name, logo_url')
+        .eq('user_id', userId)
+        .single();
+      profile = data;
+      name = profile?.company_name || null;
+      avatar_url = profile?.logo_url || null;
+    } else {
+      // Student: fetch from student_profiles
+      const { data } = await supabaseClient
+        .from('student_profiles')
+        .select('first_name, last_name, photo_url')
+        .eq('user_id', userId)
+        .single();
+      profile = data;
+      name = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || null : null;
+      avatar_url = profile?.photo_url || null;
+    }
+    
+    return { name, avatar_url };
   } catch {
-    return { name: null, photo_url: null };
+    return { name: null, avatar_url: null };
   }
 }
 // Set Active Nav Link

@@ -445,6 +445,7 @@ async function loadCompanyProfile() {
       fillCompanyDisplay(profile);
       fillCompanyLogo(profile);
       await loadCompanyTeam();
+      await loadCompanyPostings();
       fillTeamDisplay();
     }
   } catch (err) {
@@ -517,40 +518,7 @@ function fillCompanyDisplay(profile) {
         document.getElementById('dTeamSize').innerText = profile.y_tunnus || 'Not set';
 }
 
-async function uploadCompanyLogo(input) {
-    const file = input.files[0];
-    if (!file || !currentProfile) return;
 
-    const fileExt = file.name.split('.').pop();
-    const filePath = `logos/${currentProfile.company_id}.${fileExt}`;
-
-    try {
-        const { error: uploadError } = await supabaseClient.storage
-            .from('LOGO')
-            .upload(filePath, file, { upsert: true });
-
-        if (uploadError) throw uploadError;
-
-        const { data } = supabaseClient.storage
-            .from('LOGO')
-            .getPublicUrl(filePath);
-
-        const publicUrl = data.publicUrl;
-
-        const { error: dbError } = await supabaseClient
-            .from('Companies')
-            .update({ logo_url: publicUrl })
-            .eq('company_id', currentProfile.company_id);
-
-        if (dbError) throw dbError;
-
-        currentProfile.logo_url = publicUrl;
-        fillCompanyLogo(currentProfile);
-        alert('Logo updated!');
-    } catch (err) {
-        console.error('Logo Error:', err.message);
-    }
-}
 
 async function saveCompanyProfile() {
     const session = getCurrentSession(); 
@@ -604,20 +572,320 @@ async function saveCompanyProfile() {
     }
 }
 
+// Opens the modal for a NEW position
+function openPostModal() {
+  const modal = document.getElementById('postJobModal');
+  const titleHeader = document.getElementById('modalTitle');
+  const submitBtn = document.getElementById('submitPostBtn');
+
+  if (titleHeader) titleHeader.innerText = "Create New Internship";
+  if (submitBtn) submitBtn.innerText = "Post Position";
+  document.getElementById('editPositionId').value = ""; // Clear ID
+
+  // Clear form
+  document.getElementById('pTitle').value = "";
+  document.getElementById('pDesc').value = "";
+  document.getElementById('pReqs').value = "";
+  document.getElementById('pCategory').value = "";
+  
+  loadCategoriesIntoSelect();
+
+  modal.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+// Opens the modal to EDIT an existing position
+async function openEditModal(id) {
+  const modal = document.getElementById('postJobModal');
+  const titleHeader = document.getElementById('modalTitle');
+  const submitBtn = document.getElementById('submitPostBtn');
+
+  if (titleHeader) titleHeader.innerText = "Edit Internship";
+  if (submitBtn) submitBtn.innerText = "Update Position";
+  document.getElementById('editPositionId').value = id;
+
+  try {
+      const { data, error } = await supabaseClient
+          .from('positions')
+          .select('*')
+          .eq('position_id', id)
+          .single();
+
+      if (error) throw error;
+
+      // Fill fields
+      document.getElementById('pTitle').value = data.title || "";
+      document.getElementById('pDesc').value = data.description || "";
+      document.getElementById('pReqs').value = data.requirements || "";
+      document.getElementById('pStatus').value = data.status || "active";
+      document.getElementById('pStart').value = data.period_start || "";
+      document.getElementById('pEnd').value = data.period_end || "";
+      document.getElementById('pOpenEnded').checked = data.is_open_ended;
+
+      // Load categories and then set the selected one
+      await loadCategoriesIntoSelect();
+      setTimeout(() => {
+          document.getElementById('pCategory').value = data.category_id || "";
+      }, 100);
+
+      modal.style.display = 'block';
+      document.body.style.overflow = 'hidden';
+  } catch (err) {
+      alert("Error loading data: " + err.message);
+  }
+}
+
+// Handles both INSERT and UPDATE
+async function submitPosition() {
+  const editId = document.getElementById('editPositionId').value;
+  const submitBtn = document.getElementById('submitPostBtn');
+  
+  if (!currentProfile) return alert("Profile not loaded.");
+
+  const postData = {
+      company_id: currentProfile.company_id,
+      title: document.getElementById('pTitle').value.trim(),
+      description: document.getElementById('pDesc').value,
+      requirements: document.getElementById('pReqs').value,
+      status: document.getElementById('pStatus').value,
+      category_id: document.getElementById('pCategory').value ? parseInt(document.getElementById('pCategory').value) : null,
+      period_start: document.getElementById('pStart').value || null,
+      period_end: document.getElementById('pEnd').value || null,
+      is_open_ended: document.getElementById('pOpenEnded').checked
+  };
+
+  submitBtn.disabled = true;
+  submitBtn.innerText = "Saving...";
+
+  try {
+      let error;
+      if (editId) {
+          const { error: err } = await supabaseClient.from('positions').update(postData).eq('position_id', editId);
+          error = err;
+      } else {
+          const { error: err } = await supabaseClient.from('positions').insert([postData]);
+          error = err;
+      }
+
+      if (error) throw error;
+
+      alert(editId ? "Updated!" : "Posted!");
+      closePostModal();
+      loadCompanyPostings();
+  } catch (err) {
+      alert("Error: " + err.message);
+  } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerText = editId ? "Update Position" : "Post Position";
+  }
+}
+
+function closePostModal() {
+  const modal = document.getElementById('postJobModal');
+  modal.style.display = 'none';
+  document.body.style.overflow = ''; // Restore scrolling
+  
+  // Reset error messages
+  const err = document.getElementById('postError');
+  if (err) err.style.display = 'none';
+}
+
+// Close modal if user clicks the dark background
+window.onclick = function(event) {
+  const modal = document.getElementById('postJobModal');
+  if (event.target == modal) {
+      closePostModal();
+  }
+}
+
+async function loadCategoriesIntoSelect() {
+  const select = document.getElementById('pCategory');
+  if (!select) return;
+
+  try {
+      // Fetch categories and their parent group titles
+      const { data, error } = await supabaseClient
+          .from('job_groups')
+          .select(`
+              group_id,
+              title,
+              job_categories (
+                  category_id,
+                  title
+              )
+          `)
+          .order('title');
+
+      if (error) throw error;
+
+      // Start with a clean select
+      select.innerHTML = '<option value="">Select a category...</option>';
+
+      data.forEach(group => {
+          // Create a non-clickable group header (e.g., IT, Design)
+          const optGroup = document.createElement('optgroup');
+          optGroup.label = group.title;
+
+          // Add the specific categories (e.g., Frontend Developer)
+          group.job_categories.forEach(cat => {
+              const option = document.createElement('option');
+              option.value = cat.category_id;
+              option.textContent = cat.title;
+              optGroup.appendChild(option);
+          });
+
+          select.appendChild(optGroup);
+      });
+  } catch (err) {
+      console.error("Error loading categories:", err.message);
+      select.innerHTML = '<option value="">Error loading categories</option>';
+  }
+}
+
+async function deletePosition(id) {
+  if (!confirm("Are you sure you want to delete this posting?")) return;
+
+  try {
+      const { error } = await supabaseClient
+          .from('positions')
+          .delete()
+          .eq('position_id', id);
+
+      if (error) throw error;
+      loadCompanyPostings(); // Refresh the list
+  } catch (err) {
+      alert(err.message);
+  }
+}
+
+// --- Load and Display Postings ---
+async function loadCompanyPostings() {
+  const container = document.getElementById('companyPostingsList');
+  if (!container || !currentProfile) return;
+
+  try {
+      // Fetch positions for this company
+      const { data: positions, error } = await supabaseClient
+          .from('positions')
+          .select('position_id, title, status')
+          .eq('company_id', currentProfile.company_id)
+          .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      if (positions.length === 0) {
+          container.innerHTML = '<p style="text-align:center; color:gray;">No active postings.</p>';
+          return;
+      }
+
+      // Generate the HTML for each item
+      container.innerHTML = positions.map(pos => `
+          <div class="posting-item" id="posting-${pos.position_id}">
+              <div id="view-mode-${pos.position_id}">
+                  <h4 id="title-${pos.position_id}">${pos.title}</h4>
+                  <p class="applications">📊 0 Applications</p>
+                  <p style="font-size: 0.875rem; margin: 0.5rem 0 0 0;">
+                      <a href="internship-detail.html?id=${pos.position_id}" class="text-primary">View Posting</a> | 
+                      <a href="javascript:void(0)" onclick="openEditModal(${pos.position_id})" class="text-primary">Edit</a>| 
+                      <a href="javascript:void(0)" onclick="deletePosition(${pos.position_id})" class="text-primary" style="color:red;">Delete</a>
+                  </p>
+              </div>
+              
+              <div id="edit-mode-${pos.position_id}" style="display: none; margin-top: 10px;">
+                  <input type="text" id="input-title-${pos.position_id}" class="form-control" value="${pos.title}" style="margin-bottom: 5px;">
+                  <button type="button" onclick="updatePositionTitle(${pos.position_id})" class="btn-small btn-primary">Update</button>
+                  <button class="btn-cancel" onclick="togglePostEdit(${pos.position_id}, false)" style="background: #ccc; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Cancel</button>
+              </div>
+          </div>
+      `).join('');
+
+  } catch (err) {
+      console.error("Error loading postings:", err);
+  }
+}
+
+// --- Toggle Edit for a specific job row ---
+function togglePostEdit(id, show) {
+  document.getElementById(`view-mode-${id}`).style.display = show ? 'none' : 'block';
+  document.getElementById(`edit-mode-${id}`).style.display = show ? 'block' : 'none';
+}
+
+async function handleFormSubmit() {
+  const editId = document.getElementById('editPositionId').value;
+  const submitBtn = document.getElementById('submitPostBtn');
+  
+  const postData = {
+      company_id: currentProfile.company_id,
+      title: document.getElementById('pTitle').value.trim(),
+      description: document.getElementById('pDesc').value,
+      status: document.getElementById('pStatus').value,
+      category_id: document.getElementById('pCategory').value ? parseInt(document.getElementById('pCategory').value) : null,
+      period_start: document.getElementById('pStart').value || null,
+      period_end: document.getElementById('pEnd').value || null,
+      is_open_ended: document.getElementById('pOpenEnded').checked
+  };
+
+  submitBtn.disabled = true;
+
+  try {
+      let result;
+      if (editId) {
+          // UPDATE existing row
+          result = await supabaseClient
+              .from('positions')
+              .update(postData)
+              .eq('position_id', editId);
+      } else {
+          // INSERT new row
+          result = await supabaseClient
+              .from('positions')
+              .insert([postData]);
+      }
+
+      if (result.error) throw result.error;
+
+      alert(editId ? "Updated!" : "Posted!");
+      closePostModal();
+      loadCompanyPostings(); // Refresh the list
+
+  } catch (err) {
+      alert("Error: " + err.message);
+  } finally {
+      submitBtn.disabled = false;
+  }
+}
+
+function updateNavLogo(url) {
+  const navLogo = document.getElementById('navCompanyLogo'); // Ensure this ID is in your header
+  if (navLogo) {
+      // Add a timestamp to the URL to force a refresh
+      navLogo.src = `${url}?t=${new Date().getTime()}`;
+      navLogo.style.display = 'block';
+  }
+}
+
 function fillCompanyLogo(profile) {
-    const logoImg = document.getElementById('companyLogoImg');
-    const logoEmoji = document.getElementById('logoEmoji');
-    
-    if (profile.logo_url) {
-        if (logoImg) {
-            logoImg.src = profile.logo_url;
-            logoImg.style.display = 'block';
-        }
-        if (logoEmoji) logoEmoji.style.display = 'none';
-    } else {
-        if (logoImg) logoImg.style.display = 'none';
-        if (logoEmoji) logoEmoji.style.display = 'block';
-    }
+  const logoImg = document.getElementById('avatarImg');
+  const placeholder = document.getElementById('avatarPlaceholder');
+  
+  if (profile && profile.logo_url) {
+      // Force refresh with timestamp
+      const freshUrl = `${profile.logo_url.split('?')[0]}?t=${new Date().getTime()}`;
+      
+      if (logoImg) {
+          logoImg.src = freshUrl;
+          logoImg.style.display = 'block';
+          logoImg.style.objectFit = 'cover';
+      }
+      if (placeholder) {
+          placeholder.style.display = 'none';
+      }
+      
+      // Refresh global navigation menu
+      if (typeof initUserMenu === 'function') {
+        initUserMenu();
+      }
+  }
 }
 // ==========================================
 // FILL APPLICATIONS
@@ -1153,6 +1421,88 @@ async function uploadAvatar(input) {
   }
 }
 
+async function uploadLogo(input) {
+  const file = input.files[0];
+  
+  // 1. Basic checks (Must have file and profile loaded)
+  if (!file || !currentProfile) return;
+
+  // 2. Check Session (Must be logged in)
+  const session = getCurrentSession();
+  if (!session) {
+    alert("Please log in to upload a logo.");
+    return;
+  }
+
+  // 3. Size Validation (Max 2MB)
+  if (file.size > 2 * 1024 * 1024) {
+    alert('Logo must be under 2 MB.');
+    return;
+  }
+
+  const ext = file.name.split('.').pop();
+  // Using company_id to keep folder organized
+  const filePath = `company_${currentProfile.company_id}/logo.${ext}`;
+
+  try {
+    // 4. Upload to 'fotot' bucket (upsert: true overwrites existing file)
+    const { error: uploadError } = await supabaseClient.storage
+      .from('foto')
+      .upload(filePath, file, { 
+          upsert: true,
+          cacheControl: '3600' 
+      });
+
+    if (uploadError) {
+      alert('Upload error: ' + uploadError.message);
+      return;
+    }
+
+    // 5. Get Public URL
+    const { data: urlData } = supabaseClient.storage
+      .from('foto')
+      .getPublicUrl(filePath);
+
+    const logoUrl = urlData.publicUrl;
+
+    // 6. Save URL to 'Companies' table
+    // Adding a timestamp to the URL (logoUrl?t=...) trick the browser into 
+    // showing the new image immediately instead of the old cached one
+    const finalUrl = `${logoUrl}?t=${new Date().getTime()}`;
+
+    const { error: updateError } = await supabaseClient
+      .from('Companies')
+      .update({ 
+          logo_url: finalUrl, 
+          updated_at: new Date().toISOString() 
+      })
+      .eq('company_id', currentProfile.company_id);
+
+    if (updateError) throw updateError;
+
+    currentProfile.logo_url = publicUrl;
+    
+    // Ensure this matches your UI update function name
+    if (typeof fillCompanyLogo === 'function') {
+        fillCompanyLogo(currentProfile);
+    } else {
+        // Fallback: manually update the elements
+        const logoImg = document.getElementById('avatarImg');
+        const placeholder = document.getElementById('avatarPlaceholder');
+        if (logoImg) {
+            logoImg.src = finalUrl;
+            logoImg.style.display = 'block';
+        }
+        if (placeholder) placeholder.style.display = 'none';
+    }
+
+    alert('Logo updated successfully!');
+
+  } catch (err) {
+    console.error('Logo upload error:', err);
+    alert('Failed to upload logo.');
+  }
+}
 // ==========================================
 // CV FILE (Supabase Storage: practice-files)
 // ==========================================
