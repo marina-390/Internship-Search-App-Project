@@ -499,48 +499,6 @@ async function handlePRHSearch(query) {
         }
     }, 400);
 }
-async function saveCompanyProfile() {
-    const session = getCurrentSession();
-    if (!session || !currentProfile) return;
-
-    const newBusinessId = document.getElementById('eTeamSize').value;
-
-    const saveBtn = document.querySelector('[onclick="saveCompanyProfile()"]');
-    saveBtn.disabled = true;
-    saveBtn.textContent = 'Saving...';
-
-    // Map your UI inputs to your DB columns exactly as they are in the image
-    const updates = {
-        company_name: document.getElementById('eCompanyName').value.trim(),
-        description: document.getElementById('eCompanyDesc').value.trim(),
-        website: document.getElementById('eWebsite').value.trim(),
-        city: document.getElementById('eHeadquarters').value.trim(), 
-        y_tunnus: newBusinessId,
-        updated_at: new Date().toISOString()
-    };
-
-    try {
-        const { error } = await supabaseClient
-            .from('Companies')
-            .update(updates)
-            .eq('company_id', currentProfile.company_id); // Use company_id PK from image
-
-        if (error) throw error;
-
-        // Update local data and UI
-        Object.assign(currentProfile, updates);
-        fillCompanyDisplay(currentProfile);
-        toggleCompanyEdit(false);
-        alert("Changes saved successfully!");
-    } catch (err) {
-        console.error("Save error:", err);
-        alert("Failed to save: " + err.message);
-    } finally {
-        saveBtn.disabled = false;
-        saveBtn.textContent = 'Save';
-    }
-}
-
 // Helper to fill the display text
 function fillCompanyDisplay(profile) {
     if(document.getElementById('dCompanyName')) 
@@ -594,32 +552,6 @@ async function uploadCompanyLogo(input) {
     }
 }
 
-function toggleCompanyEdit(isEditing) {
-    const editBtn = document.getElementById('editCompanyBtn');
-    const actionBtns = document.getElementById('editActionButtons');
-    const displayAbout = document.getElementById('companyDisplayAbout');
-    const editMode = document.getElementById('companyEditMode');
-
-    if (isEditing) {
-        document.getElementById('eCompanyName').value = document.getElementById('dCompanyName').innerText;
-        document.getElementById('eCompanyDesc').value = document.getElementById('dCompanyDesc').innerText;
-        
-        document.getElementById('eHeadquarters').value = document.getElementById('dHeadquarters').innerText;
-        document.getElementById('eTeamSize').value = document.getElementById('dTeamSize').innerText;
-        document.getElementById('eWebsite').value = document.getElementById('dWebsite').innerText;
-
-        editBtn.style.display = 'none';
-        actionBtns.style.display = 'flex';
-        displayAbout.style.display = 'none';
-        editMode.style.display = 'block';
-    } else {
-        editBtn.style.display = 'inline-block';
-        actionBtns.style.display = 'none';
-        displayAbout.style.display = 'block';
-        editMode.style.display = 'none';
-    }
-}
-
 async function saveCompanyProfile() {
     const session = getCurrentSession(); 
     if (!session) {
@@ -656,6 +588,8 @@ async function saveCompanyProfile() {
         document.getElementById('dTeamSize').innerText = updates.y_tunnus;
         document.getElementById('dWebsite').innerText = updates.website;
 
+        // Update local cache so toggleCompanyEdit pre-fills correctly next time
+        Object.assign(currentProfile, updates);
         toggleCompanyEdit(false);
         alert("Profile updated successfully!");
 
