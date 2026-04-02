@@ -500,24 +500,31 @@ async function handlePRHSearch(query) {
         }
     }, 400);
 }
-// Helper to fill the display text
 function fillCompanyDisplay(profile) {
-    if(document.getElementById('dCompanyName')) 
-        document.getElementById('dCompanyName').innerText = profile.company_name || '';
-    
-    if(document.getElementById('dCompanyDesc')) 
-        document.getElementById('dCompanyDesc').innerText = profile.description || '';
-    
-    if(document.getElementById('dWebsite')) 
-        document.getElementById('dWebsite').innerText = profile.website || '';
-    
-    if(document.getElementById('dHeadquarters')) 
-        document.getElementById('dHeadquarters').innerText = profile.city || '';
+  // 1. Company Name
+  if(document.getElementById('dCompanyName')) 
+      document.getElementById('dCompanyName').innerText = profile.company_name || 'Company Name';
 
-    if(document.getElementById('dTeamSize'))
-        document.getElementById('dTeamSize').innerText = profile.y_tunnus || 'Not set';
+  
+  // 3. Email (The new field)
+  if(document.getElementById('dEmail')) 
+      document.getElementById('dEmail').innerText = profile.email || 'Not set';
+
+  // 4. Website
+  if(document.getElementById('dWebsite')) {
+      const site = profile.website || '';
+      document.getElementById('dWebsite').innerText = site || 'Not set';
+      document.getElementById('dWebsite').href = site.startsWith('http') ? site : `https://${site}`;
+  }
+  
+  // 5. City/Headquarters
+  if(document.getElementById('dHeadquarters')) 
+      document.getElementById('dHeadquarters').innerText = profile.city || 'Not set';
+
+  // 6. Business ID
+  if(document.getElementById('dYTunnus'))
+      document.getElementById('dYTunnus').innerText = profile.y_tunnus || 'Not set';
 }
-
 
 
 async function saveCompanyProfile() {
@@ -616,7 +623,9 @@ async function openEditModal(id) {
       // Fill fields
       document.getElementById('pTitle').value = data.title || "";
       document.getElementById('pDesc').value = data.description || "";
+      document.getElementById('pRespon').value = data.responsibilities || "";
       document.getElementById('pReqs').value = data.requirements || "";
+      document.getElementById('pSalary').value = data.salary || "";
       document.getElementById('pStatus').value = data.status || "active";
       document.getElementById('pStart').value = data.period_start || "";
       document.getElementById('pEnd').value = data.period_end || "";
@@ -646,13 +655,15 @@ async function submitPosition() {
       company_id: currentProfile.company_id,
       title: document.getElementById('pTitle').value.trim(),
       description: document.getElementById('pDesc').value,
-      requirements: document.getElementById('pReqs').value,
-      status: document.getElementById('pStatus').value,
-      category_id: document.getElementById('pCategory').value ? parseInt(document.getElementById('pCategory').value) : null,
+      responsibilities: document.getElementById('pRespon') ? document.getElementById('pRespon').value : '',
+      salary: document.getElementById('pSalary').value.trim(),
+
       period_start: document.getElementById('pStart').value || null,
       period_end: document.getElementById('pEnd').value || null,
       is_open_ended: document.getElementById('pOpenEnded').checked
   };
+
+  
 
   submitBtn.disabled = true;
   submitBtn.innerText = "Saving...";
@@ -819,6 +830,9 @@ async function handleFormSubmit() {
       title: document.getElementById('pTitle').value.trim(),
       description: document.getElementById('pDesc').value,
       status: document.getElementById('pStatus').value,
+      responsibilities: document.getElementById('pRespon').value, // Matches your new DB line
+      requirements: document.getElementById('pReqs').value,
+      salary: document.getElementById('pSalary') ? document.getElementById('pSalary').value : '',
       category_id: document.getElementById('pCategory').value ? parseInt(document.getElementById('pCategory').value) : null,
       period_start: document.getElementById('pStart').value || null,
       period_end: document.getElementById('pEnd').value || null,
@@ -914,60 +928,47 @@ function fillApplications(applications) {
   }).join('');
 }
 
+/**
+ * Fetches city suggestions from Digitransit API
+ * @param {string} query - The city name being typed
+ */
 async function handleCityInput(query) {
-    const datalist = document.getElementById('citySuggestions');
-    if (!datalist) return;
+  const datalist = document.getElementById('citySuggestions');
+  const cleanQuery = query.trim();
 
-    // 1. CLEAR list immediately if query is too short
-    if (!query || query.length < 2) {
-        datalist.innerHTML = ''; 
-        return;
-    }
+  // Only search if 2 or more characters are typed
+  if (!cleanQuery || cleanQuery.length < 2) {
+      if (datalist) datalist.innerHTML = '';
+      return;
+  }
 
-    try {
-        // Broad search for speed, we filter the "city" part manually below
-        const url = `https://api.digitransit.fi/geocoding/v1/autocomplete?text=${encodeURIComponent(query)}&boundary.country=FIN&size=20`;
+  try {
+      const url = `https://api.digitransit.fi/geocoding/v1/autocomplete?text=${encodeURIComponent(cleanQuery)}&sources=oa,osm&layers=address,locality&digitransit-subscription-key=${DIGITRANSIT_API_KEY}`;
 
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: { 
-                'digitransit-subscription-key': DIGITRANSIT_API_KEY 
-            }
-        });
+      const response = await fetch(url);
+      const data = await response.json();
 
-        if (!response.ok) return;
+      if (datalist) {
+          datalist.innerHTML = ''; // Clear previous suggestions
 
-        const data = await response.json();
-        const uniqueCities = new Set();
-        
-        // 2. Clear previous options before adding new ones
-        datalist.innerHTML = ''; 
-
-        if (data.features) {
-            data.features.forEach(feature => {
-                const props = feature.properties;
-                
-                // 3. PRIORITY: Take the 'locality' (this is the actual City name)
-                const cityName = props.locality || props.name;
-
-                // 4. FILTER: If it has a number or a street ending, SKIP IT
-                const hasNumber = /\d/.test(cityName);
-                const isStreet = cityName.toLowerCase().endsWith('tie') || 
-                                 cityName.toLowerCase().endsWith('katu') || 
-                                 cityName.toLowerCase().endsWith('kuja');
-
-                if (!hasNumber && !isStreet && !uniqueCities.has(cityName)) {
-                    uniqueCities.add(cityName);
-                    
-                    const option = document.createElement('option');
-                    option.value = cityName;
-                    datalist.appendChild(option);
-                }
-            });
-        }
-    } catch (err) {
-        console.error('City Search Error:', err);
-    }
+          if (data.features && data.features.length > 0) {
+              // Filter and display unique city/locality names
+              const uniqueCities = new Set();
+              
+              data.features.forEach(feature => {
+                  const cityName = feature.properties.locality || feature.properties.name;
+                  if (cityName && !uniqueCities.has(cityName)) {
+                      uniqueCities.add(cityName);
+                      const option = document.createElement('option');
+                      option.value = cityName;
+                      datalist.appendChild(option);
+                  }
+              });
+          }
+      }
+  } catch (err) {
+      console.error("City Search Error:", err);
+  }
 }
 // ==========================================
 // EDIT MODE

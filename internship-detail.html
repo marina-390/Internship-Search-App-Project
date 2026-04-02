@@ -80,34 +80,23 @@
               </div>
             </div>
 
-            <!-- Description -->
             <div class="card-content">
-              <h3>About This Role</h3>
-              <p>
-                Add a description of the internship position here. Explain what the intern will be doing and what they can expect from this opportunity.
+              <h3>About As</h3>
+              <p id="pDesc" style="white-space: pre-wrap; color: var(--text-color);">
+                Loading role description...
               </p>
             </div>
-
-            <!-- Responsibilities -->
+            
             <div class="card-content">
               <h3>Responsibilities</h3>
-              <ul style="margin-left: 1.5rem;">
-                <li>Responsibility 1</li>
-                <li>Responsibility 2</li>
-                <li>Responsibility 3</li>
-                <li>Responsibility 4</li>
-              </ul>
+              <p id="displayResponsibilities" style="white-space: pre-wrap; color: var(--text-color);">
+                  Loading responsibilities...
+              </p>
             </div>
-
-            <!-- Requirements -->
+            
             <div class="card-content">
               <h3>Requirements</h3>
-              <ul style="margin-left: 1.5rem;">
-                <li>Requirement 1</li>
-                <li>Requirement 2</li>
-                <li>Requirement 3</li>
-                <li>Requirement 4</li>
-              </ul>
+              <p id="pReqs" style="white-space: pre-wrap;"></p> 
             </div>
 
             <!-- Application Button -->
@@ -131,11 +120,13 @@
   </div>
 
   <div id="companyDisplayMode" class="card-content">
-    <p id="dCompanyDesc">Add company description here...</p>
+    
+    <p id="dCompanyDesc" style="white-space: pre-wrap;">Add company description here...</p>
     <p>
-      <strong>Website:</strong> <span id="dWebsite">www.company.com</span><br>
-      <strong>Headquarters:</strong> <span id="dHeadquarters">Location</span><br>
-      <strong>Business ID (Y-Tunnus):</strong> <span id="dYTunnus">Number</span><br>
+      <strong>Email:</strong> <span id="dEmail"> No Added Email</span><br>
+      <strong>Website:</strong> <span id="dWebsite">No added Website</span><br>
+      <strong>Headquarters:</strong> <span id="dHeadquarters">No added Headquarters</span><br>
+      <strong>Business ID (Y-Tunnus):</strong> <span id="dYTunnus">No added Y</span><br>
     </p>
   </div>
 
@@ -266,29 +257,38 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js"></script>
   <script src="js/auth.js"></script>
-  <script src="js/profile.js"></script> 
+  <script src="js/profile.js"></script>
   <script src="js/script.js"></script>
+  <script src="js/internship-detail.js"></script>
   <script>
-    // Handle quick apply form submission
-    document.addEventListener('DOMContentLoaded', function() {
+    // Page init - load from URL param
+    document.addEventListener('DOMContentLoaded', async function() {
+      const positionId = getUrlParameter('id');
+      if (positionId) {
+        await loadInternshipDetail(positionId);
+      }
+      
+      // Existing form handlers...
       const quickApplyForm = document.getElementById('quickApplyForm');
       if (quickApplyForm) {
         quickApplyForm.addEventListener('submit', function(e) {
           e.preventDefault();
-          const fullName = document.getElementById('fullName').value;
-          alert(`Thank you, ${fullName}! Your application has been submitted.`);
-          this.reset();
+          const formData = new FormData(this);
+          if (window.currentPosition) {
+            alert(`Applied to ${window.currentPosition.title}!`);
+            this.reset();
+          }
         });
       }
 
-      // Handle favorite button on detail page
-      const detailFavoriteBtn = document.querySelector('.job-meta .favorite-btn');
-      if (detailFavoriteBtn) {
-        detailFavoriteBtn.addEventListener('click', function(e) {
+      // Favorite toggle
+      const favoriteBtns = document.querySelectorAll('.favorite-btn');
+      favoriteBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
           e.stopPropagation();
           this.textContent = this.textContent === '🤍' ? '❤️' : '🤍';
         });
-      }
+      });
     });
   </script>
 </body>
