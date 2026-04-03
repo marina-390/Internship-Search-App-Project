@@ -44,8 +44,19 @@ async function loadStudentProfile() {
     allCategories = categoriesRes.data || [];
 
     if (!profile) {
-      console.error('Profile not found');
-      return;
+      console.warn('Profile not found, creating new empty student profile');
+      const { data: newProfile, error: createError } = await supabaseClient
+        .from('student_profiles')
+        .insert({ user_id: session.userId, created_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+        .select('*')
+        .single();
+
+      if (createError) {
+        console.error('Failed to create student profile:', createError);
+        return;
+      }
+
+      profile = newProfile;
     }
 
     currentProfile = profile;
@@ -444,8 +455,10 @@ async function loadCompanyProfile() {
       currentProfile = profile; 
       fillCompanyDisplay(profile);
       fillCompanyLogo(profile);
+      fillCompanyCvInfo();
       await loadCompanyTeam();
       await loadCompanyPostings();
+      await loadCompanyApplications();
       fillTeamDisplay();
     }
   } catch (err) {
@@ -804,6 +817,50 @@ async function loadCompanyPostings() {
   }
 }
 
+async function loadCompanyApplications() {
+  const container = document.getElementById('companyApplicationsContainer');
+  if (!container || !currentProfile) return;
+
+  try {
+    const { data: positions, error: posErr } = await supabaseClient
+      .from('positions')
+      .select('position_id, title')
+      .eq('company_id', currentProfile.company_id);
+
+    if (posErr) throw posErr;
+
+    const positionIds = (positions || []).map(p => p.position_id);
+    if (!positionIds.length) {
+      container.innerHTML = '<p style="color: var(--text-light); text-align: center;">No applications yet.</p>';
+      return;
+    }
+
+    const { data: apps, error: appErr } = await supabaseClient
+      .from('applications')
+      .select('application_id, position_id, student_id, status, applied_at, positions(title)')
+      .in('position_id', positionIds)
+      .order('applied_at', { ascending: false });
+
+    if (appErr) throw appErr;
+
+    if (!apps || !apps.length) {
+      container.innerHTML = '<p style="color: var(--text-light); text-align: center;">No applications yet.</p>';
+      return;
+    }
+
+    container.innerHTML = apps.map(app => `
+      <div class="application-item">
+        <p style="margin:0; font-weight:600;">${app.positions?.title || 'Position'}</p>
+        <span class="status-badge status-${app.status}">${app.status}</span>
+        <p style="margin:0.25rem 0 0; font-size:0.8rem; color:var(--text-light);">${new Date(app.applied_at).toLocaleDateString()}</p>
+      </div>
+    `).join('');
+  } catch (err) {
+    console.error('Error loading company applications:', err);
+    container.innerHTML = '<p style="color: var(--text-light); text-align: center;">Unable to load applications.</p>';
+  }
+}
+
 // --- Toggle Edit for a specific job row ---
 function togglePostEdit(id, show) {
   document.getElementById(`view-mode-${id}`).style.display = show ? 'none' : 'block';
@@ -865,26 +922,46 @@ function updateNavLogo(url) {
 }
 
 function fillCompanyLogo(profile) {
-  const logoImg = document.getElementById('avatarImg');
-  const placeholder = document.getElementById('avatarPlaceholder');
-  
+  const avatarImg = document.getElementById('avatarImg');
+  const avatarPlaceholder = document.getElementById('avatarPlaceholder');
+  const companyLogoDiv = document.getElementById('companyLogoDiv');
+  const companyLogoPlaceholder = document.getElementById('companyLogoPlaceholder');
+
   if (profile && profile.logo_url) {
-      // Force refresh with timestamp
-      const freshUrl = `${profile.logo_url.split('?')[0]}?t=${new Date().getTime()}`;
-      
-      if (logoImg) {
-          logoImg.src = freshUrl;
-          logoImg.style.display = 'block';
-          logoImg.style.objectFit = 'cover';
-      }
-      if (placeholder) {
-          placeholder.style.display = 'none';
-      }
-      
-      // Refresh global navigation menu
-      if (typeof initUserMenu === 'function') {
-        initUserMenu();
-      }
+    const freshUrl = `${profile.logo_url.split('?')[0]}?t=${new Date().getTime()}`;
+
+    if (avatarImg) {
+      avatarImg.src = freshUrl;
+      avatarImg.style.display = 'block';
+      avatarImg.style.objectFit = 'cover';
+    }
+    if (avatarPlaceholder) {
+      avatarPlaceholder.style.display = 'none';
+    }
+
+    if (companyLogoDiv) {
+      companyLogoDiv.style.backgroundImage = `url('${freshUrl}')`;
+      companyLogoDiv.style.backgroundSize = 'cover';
+      companyLogoDiv.style.backgroundPosition = 'center';
+      companyLogoDiv.textContent = '';
+    }
+    if (companyLogoPlaceholder) {
+      companyLogoPlaceholder.style.display = 'none';
+    }
+
+    if (typeof initUserMenu === 'function') {
+      initUserMenu();
+    }
+    return;
+  }
+
+  // If profile has no logo, show placeholders
+  if (companyLogoDiv) {
+    companyLogoDiv.style.backgroundImage = '';
+    companyLogoDiv.textContent = '🏢';
+  }
+  if (companyLogoPlaceholder) {
+    companyLogoPlaceholder.style.display = '';
   }
 }
 // ==========================================
@@ -1056,10 +1133,11 @@ function toggleCompanyEdit(isEditing) {
 // SAVE PROFILE
 // ==========================================
 async function saveProfile() {
+  const saveBtn = document.getElementById('saveProfileBtn');
   const session = getCurrentSession();
   if (!session || !currentProfile) return;
 
-  const saveBtn = document.getElementById('saveProfileBtn');
+  
   saveBtn.disabled = true;
   saveBtn.textContent = 'Saving...';
 
@@ -1083,42 +1161,41 @@ async function saveProfile() {
     };
 
     // Update profile
-    const { error: profileError } = await supabaseClient
+    const { error: updateError } = await supabaseClient
       .from('student_profiles')
       .update(updates)
       .eq('id', currentProfile.id);
 
-    if (profileError) {
-      throw new Error('Error saving profile: ' + profileError.message);
+    if (updateError) {
+      throw new Error('Error saving profile: ' + updateError.message);
     }
 
     // Update categories: delete old, insert new
-    await supabaseClient
+    const { error: categoryDeleteError } = await supabaseClient
       .from('student_categories')
       .delete()
       .eq('student_id', currentProfile.id);
 
-    if (selectedCategoryIds.length > 0) {
-      const rows = selectedCategoryIds.map(catId => ({
-        student_id: currentProfile.id,
-        category_id: catId
-      }));
-      const { error: catError } = await supabaseClient
-        .from('student_categories')
-        .insert(rows);
-      
-      if (catError) console.error("Category save error:", catError);
+    if (categoryDeleteError) throw new Error('Category cleanup failed: ' + categoryDeleteError.message);
+
+    // 2. Save Categories (Optional/Safety check)
+    if (typeof selectedCategoryIds !== 'undefined') {
+        if (selectedCategoryIds.length > 0) {
+            const catRows = selectedCategoryIds.map(catId => ({ student_id: currentProfile.id, category_id: catId }));
+            const { error: categoryInsertError } = await supabaseClient.from('student_categories').insert(catRows);
+            if (categoryInsertError) throw new Error('Category insert failed: ' + categoryInsertError.message);
+        }
     }
-    // Save links
+
+    // 3. Save links
     await saveLinks();
 
-    // 6. UPDATE LOCAL STATE AND REFRESH UI
+    // 4. UPDATE LOCAL STATE AND REFRESH UI
     Object.assign(currentProfile, updates);
 
     fillDisplayMode(currentProfile, session);
     updateEducationDisplay(educationEntries);
     cancelEditMode();
-    
     alert('Profile saved successfully!');
 
   } catch (err) {
@@ -1480,7 +1557,7 @@ async function uploadLogo(input) {
 
     if (updateError) throw updateError;
 
-    currentProfile.logo_url = publicUrl;
+    currentProfile.logo_url = finalUrl;
     
     // Ensure this matches your UI update function name
     if (typeof fillCompanyLogo === 'function') {
@@ -1587,6 +1664,10 @@ function fillCvInfo() {
     renderCVList();
 }
 
+function fillCompanyCvInfo() {
+    renderCompanyCvList();
+}
+
 function renderCVList() {
   const container = document.getElementById('cvFileInfo');
   if (!container || !currentProfile || !currentProfile.cv_url) {
@@ -1615,6 +1696,73 @@ function renderCVList() {
     </div>
   `;
 }
+
+// ==========================================
+// COMPANY CV
+// ==========================================
+async function uploadCompanyCv(input) {
+  const file = input.files[0];
+  if (!file || !currentProfile) return;
+
+  const BUCKET_NAME = 'practice-files';
+  const safeName = file.name.replace(/[^a-z0-9.]/gi, '_').toLowerCase();
+  const filePath = `company_${currentProfile.company_id}/${Date.now()}_${safeName}`;
+
+  try {
+    const infoDiv = document.getElementById('companyCvFileInfo');
+    if (infoDiv) infoDiv.innerHTML = '<p class="text-muted">Uploading...</p>';
+
+    const { error: uploadError } = await supabaseClient.storage
+      .from(BUCKET_NAME)
+      .upload(filePath, file);
+    if (uploadError) throw uploadError;
+
+    const { data: urlData } = await supabaseClient.storage
+      .from(BUCKET_NAME)
+      .getPublicUrl(filePath);
+
+    currentProfile.company_cv_url = urlData.publicUrl;
+    currentProfile.company_cv_original_name = file.name;
+
+    const { error: updateError } = await supabaseClient
+      .from('Companies')
+      .update({ company_cv_url: urlData.publicUrl, company_cv_original_name: file.name })
+      .eq('company_id', currentProfile.company_id);
+
+    if (updateError) {
+      console.warn('Unable to store company CV info in DB (optional):', updateError.message);
+    }
+
+    renderCompanyCvList();
+    alert('Company document uploaded successfully!');
+  } catch (err) {
+    console.error('Company CV upload error:', err);
+    alert('Failed to upload company document: ' + err.message);
+    renderCompanyCvList();
+  }
+}
+
+function renderCompanyCvList() {
+  const container = document.getElementById('companyCvFileInfo');
+  if (!container || !currentProfile || !currentProfile.company_cv_url) {
+    if (container) container.innerHTML = '<p class="text-muted">No document uploaded yet.</p>';
+    return;
+  }
+
+  container.innerHTML = `
+    <div style="display: flex; align-items: center; justify-content: space-between; background: #f8f9fa; padding: 12px; border-radius: 8px; border: 1px solid #dee2e6;">
+      <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
+        <span>📄</span>
+        <span style="font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">
+          ${currentProfile.company_cv_original_name || 'CompanyProfile.pdf'}
+        </span>
+      </div>
+      <div style="display: flex; gap: 6px;">
+        <a href="${currentProfile.company_cv_url}" target="_blank" style="background: #007bff; color: white; padding: 4px 10px; border-radius: 4px; text-decoration: none; font-size: 0.8rem;">Download</a>
+      </div>
+    </div>`;
+}
+
 // ==========================================
 // DOWNLOAD CV
 // ==========================================
