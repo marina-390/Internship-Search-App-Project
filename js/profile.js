@@ -1697,50 +1697,6 @@ function renderCVList() {
   `;
 }
 
-// ==========================================
-// COMPANY CV
-// ==========================================
-async function uploadCompanyCv(input) {
-  const file = input.files[0];
-  if (!file || !currentProfile) return;
-
-  const BUCKET_NAME = 'practice-files';
-  const safeName = file.name.replace(/[^a-z0-9.]/gi, '_').toLowerCase();
-  const filePath = `company_${currentProfile.company_id}/${Date.now()}_${safeName}`;
-
-  try {
-    const infoDiv = document.getElementById('companyCvFileInfo');
-    if (infoDiv) infoDiv.innerHTML = '<p class="text-muted">Uploading...</p>';
-
-    const { error: uploadError } = await supabaseClient.storage
-      .from(BUCKET_NAME)
-      .upload(filePath, file);
-    if (uploadError) throw uploadError;
-
-    const { data: urlData } = await supabaseClient.storage
-      .from(BUCKET_NAME)
-      .getPublicUrl(filePath);
-
-    currentProfile.company_cv_url = urlData.publicUrl;
-    currentProfile.company_cv_original_name = file.name;
-
-    const { error: updateError } = await supabaseClient
-      .from('Companies')
-      .update({ company_cv_url: urlData.publicUrl, company_cv_original_name: file.name })
-      .eq('company_id', currentProfile.company_id);
-
-    if (updateError) {
-      console.warn('Unable to store company CV info in DB (optional):', updateError.message);
-    }
-
-    renderCompanyCvList();
-    alert('Company document uploaded successfully!');
-  } catch (err) {
-    console.error('Company CV upload error:', err);
-    alert('Failed to upload company document: ' + err.message);
-    renderCompanyCvList();
-  }
-}
 
 function renderCompanyCvList() {
   const container = document.getElementById('companyCvFileInfo');
