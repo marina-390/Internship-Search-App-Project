@@ -210,56 +210,28 @@ function getUrlParameter(name) {
   return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
 }
 
-// Search/Filter functionality
-const searchInput = document.getElementById('searchInput');
-const filterBtn = document.getElementById('filterBtn');
-
-if (searchInput && filterBtn) {
-  searchInput.addEventListener('keyup', filterJobs);
-  filterBtn.addEventListener('click', filterJobs);
-}
+// Search/Filter functionality - now handled by attachFilterListeners on internships page
 
 function filterJobs() {
   const searchText = searchInput ? searchInput.value.toLowerCase() : '';
+  const categoryFilter = document.getElementById('filterCategory') ? document.getElementById('filterCategory').value : '';
   const jobCards = document.querySelectorAll('.job-card');
 
   jobCards.forEach(card => {
     const title = card.querySelector('.job-title').textContent.toLowerCase();
     const company = card.querySelector('.job-company').textContent.toLowerCase();
+    const category = card.querySelector('.badge:last-child').textContent.toLowerCase();
 
-    if (title.includes(searchText) || company.includes(searchText)) {
+    const matchesSearch = title.includes(searchText) || company.includes(searchText);
+    const matchesCategory = !categoryFilter || category.includes(categoryFilter.toLowerCase());
+
+    if (matchesSearch && matchesCategory) {
       card.style.display = '';
     } else {
       card.style.display = 'none';
     }
   });
 }
-
-// Job Card Navigation
-const jobCards = document.querySelectorAll('.job-card');
-jobCards.forEach(card => {
-  card.addEventListener('click', function() {
-    const jobId = this.getAttribute('data-job-id');
-    if (jobId) {
-      window.location.href = `internship-detail.html?id=${jobId}`;
-    }
-  });
-});
-
-// Add to Favorites (Demo)
-const favoriteButtons = document.querySelectorAll('.job-card .favorite-btn');
-favoriteButtons.forEach(btn => {
-  btn.addEventListener('click', function(e) {
-    e.stopPropagation();
-    this.classList.toggle('active');
-    const jobTitle = this.closest('.job-card').querySelector('.job-title').textContent;
-    if (this.classList.contains('active')) {
-      alert(`Added "${jobTitle}" to favorites!`);
-    } else {
-      alert(`Removed "${jobTitle}" from favorites!`);
-    }
-  });
-});
 
 // Clear form errors on input
 document.addEventListener('input', function(e) {
@@ -269,6 +241,217 @@ document.addEventListener('input', function(e) {
     }
   }
 });
+
+// ==========================================
+// LOAD CATEGORIES FOR FILTER
+// ==========================================
+async function loadCategoriesForFilter() {
+  const filterCategory = document.getElementById('filterCategory');
+  if (!filterCategory) return;
+
+  try {
+    const { data: categories, error } = await supabaseClient
+      .from('job_categories')
+      .select('category_id, title')
+      .order('title');
+
+    if (error) throw error;
+
+    // Clear existing options except "All Categories"
+    filterCategory.innerHTML = '<option value="">All Categories</option>';
+
+    // Add category options
+    categories.forEach(cat => {
+      const option = document.createElement('option');
+      option.value = cat.title;
+      option.textContent = cat.title;
+      filterCategory.appendChild(option);
+    });
+  } catch (err) {
+    console.error('Error loading categories:', err);
+  }
+}
+
+// ==========================================
+// LOAD INTERNSHIPS
+// ==========================================
+async function loadInternships() {
+  const jobsList = document.getElementById('jobsList');
+  const noResults = document.getElementById('noResults');
+  if (!jobsList) return;
+
+  try {
+    // Load categories for filter
+    await loadCategoriesForFilter();
+
+    // Fetch all active positions
+    const { data: positions, error } = await supabaseClient
+      .from('positions')
+      .select(`
+        position_id,
+        title,
+        description,
+        requirements,
+        period_start,
+        period_end,
+        is_open_ended,
+        status,
+        company_id,
+        category_id
+      `)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Supabase positions query error:', error);
+      throw error;
+    }
+
+    // Load company and category names for the list (less relational dependency)
+    const companyIds = [...new Set((positions || []).map(p => p.company_id).filter(Boolean))];
+    let companyMap = {};
+    if (companyIds.length > 0) {
+      const { data: companies, error: companyError } = await supabaseClient
+        .from('Companies')
+        .select('company_id, company_name, city')
+        .in('company_id', companyIds);
+
+      if (companyError) {
+        console.error('Supabase companies query error:', companyError);
+        throw companyError;
+      }
+      companyMap = (companies || []).reduce((acc, comp) => ({ ...acc, [comp.company_id]: comp }), {});
+    }
+
+    const categoryIds = [...new Set((positions || []).map(p => p.category_id).filter(Boolean))];
+    let categoryMap = {};
+    if (categoryIds.length > 0) {
+      const { data: categories, error: categoryError } = await supabaseClient
+        .from('job_categories')
+        .select('category_id, title')
+        .in('category_id', categoryIds);
+
+      if (categoryError) {
+        console.error('Supabase job_categories query error:', categoryError);
+        throw categoryError;
+      }
+      categoryMap = (categories || []).reduce((acc, cat) => ({ ...acc, [cat.category_id]: cat.title }), {});
+    }
+
+    if (!positions || positions.length === 0) {
+      jobsList.innerHTML = '';
+      if (noResults) noResults.style.display = 'block';
+      return;
+    }
+
+    // Hide no results message
+    if (noResults) noResults.style.display = 'none';
+
+    // Generate job cards
+    jobsList.innerHTML = positions.map(pos => {
+      const company = companyMap[pos.company_id] || {};
+      const companyName = company.company_name || 'Unknown Company';
+      const location = company.city || 'Remote';
+      const category = categoryMap[pos.category_id] || 'General';
+
+      // Format period
+      let periodText = 'Flexible';
+      if (pos.period_start && pos.period_end) {
+        const start = new Date(pos.period_start).toLocaleDateString();
+        const end = new Date(pos.period_end).toLocaleDateString();
+        periodText = `${start} - ${end}`;
+      } else if (pos.is_open_ended) {
+        periodText = 'Open-ended';
+      }
+
+      return `
+        <div class="job-card" data-job-id="${pos.position_id}">
+          <div class="job-meta" style="display: flex; justify-content: space-between; align-items: start;">
+            <div>
+              <h3 class="job-title">${pos.title}</h3>
+              <p class="job-company">${companyName}</p>
+            </div>
+            <button class="favorite-btn" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">🤍</button>
+          </div>
+          
+          <div class="job-meta">
+            <span class="badge badge-primary">${location}</span>
+            <span class="badge badge-secondary">${periodText}</span>
+            <span class="badge">${category}</span>
+          </div>
+
+          <p class="job-description">
+            ${pos.description ? pos.description.substring(0, 150) + (pos.description.length > 150 ? '...' : '') : 'No description available.'}
+          </p>
+
+          <div class="job-footer">
+            <a href="internship-detail.html?id=${pos.position_id}" class="btn btn-small btn-primary">View Details</a>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Re-attach event listeners for job cards
+    attachJobCardListeners();
+
+  } catch (err) {
+    console.error('Error loading internships:', err);
+    jobsList.innerHTML = '<p class="text-center text-muted">Error loading internships. Please try again later.</p>';
+  }
+}
+
+// ==========================================
+// ATTACH JOB CARD LISTENERS
+// ==========================================
+function attachJobCardListeners() {
+  // Job Card Navigation
+  const jobCards = document.querySelectorAll('.job-card');
+  jobCards.forEach(card => {
+    card.addEventListener('click', function(e) {
+      // Don't navigate if clicking favorite button
+      if (e.target.classList.contains('favorite-btn')) return;
+      
+      const jobId = this.getAttribute('data-job-id');
+      if (jobId) {
+        window.location.href = `internship-detail.html?id=${jobId}`;
+      }
+    });
+  });
+
+  // Add to Favorites (Demo)
+  const favoriteButtons = document.querySelectorAll('.job-card .favorite-btn');
+  favoriteButtons.forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      this.classList.toggle('active');
+      const jobTitle = this.closest('.job-card').querySelector('.job-title').textContent;
+      if (this.classList.contains('active')) {
+        alert(`Added "${jobTitle}" to favorites!`);
+      } else {
+        alert(`Removed "${jobTitle}" from favorites!`);
+      }
+    });
+  });
+}
+
+// ==========================================
+// ATTACH FILTER LISTENERS
+// ==========================================
+function attachFilterListeners() {
+  const searchInput = document.getElementById('searchInput');
+  const filterBtn = document.getElementById('filterBtn');
+  const filterCategory = document.getElementById('filterCategory');
+
+  if (searchInput) {
+    searchInput.addEventListener('keyup', filterJobs);
+  }
+  if (filterBtn) {
+    filterBtn.addEventListener('click', filterJobs);
+  }
+  if (filterCategory) {
+    filterCategory.addEventListener('change', filterJobs);
+  }
+}
 
 // ==========================================
 // INITIALIZATION
@@ -283,5 +466,11 @@ document.addEventListener('DOMContentLoaded', function() {
   // Load student profile if on that page
   if (window.location.pathname.includes('student-profile.html')) {
     loadStudentProfile();
+  }
+
+  // Load internships if on that page
+  if (window.location.pathname.includes('internships.html')) {
+    loadInternships();
+    attachFilterListeners();
   }
 });

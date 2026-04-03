@@ -50,10 +50,7 @@
         <div>
           <select id="filterCategory" style="margin-bottom: 0;">
             <option value="">All Categories</option>
-            <option value="Engineering">Engineering</option>
-            <option value="Design">Design</option>
-            <option value="Marketing">Marketing</option>
-            <option value="Business">Business</option>
+            <!-- Categories will be loaded dynamically -->
           </select>
         </div>
         <div>
@@ -67,31 +64,7 @@
   <section class="section">
     <div class="container">
       <div id="jobsList" class="grid" style="grid-template-columns: 1fr;">
-        <!-- Job Card Template -->
-        <div class="job-card" data-job-id="1">
-          <div class="job-meta" style="display: flex; justify-content: space-between; align-items: start;">
-            <div>
-              <h3 class="job-title">Position Title</h3>
-              <p class="job-company">Company Name</p>
-            </div>
-            <button class="favorite-btn" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">🤍</button>
-          </div>
-          
-          <div class="job-meta">
-            <span class="badge badge-primary">Location</span>
-            <span class="badge badge-secondary">Duration</span>
-            <span class="badge">Skills</span>
-          </div>
-
-          <p class="job-description">
-            Brief description of the internship position and what the intern will be doing.
-          </p>
-
-          <div class="job-footer">
-            <span class="job-salary">$XX/hr - $XX/hr</span>
-            <a href="internship-detail.html?id=1" class="btn btn-small btn-primary">View Details</a>
-          </div>
-        </div>
+        <!-- Dynamic job cards will be loaded here -->
       </div>
 
       <!-- No Results Message -->
