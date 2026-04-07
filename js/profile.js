@@ -44,8 +44,19 @@ async function loadStudentProfile() {
     allCategories = categoriesRes.data || [];
 
     if (!profile) {
-      console.error('Profile not found');
-      return;
+      console.warn('Profile not found, creating new empty student profile');
+      const { data: newProfile, error: createError } = await supabaseClient
+        .from('student_profiles')
+        .insert({ user_id: session.userId, created_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+        .select('*')
+        .single();
+
+      if (createError) {
+        console.error('Failed to create student profile:', createError);
+        return;
+      }
+
+      profile = newProfile;
     }
 
     currentProfile = profile;
@@ -444,8 +455,10 @@ async function loadCompanyProfile() {
       currentProfile = profile; 
 fillCompanyDisplay(profile, session);
       fillCompanyLogo(profile);
+      fillCompanyCvInfo();
       await loadCompanyTeam();
       await loadCompanyPostings();
+      await loadCompanyApplications();
       fillTeamDisplay();
     }
   } catch (err) {
@@ -500,35 +513,25 @@ async function handlePRHSearch(query) {
         }
     }, 400);
 }
-function fillCompanyDisplay(profile, session) {
-  // 1. Company Name
-  if(document.getElementById('dCompanyName')) 
-    document.getElementById('dCompanyName').innerText = profile.company_name || 'Company Name';
-  
-  // Email field
-  if(document.getElementById('dCompanyEmail')) 
-      document.getElementById('dCompanyEmail').innerText = profile.email || session.login || 'Not set';
+// Helper to fill the display text
+function fillCompanyDisplay(profile) {
+    if(document.getElementById('dCompanyName')) 
+        document.getElementById('dCompanyName').innerText = profile.company_name || '';
+    
+    if(document.getElementById('dCompanyDesc')) 
+        document.getElementById('dCompanyDesc').innerText = profile.description || '';
+    
+    if(document.getElementById('dWebsite')) 
+        document.getElementById('dWebsite').innerText = profile.website || '';
+    
+    if(document.getElementById('dHeadquarters')) 
+        document.getElementById('dHeadquarters').innerText = profile.city || '';
 
-  
-
-
-  // 4. Website
-  if(document.getElementById('dWebsite')) {
-      const site = profile.website || '';
-      document.getElementById('dWebsite').innerText = site || 'Not set';
-      document.getElementById('dWebsite').href = site.startsWith('http') ? site : `https://${site}`;
-  }
-  
-  // 5. City/Headquarters
-  if(document.getElementById('dHeadquarters')) 
-      document.getElementById('dHeadquarters').innerText = profile.city || 'Not set';
-  if(document.getElementById('dTeamSize')) 
-      document.getElementById('dTeamSize').innerText = profile.y_tunnus || 'Business ID';
-
-  // 6. Business ID
-  if(document.getElementById('dYTunnus'))
-      document.getElementById('dYTunnus').innerText = profile.y_tunnus || 'Not set';
+    if(document.getElementById('dTeamSize'))
+        document.getElementById('dTeamSize').innerText = profile.y_tunnus || 'Not set';
 }
+
+
 
 
 async function saveCompanyProfile() { 
@@ -640,9 +643,7 @@ async function openEditModal(id) {
       // Fill fields
       document.getElementById('pTitle').value = data.title || "";
       document.getElementById('pDesc').value = data.description || "";
-      document.getElementById('pRespon').value = data.responsibilities || "";
       document.getElementById('pReqs').value = data.requirements || "";
-      document.getElementById('pSalary').value = data.salary || "";
       document.getElementById('pStatus').value = data.status || "active";
       document.getElementById('pStart').value = data.period_start || "";
       document.getElementById('pEnd').value = data.period_end || "";
@@ -672,15 +673,13 @@ async function submitPosition() {
       company_id: currentProfile.company_id,
       title: document.getElementById('pTitle').value.trim(),
       description: document.getElementById('pDesc').value,
-      responsibilities: document.getElementById('pRespon') ? document.getElementById('pRespon').value : '',
-      salary: document.getElementById('pSalary').value.trim(),
-
+      requirements: document.getElementById('pReqs').value,
+      status: document.getElementById('pStatus').value,
+      category_id: document.getElementById('pCategory').value ? parseInt(document.getElementById('pCategory').value) : null,
       period_start: document.getElementById('pStart').value || null,
       period_end: document.getElementById('pEnd').value || null,
       is_open_ended: document.getElementById('pOpenEnded').checked
   };
-
-  
 
   submitBtn.disabled = true;
   submitBtn.innerText = "Saving...";
@@ -832,6 +831,50 @@ async function loadCompanyPostings() {
   }
 }
 
+async function loadCompanyApplications() {
+  const container = document.getElementById('companyApplicationsContainer');
+  if (!container || !currentProfile) return;
+
+  try {
+    const { data: positions, error: posErr } = await supabaseClient
+      .from('positions')
+      .select('position_id, title')
+      .eq('company_id', currentProfile.company_id);
+
+    if (posErr) throw posErr;
+
+    const positionIds = (positions || []).map(p => p.position_id);
+    if (!positionIds.length) {
+      container.innerHTML = '<p style="color: var(--text-light); text-align: center;">No applications yet.</p>';
+      return;
+    }
+
+    const { data: apps, error: appErr } = await supabaseClient
+      .from('applications')
+      .select('application_id, position_id, student_id, status, applied_at, positions(title)')
+      .in('position_id', positionIds)
+      .order('applied_at', { ascending: false });
+
+    if (appErr) throw appErr;
+
+    if (!apps || !apps.length) {
+      container.innerHTML = '<p style="color: var(--text-light); text-align: center;">No applications yet.</p>';
+      return;
+    }
+
+    container.innerHTML = apps.map(app => `
+      <div class="application-item">
+        <p style="margin:0; font-weight:600;">${app.positions?.title || 'Position'}</p>
+        <span class="status-badge status-${app.status}">${app.status}</span>
+        <p style="margin:0.25rem 0 0; font-size:0.8rem; color:var(--text-light);">${new Date(app.applied_at).toLocaleDateString()}</p>
+      </div>
+    `).join('');
+  } catch (err) {
+    console.error('Error loading company applications:', err);
+    container.innerHTML = '<p style="color: var(--text-light); text-align: center;">Unable to load applications.</p>';
+  }
+}
+
 // --- Toggle Edit for a specific job row ---
 function togglePostEdit(id, show) {
   document.getElementById(`view-mode-${id}`).style.display = show ? 'none' : 'block';
@@ -847,9 +890,6 @@ async function handleFormSubmit() {
       title: document.getElementById('pTitle').value.trim(),
       description: document.getElementById('pDesc').value,
       status: document.getElementById('pStatus').value,
-      responsibilities: document.getElementById('pRespon').value, // Matches your new DB line
-      requirements: document.getElementById('pReqs').value,
-      salary: document.getElementById('pSalary') ? document.getElementById('pSalary').value : '',
       category_id: document.getElementById('pCategory').value ? parseInt(document.getElementById('pCategory').value) : null,
       period_start: document.getElementById('pStart').value || null,
       period_end: document.getElementById('pEnd').value || null,
@@ -896,26 +936,46 @@ function updateNavLogo(url) {
 }
 
 function fillCompanyLogo(profile) {
-  const logoImg = document.getElementById('avatarImg');
-  const placeholder = document.getElementById('avatarPlaceholder');
-  
+  const avatarImg = document.getElementById('avatarImg');
+  const avatarPlaceholder = document.getElementById('avatarPlaceholder');
+  const companyLogoDiv = document.getElementById('companyLogoDiv');
+  const companyLogoPlaceholder = document.getElementById('companyLogoPlaceholder');
+
   if (profile && profile.logo_url) {
-      // Force refresh with timestamp
-      const freshUrl = `${profile.logo_url.split('?')[0]}?t=${new Date().getTime()}`;
-      
-      if (logoImg) {
-          logoImg.src = freshUrl;
-          logoImg.style.display = 'block';
-          logoImg.style.objectFit = 'cover';
-      }
-      if (placeholder) {
-          placeholder.style.display = 'none';
-      }
-      
-      // Refresh global navigation menu
-      if (typeof initUserMenu === 'function') {
-        initUserMenu();
-      }
+    const freshUrl = `${profile.logo_url.split('?')[0]}?t=${new Date().getTime()}`;
+
+    if (avatarImg) {
+      avatarImg.src = freshUrl;
+      avatarImg.style.display = 'block';
+      avatarImg.style.objectFit = 'cover';
+    }
+    if (avatarPlaceholder) {
+      avatarPlaceholder.style.display = 'none';
+    }
+
+    if (companyLogoDiv) {
+      companyLogoDiv.style.backgroundImage = `url('${freshUrl}')`;
+      companyLogoDiv.style.backgroundSize = 'cover';
+      companyLogoDiv.style.backgroundPosition = 'center';
+      companyLogoDiv.textContent = '';
+    }
+    if (companyLogoPlaceholder) {
+      companyLogoPlaceholder.style.display = 'none';
+    }
+
+    if (typeof initUserMenu === 'function') {
+      initUserMenu();
+    }
+    return;
+  }
+
+  // If profile has no logo, show placeholders
+  if (companyLogoDiv) {
+    companyLogoDiv.style.backgroundImage = '';
+    companyLogoDiv.textContent = '🏢';
+  }
+  if (companyLogoPlaceholder) {
+    companyLogoPlaceholder.style.display = '';
   }
 }
 // ==========================================
@@ -1075,10 +1135,11 @@ function toggleCompanyEdit(isEditing) {
 // SAVE PROFILE
 // ==========================================
 async function saveProfile() {
+  const saveBtn = document.getElementById('saveProfileBtn');
   const session = getCurrentSession();
   if (!session || !currentProfile) return;
 
-  const saveBtn = document.getElementById('saveProfileBtn');
+  
   saveBtn.disabled = true;
   saveBtn.textContent = 'Saving...';
 
@@ -1102,42 +1163,41 @@ async function saveProfile() {
     };
 
     // Update profile
-    const { error: profileError } = await supabaseClient
+    const { error: updateError } = await supabaseClient
       .from('student_profiles')
       .update(updates)
       .eq('id', currentProfile.id);
 
-    if (profileError) {
-      throw new Error('Error saving profile: ' + profileError.message);
+    if (updateError) {
+      throw new Error('Error saving profile: ' + updateError.message);
     }
 
     // Update categories: delete old, insert new
-    await supabaseClient
+    const { error: categoryDeleteError } = await supabaseClient
       .from('student_categories')
       .delete()
       .eq('student_id', currentProfile.id);
 
-    if (selectedCategoryIds.length > 0) {
-      const rows = selectedCategoryIds.map(catId => ({
-        student_id: currentProfile.id,
-        category_id: catId
-      }));
-      const { error: catError } = await supabaseClient
-        .from('student_categories')
-        .insert(rows);
-      
-      if (catError) console.error("Category save error:", catError);
+    if (categoryDeleteError) throw new Error('Category cleanup failed: ' + categoryDeleteError.message);
+
+    // 2. Save Categories (Optional/Safety check)
+    if (typeof selectedCategoryIds !== 'undefined') {
+        if (selectedCategoryIds.length > 0) {
+            const catRows = selectedCategoryIds.map(catId => ({ student_id: currentProfile.id, category_id: catId }));
+            const { error: categoryInsertError } = await supabaseClient.from('student_categories').insert(catRows);
+            if (categoryInsertError) throw new Error('Category insert failed: ' + categoryInsertError.message);
+        }
     }
-    // Save links
+
+    // 3. Save links
     await saveLinks();
 
-    // 6. UPDATE LOCAL STATE AND REFRESH UI
+    // 4. UPDATE LOCAL STATE AND REFRESH UI
     Object.assign(currentProfile, updates);
 
     fillDisplayMode(currentProfile, session);
     updateEducationDisplay(educationEntries);
     cancelEditMode();
-    
     alert('Profile saved successfully!');
 
   } catch (err) {
@@ -1499,7 +1559,7 @@ async function uploadLogo(input) {
 
     if (updateError) throw updateError;
 
-    currentProfile.logo_url = publicUrl;
+    currentProfile.logo_url = finalUrl;
     
     // Ensure this matches your UI update function name
     if (typeof fillCompanyLogo === 'function') {
@@ -1606,6 +1666,10 @@ function fillCvInfo() {
     renderCVList();
 }
 
+function fillCompanyCvInfo() {
+    renderCompanyCvList();
+}
+
 function renderCVList() {
   const container = document.getElementById('cvFileInfo');
   if (!container || !currentProfile || !currentProfile.cv_url) {
@@ -1634,6 +1698,29 @@ function renderCVList() {
     </div>
   `;
 }
+
+
+function renderCompanyCvList() {
+  const container = document.getElementById('companyCvFileInfo');
+  if (!container || !currentProfile || !currentProfile.company_cv_url) {
+    if (container) container.innerHTML = '<p class="text-muted">No document uploaded yet.</p>';
+    return;
+  }
+
+  container.innerHTML = `
+    <div style="display: flex; align-items: center; justify-content: space-between; background: #f8f9fa; padding: 12px; border-radius: 8px; border: 1px solid #dee2e6;">
+      <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
+        <span>📄</span>
+        <span style="font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">
+          ${currentProfile.company_cv_original_name || 'CompanyProfile.pdf'}
+        </span>
+      </div>
+      <div style="display: flex; gap: 6px;">
+        <a href="${currentProfile.company_cv_url}" target="_blank" style="background: #007bff; color: white; padding: 4px 10px; border-radius: 4px; text-decoration: none; font-size: 0.8rem;">Download</a>
+      </div>
+    </div>`;
+}
+
 // ==========================================
 // DOWNLOAD CV
 // ==========================================
