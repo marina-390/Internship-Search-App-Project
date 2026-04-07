@@ -253,24 +253,12 @@
               <div class="form-row">
                 <div class="form-group" style="margin-bottom: 1.5rem;">
                   <label for="firstName">First Name</label>
-                  <input 
-                    type="text" 
-                    id="firstName" 
-                    name="firstName" 
-                    placeholder="John" 
-                    required
-                  />
+                  <input type="text" id="firstName" name="firstName" placeholder="John" required maxlength="15" />
                 </div>
 
                 <div class="form-group" style="margin-bottom: 1.5rem;">
                   <label for="lastName">Last Name</label>
-                  <input 
-                    type="text" 
-                    id="lastName" 
-                    name="lastName" 
-                    placeholder="Doe" 
-                    required
-                  />
+                  <input type="text" id="lastName" name="lastName" placeholder="Doe" required maxlength="15" />
                 </div>
               </div>
 
@@ -349,7 +337,9 @@
                     👁️
                   </button>
                 </div>
-                <small class="text-muted">Password must be at least 6 characters long</small>
+                <small class="text-muted">
+                  Password: Min 8 chars, 2 numbers (0-9), and 2 special symbols (!!, @#, etc.)
+                </small>
               </div>
 
               <div class="form-group">
@@ -642,6 +632,41 @@
     const confirmPassword = document.getElementById('confirmPassword').value;
     const roleValue = document.querySelector('input[name="role"]:checked').value;
     const submitBtn = event.target.querySelector('button[type="submit"]');
+
+    if (firstName.length > 15 || lastName.length > 15) {
+        alert('First Name and Last Name must not exceed 15 characters.');
+        return;
+    }
+
+    // 2. Email "@" Check
+    if (!email.includes('@')) {
+        alert('Please enter a valid email address containing "@".');
+        return;
+    }
+
+    // 3. Password Complexity Check
+    // Rules: Min 8 chars, 2 numbers, 2 special chars
+    const hasMinLength = password.length >= 8;
+    const digitCount = (password.match(/\d/g) || []).length; // Counts numbers
+    const specialCharCount = (password.match(/[!@#$%^&*(),.?":{}|<>]/g) || []).length; // Counts symbols
+
+    if (!hasMinLength) {
+        alert('Password must be at least 8 characters long.');
+        return;
+    }
+    if (digitCount < 2) {
+        alert('Password must contain at least 2 numbers (0-9).');
+        return;
+    }
+    if (specialCharCount < 2) {
+        alert('Password must contain at least 2 special characters (e.g., !!, .., @#).');
+        return;
+    }
+
+    if (password !== confirmPassword) {
+        alert('Passwords do not match.');
+        return;
+    }
 
     // Role: 1 = student, 2 = employer
     const role = roleValue === 'student' ? 1 : 2;

@@ -453,7 +453,7 @@ async function loadCompanyProfile() {
     if (error) throw error;
     if (profile) {
       currentProfile = profile; 
-      fillCompanyDisplay(profile);
+fillCompanyDisplay(profile, session);
       fillCompanyLogo(profile);
       fillCompanyCvInfo();
       await loadCompanyTeam();
@@ -533,7 +533,8 @@ function fillCompanyDisplay(profile) {
 
 
 
-async function saveCompanyProfile() {
+
+async function saveCompanyProfile() { 
     const session = getCurrentSession(); 
     if (!session) {
         alert("You must be logged in to save.");
@@ -563,11 +564,24 @@ async function saveCompanyProfile() {
 
         if (error) throw error;
 
+        const emailInput = document.getElementById('eCompanyEmail');
+        if (emailInput && emailInput.value.trim() && session?.user?.id) {
+            await supabaseClient
+                .from('Users')
+                .update({ email: emailInput.value.trim() })
+                .eq('id', session.user.id);
+        }
+
         document.getElementById('dCompanyName').innerText = updates.company_name;
         document.getElementById('dCompanyDesc').innerText = updates.description;
-        document.getElementById('dHeadquarters').innerText = updates.city;
+  document.getElementById('dHeadquarters').innerText = updates.city;
         document.getElementById('dTeamSize').innerText = updates.y_tunnus;
+        if(document.getElementById('dYTunnus'))
+            document.getElementById('dYTunnus').innerText = updates.y_tunnus;
         document.getElementById('dWebsite').innerText = updates.website;
+        if (document.getElementById('dCompanyEmail')) {
+            document.getElementById('dCompanyEmail').innerText = emailInput ? emailInput.value.trim() : session.login || 'Not set';
+        }
 
         // Update local cache so toggleCompanyEdit pre-fills correctly next time
         Object.assign(currentProfile, updates);
@@ -991,60 +1005,47 @@ function fillApplications(applications) {
   }).join('');
 }
 
+/**
+ * Fetches city suggestions from Digitransit API
+ * @param {string} query - The city name being typed
+ */
 async function handleCityInput(query) {
-    const datalist = document.getElementById('citySuggestions');
-    if (!datalist) return;
+  const datalist = document.getElementById('citySuggestions');
+  const cleanQuery = query.trim();
 
-    // 1. CLEAR list immediately if query is too short
-    if (!query || query.length < 2) {
-        datalist.innerHTML = ''; 
-        return;
-    }
+  // Only search if 2 or more characters are typed
+  if (!cleanQuery || cleanQuery.length < 2) {
+      if (datalist) datalist.innerHTML = '';
+      return;
+  }
 
-    try {
-        // Broad search for speed, we filter the "city" part manually below
-        const url = `https://api.digitransit.fi/geocoding/v1/autocomplete?text=${encodeURIComponent(query)}&boundary.country=FIN&size=20`;
+  try {
+      const url = `https://api.digitransit.fi/geocoding/v1/autocomplete?text=${encodeURIComponent(cleanQuery)}&sources=oa,osm&layers=address,locality&digitransit-subscription-key=${DIGITRANSIT_API_KEY}`;
 
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: { 
-                'digitransit-subscription-key': DIGITRANSIT_API_KEY 
-            }
-        });
+      const response = await fetch(url);
+      const data = await response.json();
 
-        if (!response.ok) return;
+      if (datalist) {
+          datalist.innerHTML = ''; // Clear previous suggestions
 
-        const data = await response.json();
-        const uniqueCities = new Set();
-        
-        // 2. Clear previous options before adding new ones
-        datalist.innerHTML = ''; 
-
-        if (data.features) {
-            data.features.forEach(feature => {
-                const props = feature.properties;
-                
-                // 3. PRIORITY: Take the 'locality' (this is the actual City name)
-                const cityName = props.locality || props.name;
-
-                // 4. FILTER: If it has a number or a street ending, SKIP IT
-                const hasNumber = /\d/.test(cityName);
-                const isStreet = cityName.toLowerCase().endsWith('tie') || 
-                                 cityName.toLowerCase().endsWith('katu') || 
-                                 cityName.toLowerCase().endsWith('kuja');
-
-                if (!hasNumber && !isStreet && !uniqueCities.has(cityName)) {
-                    uniqueCities.add(cityName);
-                    
-                    const option = document.createElement('option');
-                    option.value = cityName;
-                    datalist.appendChild(option);
-                }
-            });
-        }
-    } catch (err) {
-        console.error('City Search Error:', err);
-    }
+          if (data.features && data.features.length > 0) {
+              // Filter and display unique city/locality names
+              const uniqueCities = new Set();
+              
+              data.features.forEach(feature => {
+                  const cityName = feature.properties.locality || feature.properties.name;
+                  if (cityName && !uniqueCities.has(cityName)) {
+                      uniqueCities.add(cityName);
+                      const option = document.createElement('option');
+                      option.value = cityName;
+                      datalist.appendChild(option);
+                  }
+              });
+          }
+      }
+  } catch (err) {
+      console.error("City Search Error:", err);
+  }
 }
 // ==========================================
 // EDIT MODE
@@ -1107,6 +1108,7 @@ function toggleCompanyEdit(isEditing) {
     if (isEditing) {
         // 1. Copy current text INTO the input boxes so you can edit them
         document.getElementById('eCompanyName').value = document.getElementById('dCompanyName').innerText;
+        document.getElementById('eCompanyEmail').value = document.getElementById('dCompanyEmail').innerText;
         document.getElementById('eCompanyDesc').value = document.getElementById('dCompanyDesc').innerText;
         document.getElementById('eHeadquarters').value = document.getElementById('dHeadquarters').innerText;
         document.getElementById('eTeamSize').value = document.getElementById('dTeamSize').innerText;

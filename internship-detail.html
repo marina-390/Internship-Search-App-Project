@@ -48,9 +48,8 @@
                   <h1 class="card-title" style="margin: 0;">Position Title</h1>
                   <p class="text-muted" style="margin: 0.5rem 0;">Company Name</p>
                   <div class="job-meta" style="margin-top: 1rem;">
-                    <span class="badge badge-primary">Location</span>
-                    <span class="badge badge-secondary">Duration</span>
-                    <span class="badge">Skills</span>
+                    <span id="badgeLocation" class="badge badge-primary">Location</span>
+                    <span id="badgeDuration" class="badge badge-secondary">Duration</span>
                   </div>
                 </div>
                 <button class="favorite-btn" style="background: none; border: none; font-size: 2rem; cursor: pointer;">🤍</button>
@@ -63,51 +62,36 @@
               <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 2rem;">
                 <div>
                   <p class="text-muted" style="margin: 0; font-size: 0.875rem;">SALARY</p>
-                  <p style="margin: 0.5rem 0; font-weight: 600; font-size: 1.25rem;">$XX - $XX/hr</p>
+                  <p id="displaySalary" style="margin: 0.5rem 0; font-weight: 600; font-size: 1.25rem;">Loading...</p>
                 </div>
                 <div>
                   <p class="text-muted" style="margin: 0; font-size: 0.875rem;">DURATION</p>
-                  <p style="margin: 0.5rem 0; font-weight: 600; font-size: 1.25rem;">Duration</p>
+                  <p id="displayDuration" style="margin: 0.5rem 0; font-weight: 600; font-size: 1.25rem;">Loading...</p>
                 </div>
                 <div>
                   <p class="text-muted" style="margin: 0; font-size: 0.875rem;">LOCATION</p>
-                  <p style="margin: 0.5rem 0; font-weight: 600; font-size: 1.25rem;">Location</p>
-                </div>
-                <div>
-                  <p class="text-muted" style="margin: 0; font-size: 0.875rem;">TYPE</p>
-                  <p style="margin: 0.5rem 0; font-weight: 600; font-size: 1.25rem;">Full-time</p>
+                  <p id="displayLocation" style="margin: 0.5rem 0; font-weight: 600; font-size: 1.25rem;">Loading...</p>
                 </div>
               </div>
             </div>
 
-            <!-- Description -->
             <div class="card-content">
-              <h3>About This Role</h3>
-              <p>
-                Add a description of the internship position here. Explain what the intern will be doing and what they can expect from this opportunity.
+              <h3>About Us</h3> 
+              <p id="pDesc" style="white-space: pre-wrap; color: var(--text-color);">
+                Loading company description...
               </p>
             </div>
-
-            <!-- Responsibilities -->
+            
             <div class="card-content">
               <h3>Responsibilities</h3>
-              <ul style="margin-left: 1.5rem;">
-                <li>Responsibility 1</li>
-                <li>Responsibility 2</li>
-                <li>Responsibility 3</li>
-                <li>Responsibility 4</li>
-              </ul>
+              <p id="displayResponsibilities" style="white-space: pre-wrap; color: var(--text-color);">
+                  Loading responsibilities...
+              </p>
             </div>
-
-            <!-- Requirements -->
+            
             <div class="card-content">
               <h3>Requirements</h3>
-              <ul style="margin-left: 1.5rem;">
-                <li>Requirement 1</li>
-                <li>Requirement 2</li>
-                <li>Requirement 3</li>
-                <li>Requirement 4</li>
-              </ul>
+              <p id="pReqs" style="white-space: pre-wrap;"></p> 
             </div>
 
             <!-- Application Button -->
@@ -131,15 +115,21 @@
   </div>
 
   <div id="companyDisplayMode" class="card-content">
-    <p id="dCompanyDesc">Add company description here...</p>
+    
+    <p id="dCompanyDesc" style="white-space: pre-wrap;">Add company description here...</p>
     <p>
-      <strong>Website:</strong> <span id="dWebsite">www.company.com</span><br>
-      <strong>Headquarters:</strong> <span id="dHeadquarters">Location</span><br>
-      <strong>Business ID (Y-Tunnus):</strong> <span id="dYTunnus">Number</span><br>
+      <strong>Email:</strong> <span id="dCompanyEmail"> No Added Email</span><br>
+      <strong>Website:</strong> <span id="dWebsite">No added Website</span><br>
+      <strong>Headquarters:</strong> <span id="dHeadquarters">No added Headquarters</span><br>
+      <strong>Business ID (Y-Tunnus):</strong> <span id="dYTunnus">No added Y</span><br>
     </p>
   </div>
 
   <div id="companyEditMode" class="card-content" style="display: none;">
+    <div class="form-group" style="margin-bottom: 1rem;">
+      <label>Company Name</label>
+      <input type="text" id="eCompanyName" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
+    </div>
     <div class="form-group">
       <label>Company Description</label>
       <textarea id="eCompanyDesc" class="edit-textarea" rows="4" style="width:100%; border:1px solid #ddd; border-radius:4px; padding:10px;"></textarea>
@@ -157,8 +147,12 @@
         <label>Business ID (Y-Tunnus)</label>
         <input type="text" id="eYTunnus" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
       </div>
+      <div class="form-group">
+        <label>Contact Email</label>
+        <input type="email" id="eEmail" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
+      </div>
     </div>
-  </div>
+</div>
 </div>
         <!-- Sidebar -->
         <div>
@@ -266,29 +260,38 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js"></script>
   <script src="js/auth.js"></script>
-  <script src="js/profile.js"></script> 
+  <script src="js/profile.js"></script>
   <script src="js/script.js"></script>
+  <script src="js/internship-detail.js"></script>
   <script>
-    // Handle quick apply form submission
-    document.addEventListener('DOMContentLoaded', function() {
+    // Page init - load from URL param
+    document.addEventListener('DOMContentLoaded', async function() {
+      const positionId = getUrlParameter('id');
+      if (positionId) {
+        await loadInternshipDetail(positionId);
+      }
+      
+      // Existing form handlers...
       const quickApplyForm = document.getElementById('quickApplyForm');
       if (quickApplyForm) {
         quickApplyForm.addEventListener('submit', function(e) {
           e.preventDefault();
-          const fullName = document.getElementById('fullName').value;
-          alert(`Thank you, ${fullName}! Your application has been submitted.`);
-          this.reset();
+          const formData = new FormData(this);
+          if (window.currentPosition) {
+            alert(`Applied to ${window.currentPosition.title}!`);
+            this.reset();
+          }
         });
       }
 
-      // Handle favorite button on detail page
-      const detailFavoriteBtn = document.querySelector('.job-meta .favorite-btn');
-      if (detailFavoriteBtn) {
-        detailFavoriteBtn.addEventListener('click', function(e) {
+      // Favorite toggle
+      const favoriteBtns = document.querySelectorAll('.favorite-btn');
+      favoriteBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
           e.stopPropagation();
           this.textContent = this.textContent === '🤍' ? '❤️' : '🤍';
         });
-      }
+      });
     });
   </script>
 </body>
