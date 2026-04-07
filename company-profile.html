@@ -104,17 +104,38 @@
   <!-- Company Profile Section -->
   <section class="section section-light">
     <div class="container">
-      <div class="grid-2">
-        <!-- Main Profile Content -->
-        <div>
-<div>
+      <div class="profile-page-layout">
+        <!-- Main Content -->
+        <div class="main-content">
   <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
-      <div class="company-header" style="margin-bottom: 0;">
-        <div class="company-logo" id="companyLogoDiv">🏢</div>
+      <div class="company-header" style="margin-bottom: 0;">        
+          <div class="profile-avatar" id="profileAvatar" 
+          style="width: 120px; 
+                 height: 120px; 
+                 border: 1px solid #e2e8f0; 
+                 border-radius: 12px; 
+                 position: relative; 
+                 background: #ffffff; 
+                 display: flex; 
+                 align-items: center; 
+                 justify-content: center; 
+                 overflow: hidden;">
+       
+       <img id="avatarImg" src="" alt="" 
+            style="max-width: 90%; 
+                   max-height: 90%; 
+                   object-fit: contain; 
+                   display: none;" />
+          <span class="company-logo" id="avatarPlaceholder">🏢</span>
+          <label for="avatarUpload" style="position:absolute; bottom:0; right:0; background:var(--primary-color); color:white; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.1rem; border:2px solid white;">
+            +
+          </label>
+          <input type="file" id="avatarUpload" accept="image/*" style="display:none;" onchange="uploadLogo(this)" />
+        </div>
         <div id="companyDisplayHeader" class="company-info">
           <h2 id="dCompanyName">Company Name</h2>
-          <p id="dCompanyEmail">industry@company.com</p>
+          <p id="dCompanyEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="452c2b21303631373c05262a2835242b3c6b262a28">[email&#160;protected]</a></p>
           <p>📍 <span id="dHeadquarters">Location</span></p>
           <p>👥 <span id="dTeamSize">Business ID</span></p> 
           <p>🌐 <span id="dWebsite">www.company.com</span></p>
@@ -198,25 +219,7 @@
     </div>
     <div class="card-content" id="displayTeamList">
         <p style="color: var(--text-light); text-align: center;">No team members listed.</p>
-    </div>
-
-
-          </div>
-        </div>
-      </div>
-        </div>
-
-           <div class="posting-item" id="posting-1">
-            <div id="view-mode-1">
-              <h4 id="title-1">Frontend Developer Intern</h4>
-              <p class="applications">📊 12 Applications</p>
-              <p style="font-size: 0.875rem; margin: 0.5rem 0 0 0;">
-                <a href="internship-detail.html?id=1" class="text-primary">View Posting</a> | 
-                <a href="javascript:void(0)" onclick="togglePostEdit(1, true)" class="text-primary">Edit</a> | 
-                <a href="#" class="text-primary">Close</a>
-              </p>
-            </div>
-
+    </div>   
             <div id="edit-mode-1" style="display: none; margin-top: 10px;">
               <input type="text" id="input-title-1" class="form-control" style="margin-bottom: 5px;">
               <button type="button" onclick="editTeamMember('${member.id}')" class="btn-small">
@@ -227,22 +230,36 @@
           </div>
         </div>
 
-        <!-- Sidebar -->
-        <div>
-          <!-- Post Job Card -->
-          <div class="card" style="position: sticky; top: 90px; margin-bottom: 2rem;">
-            <div class="card-header">
-              <h3 class="card-title">Post New Job</h3>
-            </div>
-            <div class="card-content">
-              <p class="text-muted mb-3">Create a new internship opportunity for your company.</p>
-              <button class="btn btn-primary" style="width: 100%;" onclick="alert('Post job feature')">
-                ➕ Post New Position
-              </button>
-            </div>
+        <!-- Current Postings Card -->
+        <div class="card" style="margin-top: 1rem;">
+          <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 class="card-title">Current Postings</h3>
+          </div>
+          <div class="card-content" id="companyPostingsList">
+            <p style="color:var(--text-light); text-align:center;">No postings yet.</p>
           </div>
         </div>
-      </div>
+        </div><!-- end main col -->
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+          <!-- Post Job Card -->
+
+          <div class="sidebar-card" style="position:sticky; top:80px;">
+            <h4>Post New Job</h4>
+            <p>Create a new internship listing.</p>
+            <button class="btn btn-primary" style="width:100%;" onclick="openPostModal()">➕ Post New Position</button>
+          </div>
+          
+          <!-- Applications card — compact -->
+          <div class="sidebar-card">
+            <h4>📋 Received Applications</h4>
+            <div id="companyApplicationsContainer">
+              <p>No applications yet.</p>
+            </div>
+          </div>
+
+      </div><!-- end profile-page-layout -->
     </div>
   </section>
 
@@ -294,16 +311,65 @@
     </div>
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/profile.js"></script>
   <script src="js/script.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       setTimeout(loadCompanyProfile, 200);
     });
   </script>
-</body>
 
-</html>
+  <!-- POST POSITION MODAL -->
+  <div id="postJobModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9999; overflow-y:auto; padding:2rem 1rem;">
+    <div style="background:#fff; border-radius:1rem; max-width:640px; margin:0 auto; padding:2rem; position:relative;">
+      <button onclick="closePostModal()" style="position:absolute; top:1rem; right:1rem; background:none; border:none; font-size:1.5rem; cursor:pointer; color:#666;">&times;</button>
+      <h2 id="modalTitle" style="margin:0 0 1.5rem 0;">Post New Position</h2>
+      <!-- Hidden field to track edit vs create -->
+      <input type="hidden" id="editPositionId" value="">
+
+      <div class="form-group" style="margin-bottom:1rem;">
+        <label>Job Title <span style="color:red;">*</span></label>
+        <input type="text" id="pTitle" placeholder="e.g. Frontend Developer Intern" style="width:100%;">
+      </div>
+      <div class="form-group" style="margin-bottom:1rem;">
+        <label>Description <span style="color:red;">*</span></label>
+        <textarea id="pDesc" rows="4" placeholder="Describe the role and responsibilities..." style="width:100%;"></textarea>
+      </div>
+      <div class="form-group" style="margin-bottom:1rem;">
+        <label>Requirements</label>
+        <textarea id="pReqs" rows="3" placeholder="Skills, experience, education..." style="width:100%;"></textarea>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+        <div class="form-group">
+          <label>Start Date</label>
+          <input type="date" id="pStart" style="width:100%;">
+        </div>
+        <div class="form-group">
+          <label>End Date</label>
+          <input type="date" id="pEnd" style="width:100%;">
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:1rem;">
+        <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+          <input type="checkbox" id="pOpenEnded" onchange="toggleEndDate()">
+          <span>Open-ended (no fixed end date)</span>
+        </label>
+      </div>
+      <div class="form-group" style="margin-bottom:1rem;">
+        <label>Job Category <span style="color:red;">*</span></label>
+        <select id="pCategory" style="width:100%;">
+          <option value="">Loading categories...</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:1.5rem;">
+        <label>Status</label>
+        <select id="pStatus" style="width:100%;">
+          <option value="active">Active — visible to students</option>
+          <option value="draft">Draft — save for later</option>
+        </select>
+      </div>
+      <div style="display:flex; gap:1rem; justify-content:flex-end;">
+        <button class="btn btn-secondary" onclick="closePostModal()">Cancel</button>
