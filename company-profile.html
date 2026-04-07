@@ -168,7 +168,7 @@
         </div>
         <div id="companyDisplayHeader" class="company-info">
           <h2 id="dCompanyName">Company Name</h2>
-          <p id="dCompanyEmail">industry@company.com</p>
+<p id="dCompanyEmail">Loading...</p>
           <p>📍 <span id="dHeadquarters">Location</span></p>
           <p>👥 <span id="dTeamSize">Business ID</span></p> 
           <p>🌐 <span id="dWebsite">www.company.com</span></p>
@@ -191,10 +191,14 @@
 
     <div id="companyEditMode" style="display: none; margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
       <div class="company-section-title">Edit Company Details</div>
-      <div class="form-group">
-        <label>Company Name</label>
-        <input type="text" id="eCompanyName" class="edit-input" style="width:100%; margin-bottom:1rem;" placeholder="Company">
-      </div>
+<div class="form-group">
+          <label>Company Name</label>
+          <input type="text" id="eCompanyName" class="edit-input" style="width:100%; margin-bottom:1rem;" placeholder="Company">
+        </div>
+        <div class="form-group">
+          <label>Company Email</label>
+          <input type="email" id="eCompanyEmail" class="edit-input" style="width:100%; margin-bottom:1rem;" placeholder="company@example.com">
+        </div>
       <div class="form-group">
         <label>About Company</label>
         <textarea id="eCompanyDesc" rows="4" style="width:100%; margin-bottom:1rem;" placeholder="Write somthing about your company"></textarea>
