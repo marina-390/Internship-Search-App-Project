@@ -94,3 +94,175 @@ async function loadInternshipDetail(positionId) {
         console.error('Error:', err);
     }
   }
+
+  // --- MODAL LOGIC ---
+
+  async function openApplyModal() {
+    const pos = window.currentPosition;
+    if (!pos) return;
+
+    // 1. Set text safely
+    document.getElementById('modalTitle').innerText = pos.title;
+    
+    // Grab the company name from the main page header
+    const mainCompanyName = document.querySelector('.card-header .text-muted').innerText;
+    document.getElementById('modalCompany').innerText = mainCompanyName;
+
+    // 2. Clear previous custom lines so they don't double up
+    document.getElementById('customLinesContainer').innerHTML = '';
+
+    // 3. RUN THE EDIT MODULE CHECK
+    await enableCompanyEditFeatures(pos.company_id);
+
+    // 4. Show Modal
+    document.getElementById('applyModal').style.display = "block";
+    document.body.style.overflow = "hidden";
+}
+
+async function enableCompanyEditFeatures(companyId) {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    const adminPanel = document.getElementById('companyFormControls');
+    
+    console.log("Logged in user:", user?.id); // DEBUG 1
+    
+    if (!adminPanel) return;
+    adminPanel.style.display = "none";
+
+    if (user) {
+        const { data: company } = await supabaseClient
+            .from('Companies')
+            .select('owner_id')
+            .eq('company_id', companyId)
+            .single();
+
+        console.log("Company Owner:", company?.owner_id); // DEBUG 2
+
+        if (company && company.owner_id === user.id) {
+            adminPanel.style.display = "block";
+        }
+    }
+}
+function closeApplyModal() {
+    document.getElementById('applyModal').style.display = "none";
+    document.body.style.overflow = "auto";
+}
+
+async function checkOwnershipAndShowControls(companyId) {
+    const { data: { user } } = await supabase.auth.getUser();
+    const controls = document.getElementById('companyFormControls');
+    
+    if (user) {
+        // Fetch the company profile to see if this user is the owner
+        const { data: company } = await supabase
+            .from('Companies')
+            .select('owner_id')
+            .eq('company_id', companyId)
+            .single();
+
+        if (company && company.owner_id === user.id) {
+            controls.style.display = "block"; // User is the owner!
+        } else {
+            controls.style.display = "none";
+        }
+    }
+}
+
+// --- THE EDIT MODULE ---
+
+
+/**
+ * Adds a new input field to the application form.
+ */
+function addNewLine(label = "") {
+    const container = document.getElementById('customLinesContainer');
+    const id = Date.now();
+    const html = `
+        <div class="custom-line" id="line-${id}" style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+            <input type="text" placeholder="Question Name (e.g. Github Link)" class="dynamic-label" value="${label}" 
+                   style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            <button type="button" onclick="document.getElementById('line-${id}').remove()" 
+                    style="background: none; border: none; color: #ff4d4d; cursor: pointer; font-size: 1.2rem;">&times;</button>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', html);
+}
+
+
+// Close modal if user clicks outside of it
+window.onclick = function(event) {
+    const modal = document.getElementById('applyModal');
+    if (event.target == modal) {
+        closeApplyModal();
+    }
+}
+
+// Function to handle the CV file selection UI
+function handleCVSelection(input) {
+    const fileInfo = document.getElementById('cvFileInfo');
+    const statusText = document.getElementById('cvStatusText');
+    
+    if (input.files && input.files[0]) {
+        const fileName = input.files[0].name;
+        const fileSize = (input.files[0].size / 1024 / 1024).toFixed(2); // Convert to MB
+        
+        fileInfo.innerHTML = `
+            <div style="display:flex; align-items:center; gap:10px; background: #e7f3ff; padding: 8px; border-radius: 4px; margin-bottom:10px;">
+                <span style="font-size: 1.2rem;">pdf</span>
+                <div style="flex:1; overflow:hidden;">
+                    <p style="margin:0; font-weight:600; font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${fileName}</p>
+                    <p style="margin:0; font-size:0.75rem; color: #666;">${fileSize} MB</p>
+                </div>
+                <button type="button" onclick="resetCVUpload()" style="border:none; background:none; color:red; cursor:pointer; font-weight:bold;">✕</button>
+            </div>
+        `;
+    }
+}
+
+// Function to clear the CV selection
+function resetCVUpload() {
+    const input = document.getElementById('cvUpload');
+    input.value = ''; // Clear file
+    document.getElementById('cvFileInfo').innerHTML = '<p id="cvStatusText" style="font-size: 0.9rem; color: #666;">No CV uploaded yet.</p>';
+}
+
+// Handle Form Submission
+document.getElementById('modalApplyForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const pos = window.currentPosition;
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    
+    // Gather values
+    const applicationData = {
+        position_id: pos.position_id,
+        full_name: document.getElementById('applyName').value,
+        email: document.getElementById('applyEmail').value,
+        phone: document.getElementById('applyPhone').value,
+        letter: document.getElementById('applyLetter').value,
+        cv_file: document.getElementById('cvUpload').files[0]
+    };
+
+    if (!applicationData.cv_file) {
+        alert("Please upload your CV before submitting.");
+        return;
+    }
+
+    try {
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Sending...";
+
+        // Logic here for Supabase storage upload and table insert...
+        // For now, we show success
+        alert("Application sent successfully to " + pos.title + "!");
+        closeApplyModal();
+        this.reset();
+        resetCVUpload();
+
+    } catch (err) {
+        console.error(err);
+        alert("Error sending application.");
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Submit Application";
+    }
+});
