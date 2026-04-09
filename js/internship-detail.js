@@ -91,35 +91,56 @@ async function loadInternshipDetail(positionId) {
         window.currentPosition = position;
   
     } catch (err) {
-        console.error('Error:', err);
-    }
+        console.error('Error loading internship details:', err);
+        alert("Could not load internship details.");
+
+
+  if (error || !profile) {
+      console.error("Profile check error:", error);
+      alert("Student profile not found. Please complete your profile first.");
+      return;
   }
+
+  // Store the INTEGER ID
+  window.currentStudentId = profile.id;
+
+  // Show modal
+  document.getElementById('applyModal').style.display = "block";
+}
+        console.error('Error:', err);
+}
+
 
   // --- MODAL LOGIC ---
 
-  async function openApplyModal() {
-    const pos = window.currentPosition;
-    if (!pos) return;
+async function openApplyModal() {
+  const session = requireAuth();
+  if (!session || session.role !== 1) {
+      alert("Student login required to apply.");
+      return;
+  }
 
-    // 1. Set text safely
-    document.getElementById('modalTitle').innerText = pos.title;
-    
-    // Grab the company name from the main page header
-    const mainCompanyName = document.querySelector('.card-header .text-muted').innerText;
-    document.getElementById('modalCompany').innerText = mainCompanyName;
+  const { data: profile, error } = await supabaseClient
+      .from('student_profiles')
+      .select('id') 
+      .eq('user_id', session.userId)
+      .single();
 
-    // 2. Clear previous custom lines so they don't double up
-    document.getElementById('customLinesContainer').innerHTML = '';
+  if (error || !profile) {
+      console.error("Profile check error:", error);
+      alert("Student profile not found. Please complete your profile first.");
+      return;
+  }
 
-    // 3. RUN THE EDIT MODULE CHECK
-    await enableCompanyEditFeatures(pos.company_id);
+  // Store the INTEGER ID
+  window.currentStudentId = profile.id;
 
-    // 4. Show Modal
-    document.getElementById('applyModal').style.display = "block";
-    document.body.style.overflow = "hidden";
+  // Show modal
+  document.getElementById('applyModal').style.display = "block";
 }
 
 async function enableCompanyEditFeatures(companyId) {
+
     const { data: { user } } = await supabaseClient.auth.getUser();
     const adminPanel = document.getElementById('companyFormControls');
     
@@ -218,6 +239,13 @@ function handleCVSelection(input) {
     }
 }
 
+function handleEditCVSelection(input) {
+    const statusText = document.getElementById('editCvStatusText');
+    if (input.files && input.files[0]) {
+        statusText.innerHTML = `<strong>New file selected:</strong> ${input.files[0].name}`;
+        statusText.style.color = "#059669"; // Green color
+    }
+}
 // Function to clear the CV selection
 function resetCVUpload() {
     const input = document.getElementById('cvUpload');
@@ -225,42 +253,61 @@ function resetCVUpload() {
     document.getElementById('cvFileInfo').innerHTML = '<p id="cvStatusText" style="font-size: 0.9rem; color: #666;">No CV uploaded yet.</p>';
 }
 
-// Handle Form Submission
+
 document.getElementById('modalApplyForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
+    // 1. Get the current user
+    // Custom auth already checked by requireAuth()
+
+
     const pos = window.currentPosition;
     const submitBtn = e.target.querySelector('button[type="submit"]');
-    
-    // Gather values
-    const applicationData = {
-        position_id: pos.position_id,
-        full_name: document.getElementById('applyName').value,
-        email: document.getElementById('applyEmail').value,
-        phone: document.getElementById('applyPhone').value,
-        letter: document.getElementById('applyLetter').value,
-        cv_file: document.getElementById('cvUpload').files[0]
-    };
-
-    if (!applicationData.cv_file) {
-        alert("Please upload your CV before submitting.");
-        return;
-    }
+    const cvFile = document.getElementById('cvUpload').files[0];
 
     try {
         submitBtn.disabled = true;
-        submitBtn.innerText = "Sending...";
+        submitBtn.innerText = "Uploading...";
 
-        // Logic here for Supabase storage upload and table insert...
-        // For now, we show success
-        alert("Application sent successfully to " + pos.title + "!");
+        // 2. Upload CV (Same as before)
+        const fileName = `${Date.now()}-${cvFile.name}`;
+        const { data: uploadData, error: uploadError } = await supabaseClient.storage
+            .from('resumes')
+            .upload(fileName, cvFile);
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabaseClient.storage.from('resumes').getPublicUrl(fileName);
+
+        // 3. Insert into DB (Matching your specific schema)
+       // Inside your submit listener
+const { error: dbError } = await supabaseClient
+.from('applications')
+.insert([{
+    student_id: window.currentStudentId, // The INTEGER (e.g. 5)
+    position_id: window.currentPosition.position_id,
+    full_name: document.getElementById('applyName').value,
+    email: document.getElementById('applyEmail').value,
+    phone: document.getElementById('applyPhone').value,
+    cover_letter: document.getElementById('applyLetter').value,
+    cv_url: publicUrl,
+    cv_original_name: cvFile.name
+}]);
+
+if (dbError) {
+console.error("Insert Error:", dbError);
+alert("Error: " + dbError.message);
+} else {
+alert("Application sent!");
+}
+
+        if (dbError) throw dbError;
+
+        alert("Application sent!");
         closeApplyModal();
-        this.reset();
-        resetCVUpload();
 
     } catch (err) {
         console.error(err);
-        alert("Error sending application.");
+        alert("Error: " + err.message);
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerText = "Submit Application";

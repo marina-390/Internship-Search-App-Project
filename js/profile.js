@@ -981,30 +981,210 @@ function fillCompanyLogo(profile) {
 // ==========================================
 // FILL APPLICATIONS
 // ==========================================
+// ==========================================
+// APPLICATIONS MANAGEMENT
+// ==========================================
+
 function fillApplications(applications) {
   const container = document.getElementById('applicationsContainer');
   if (!container) return;
 
-  if (applications.length === 0) {
-    container.innerHTML = '<p class="text-muted">No applications yet.</p>';
-    return;
+  if (!applications || applications.length === 0) {
+      container.innerHTML = '<p>No applications yet.</p>';
+      return;
   }
 
   container.innerHTML = applications.map(app => {
-    const title = app.positions?.title || 'Position';
-    const statusClass = 'status-' + app.status;
-    return `
-      <div class="application-item">
-        <p style="margin:0; font-weight:600;">${title}</p>
-        <span class="status-badge ${statusClass}">${app.status}</span>
-        <p style="margin:0.25rem 0 0; font-size:0.8rem; color:var(--text-light);">
-          ${new Date(app.applied_at).toLocaleDateString()}
-        </p>
-      </div>
-    `;
+      const jobTitle = app.positions?.title || 'Unknown Position';
+      
+      // Convert the app object to a string so it can be passed into the function
+      const appData = JSON.stringify(app).replace(/"/g, '&quot;');
+
+      return `
+          <div class="application-card" id="app-${app.id}">
+              <div class="app-info">
+                  <h5>${jobTitle}</h5>
+                  <p>Status: <span class="status-badge status-${(app.status || 'pending').toLowerCase()}">${app.status || 'Pending'}</span></p>
+              </div>
+              <div class="app-actions" style="display: flex; gap: 8px; margin-top: 10px;">
+                  <button class="btn-view" onclick="viewApplication(${app.position_id})">View</button>
+                  
+                  <button class="btn-view" style="background:#f3f4f6; color:#374151;" onclick="openEditAppModal(${appData})">Edit</button>
+                  
+                  <button class="btn-delete" onclick="deleteApplication(${app.id})">Delete</button>
+              </div>
+          </div>
+      `;
   }).join('');
 }
 
+
+// Function to open the modal and fill it with current data
+function openEditAppModal(app) {
+  document.getElementById('editAppId').value = app.application_id;
+  document.getElementById('editAppName').value = app.full_name || '';
+  document.getElementById('editAppEmail').value = app.email || '';
+  document.getElementById('editAppPhone').value = app.phone || '';
+  document.getElementById('editAppLetter').value = app.cover_letter || '';
+  
+  // Store current CV state in global variables or data attributes
+  renderCvEditSection(app.cv_original_name, app.cv_url);
+
+  document.getElementById('editAppModal').style.display = 'block';
+}
+
+function renderCvEditSection(fileName, fileUrl) {
+  const container = document.getElementById('editCvContainer');
+  
+  if (fileName && fileUrl) {
+      // CASE: File exists - show name and 'X' button
+      container.innerHTML = `
+          <div style="display: flex; align-items: center; justify-content: space-between; background: white; padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd;">
+              <span style="font-size: 0.9rem; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80%;">
+                  ✅ ${fileName}
+              </span>
+              <button type="button" onclick="removeCvFromEdit()" style="background: #fee2e2; color: #ef4444; border: none; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-weight: bold;">✕</button>
+          </div>
+      `;
+  } else {
+      // CASE: No file - show upload button
+      container.innerHTML = `
+          <label for="editCvUpload" class="btn btn-secondary" style="width:100%; display:block; text-align:center; cursor:pointer; padding: 8px 0; background:#6366f1; color:white; border-radius:6px;">
+              Upload CV (PDF)
+          </label>
+      `;
+  }
+}
+
+// Variable to track if the user deleted their CV during this edit session
+let isCvDeleted = false;
+
+function removeCvFromEdit() {
+    if(confirm("Remove this CV? You will need to upload a new one before saving.")) {
+        isCvDeleted = true;
+        // Reset the file input value
+        document.getElementById('editCvUpload').value = "";
+        // Re-render to show the upload button
+        renderCvEditSection(null, null);
+    }
+}
+
+function handleEditCVSelection(input) {
+    if (input.files && input.files[0]) {
+        isCvDeleted = false; // They uploaded a new one
+        renderCvEditSection(input.files[0].name, "pending-upload");
+    }
+}
+
+// Function to save the updated data
+async function updateApplication() {
+  const appId = document.getElementById('editAppId').value;
+  const saveBtn = document.querySelector('#editAppModal .btn-primary');
+
+  const updatedData = {
+      full_name: document.getElementById('editAppName').value,
+      email: document.getElementById('editAppEmail').value,
+      phone: document.getElementById('editAppPhone').value,
+      cover_letter: document.getElementById('editAppLetter').value,
+      updated_at: new Date().toISOString()
+  };
+
+  // If user clicked 'X' and didn't upload a new one, set fields to null
+  if (isCvDeleted) {
+      updatedData.cv_url = null;
+      updatedData.cv_original_name = null;
+  }
+
+  try {
+      saveBtn.disabled = true;
+      
+      const cvInput = document.getElementById('editCvUpload');
+      if (cvInput.files && cvInput.files[0]) {
+          // ... (Same upload logic as before) ...
+          const file = cvInput.files[0];
+          const filePath = `resumes/${Date.now()}_${file.name}`;
+          await supabaseClient.storage.from('resumes').upload(filePath, file);
+          const { data: urlData } = supabaseClient.storage.from('resumes').getPublicUrl(filePath);
+          
+          updatedData.cv_url = urlData.publicUrl;
+          updatedData.cv_original_name = file.name;
+      }
+
+      const { error } = await supabaseClient
+          .from('applications')
+          .update(updatedData)
+          .eq('application_id', appId);
+
+      if (error) throw error;
+
+      alert("Update successful!");
+      isCvDeleted = false; // reset
+      document.getElementById('editAppModal').style.display = 'none';
+      loadStudentProfile();
+
+  } catch (err) {
+      alert("Error: " + err.message);
+  } finally {
+      saveBtn.disabled = false;
+  }
+}
+
+/**
+* Redirects user to the internship detail page
+*/
+function viewApplication(positionId) {
+  window.location.href = `internship-detail.html?id=${positionId}`;
+}
+
+/**
+* Deletes an application from the database
+*/
+async function deleteApplication(applicationId) {
+  if (!confirm("Are you sure you want to withdraw this application? This cannot be undone.")) return;
+
+  try {
+      const { error } = await supabaseClient
+          .from('applications')
+          .delete()
+          .eq('id', applicationId);
+
+      if (error) throw error;
+
+      // Remove from UI
+      const element = document.getElementById(`app-${applicationId}`);
+      if (element) {
+          element.style.opacity = '0';
+          setTimeout(() => element.remove(), 300);
+      }
+
+      // If no items left, show empty message
+      const container = document.getElementById('applicationsContainer');
+      if (container.children.length === 0) {
+          container.innerHTML = '<p>No applications yet.</p>';
+      }
+
+      alert("Application withdrawn successfully.");
+  } catch (err) {
+      console.error('Delete error:', err);
+      alert("Failed to delete application: " + err.message);
+  }
+}
+
+async function deleteApplication(applicationId) {
+  if (!confirm("Withdraw this application?")) return;
+
+  try {
+      const { error } = await supabaseClient
+          .from('applications')
+          .delete()
+          .eq('application_id', applicationId); // Changed from 'id' to 'application_id'
+
+      if (error) throw error;
+      loadStudentProfile();
+  } catch (err) {
+      alert("Delete failed: " + err.message);
+  }
+}
 /**
  * Fetches city suggestions from Digitransit API
  * @param {string} query - The city name being typed
