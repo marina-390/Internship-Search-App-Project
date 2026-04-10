@@ -811,6 +811,71 @@ footer {
   width: 240px;
 }
 
+/* Force grid-2 to always show 2 columns */
+.grid-2 {
+  display: grid !important;
+  grid-template-columns: 1fr 300px !important;
+  gap: 2rem;
+}
+
+/* Ensure sidebar always visible in grid - with text visible */
+.grid-2 .sidebar {
+  display: block !important;
+  grid-row: 1 / -1 !important;
+  min-height: 400px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  overflow: visible;
+}
+
+.grid-2 .sidebar-card {
+  display: block !important;
+  background: white;
+  border: none;
+  box-shadow: none;
+  padding: 1rem;
+  margin: 0;
+}
+
+#applicantsSection {
+  display: block !important;
+}
+
+#applicantsSection h4 {
+  color: #333 !important;
+  font-size: 1rem !important;
+  margin-bottom: 1rem !important;
+}
+
+#companyApplicationsContainer p {
+  color: #666 !important;
+  font-size: 0.9rem !important;
+}
+
+.application-item {
+  padding: 1rem 0;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.application-item:last-child {
+  border-bottom: none;
+}
+
+/* View modal styling */
+#viewApplicationModal .modal-content {
+  max-width: 700px !important;
+}
+
+#viewAppCover {
+  min-height: 120px;
+  line-height: 1.5;
+}
+
 /* sidebar-col is an alias for sidebar — fixes company-profile inconsistency */
 .sidebar-col {
   flex: 0 0 240px;
