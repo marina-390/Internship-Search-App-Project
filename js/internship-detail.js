@@ -89,17 +89,19 @@ async function loadInternshipDetail(positionId) {
         if (document.getElementById('dYTunnus')) document.getElementById('dYTunnus').textContent = company?.y_tunnus || 'N/A';
   
         window.currentPosition = position;
-  
+        window.currentCompany = company;
+
+        // THIS IS WHAT TRIGGERS THE SIDEBAR
+        if (position.company_id) {
+            await checkOwnerAndLoadApplicants(position.company_id, position.position_id);
+        }
+
     } catch (err) {
-        console.error('Error loading internship details:', err);
-        alert("Could not load internship details.");
+        console.error('Error:', err);
+        alert("Could not load details.");
+    }
 
 
-  if (error || !profile) {
-      console.error("Profile check error:", error);
-      alert("Student profile not found. Please complete your profile first.");
-      return;
-  }
 
   // Store the INTEGER ID
   window.currentStudentId = profile.id;
@@ -108,7 +110,7 @@ async function loadInternshipDetail(positionId) {
   document.getElementById('applyModal').style.display = "block";
 }
         console.error('Error:', err);
-}
+
 
 
   // --- MODAL LOGIC ---
@@ -169,12 +171,12 @@ function closeApplyModal() {
 }
 
 async function checkOwnershipAndShowControls(companyId) {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await supabaseClient.auth.getUser();
     const controls = document.getElementById('companyFormControls');
     
     if (user) {
         // Fetch the company profile to see if this user is the owner
-        const { data: company } = await supabase
+        const { data: company } = await supabaseClient
             .from('Companies')
             .select('owner_id')
             .eq('company_id', companyId)
@@ -313,3 +315,68 @@ alert("Application sent!");
         submitBtn.innerText = "Submit Application";
     }
 });
+
+async function checkOwnerAndLoadApplicants(companyId, positionId) {
+  try {
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      if (!user) return;
+
+      // 1. Check if user owns this company
+      const { data: company } = await supabaseClient
+          .from('Companies')
+          .select('owner_id')
+          .eq('company_id', companyId)
+          .single();
+
+      // 2. If owner, show sidebar and load data
+      if (company && company.owner_id === user.id) {
+          const section = document.getElementById('applicantsSection');
+          if (section) section.style.display = 'block';
+
+          const { data: apps, error } = await supabaseClient
+              .from('applications')
+              .select('*')
+              .eq('position_id', positionId)
+              .order('created_at', { ascending: false });
+
+          if (error) throw error;
+
+          renderSidebarApplicants(apps);
+      }
+  } catch (err) {
+      console.error("Error in owner check:", err);
+  }
+}
+
+function renderSidebarApplicants(apps) {
+  const container = document.getElementById('companyApplicationsContainer');
+  const countEl = document.getElementById('applicantsCount');
+  
+  if (!container) return;
+  if (countEl) countEl.textContent = `(${apps.length})`;
+
+  if (apps.length === 0) {
+      container.innerHTML = '<p style="color: #666; font-size: 0.9rem;">No applications yet.</p>';
+      return;
+  }
+
+  // Creating a clean list for the sidebar
+  container.innerHTML = apps.map(app => `
+      <div class="application-item" style="padding: 12px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+              <p style="margin: 0; font-weight: 600; font-size: 0.95rem;">${app.full_name}</p>
+              <small style="color: #888;">${new Date(app.created_at).toLocaleDateString()}</small>
+          </div>
+          <button class="btn btn-small btn-outline" 
+              onclick="console.log('View application:', ${JSON.stringify(app)})" 
+              style="padding: 4px 8px; font-size: 0.75rem;">
+              View
+          </button>
+      </div>
+  `).join('');
+}
+
+function showFullApplication(app) {
+  console.log('Full application details:', app);
+  alert('Application details: ' + JSON.stringify(app, null, 2));
+}

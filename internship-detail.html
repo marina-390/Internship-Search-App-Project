@@ -113,7 +113,6 @@
       </div>
     </div>
   </div>
-
   <div id="companyDisplayMode" class="card-content">
     
     <p id="dCompanyDesc" style="white-space: pre-wrap;">Add company description here...</p>
@@ -153,7 +152,19 @@
       </div>
     </div>
 </div>
-</div>
+        </div>
+          
+          <!-- Sidebar for Company Owners -->
+          <div class="sidebar">
+            <div id="applicantsSection" class="sidebar-card" style="display: none;">
+              <h4>📋 Received Applications <span id="applicantsCount" style="font-size: 0.9rem; color: #666;">(0)</span></h4>
+              <div id="companyApplicationsContainer">
+                <p>No applications yet.</p>
+              </div>
+              
+            </div>
+          </div>
+          
       </div>
     </div>
   </section>
@@ -212,7 +223,7 @@
         <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; padding: 12px;">Submit Application</button>
       </form>
     </div>
-  </div> ```
+  </div> 
   
   <!-- Footer -->
   <footer>
@@ -267,7 +278,7 @@
   <script src="js/auth.js"></script>
   <script src="js/profile.js"></script>
   <script src="js/script.js"></script>
-  <script src="js/internship-detail.js"></script>
+<script src="js/internship-detail.js"></script>
   <script>
     // Page init - load from URL param
     document.addEventListener('DOMContentLoaded', async function() {
