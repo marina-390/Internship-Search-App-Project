@@ -213,34 +213,51 @@ function getUrlParameter(name) {
 // Search/Filter functionality - now handled by attachFilterListeners on internships page
 
 function filterJobs() {
-  const searchText = searchInput ? searchInput.value.toLowerCase() : '';
-  const categoryFilter = document.getElementById('filterCategory') ? document.getElementById('filterCategory').value : '';
+  const searchText = document.getElementById('searchInput').value.toLowerCase();
+  const locationText = document.getElementById('filterLocation').value.toLowerCase();
+  const categoryId = document.getElementById('filterCategory').value;
+  const dateStartLimit = document.getElementById('filterDateStart').value; // YYYY-MM-DD
+  const dateEndLimit = document.getElementById('filterDateEnd').value;
+
   const jobCards = document.querySelectorAll('.job-card');
+  let visibleCount = 0;
 
   jobCards.forEach(card => {
-    const title = card.querySelector('.job-title').textContent.toLowerCase();
-    const company = card.querySelector('.job-company').textContent.toLowerCase();
-    const category = card.querySelector('.badge:last-child').textContent.toLowerCase();
+      // 1. Get data from card (we use data attributes or text content)
+      const title = card.querySelector('.job-title').textContent.toLowerCase();
+      const company = card.querySelector('.job-company').textContent.toLowerCase();
+      const location = card.querySelector('.badge-primary').textContent.toLowerCase();
+      const cardCategoryId = card.getAttribute('data-category-id');
+      
+      // Dates from data attributes (make sure to add these in loadInternships)
+      const jobStart = card.getAttribute('data-start'); // YYYY-MM-DD
+      const jobEnd = card.getAttribute('data-end');
 
-    const matchesSearch = title.includes(searchText) || company.includes(searchText);
-    const matchesCategory = !categoryFilter || category.includes(categoryFilter.toLowerCase());
+      // 2. Logic Checks
+      const matchesSearch = !searchText || title.includes(searchText) || company.includes(searchText);
+      const matchesLocation = !locationText || location.includes(locationText);
+      const matchesCategory = !categoryId || cardCategoryId === categoryId;
+      
+      // Date Logic: 
+      // Job must start AFTER our filter start
+      const matchesStart = !dateStartLimit || (jobStart && jobStart >= dateStartLimit);
+      // Job must end BEFORE our filter end
+      const matchesEnd = !dateEndLimit || (jobEnd && jobEnd <= dateEndLimit);
 
-    if (matchesSearch && matchesCategory) {
-      card.style.display = '';
-    } else {
-      card.style.display = 'none';
-    }
+      if (matchesSearch && matchesLocation && matchesCategory && matchesStart && matchesEnd) {
+          card.style.display = '';
+          visibleCount++;
+      } else {
+          card.style.display = 'none';
+      }
   });
-}
 
-// Clear form errors on input
-document.addEventListener('input', function(e) {
-  if (e.target.matches('input, textarea, select')) {
-    if (e.target.value.trim() !== '') {
-      e.target.style.borderColor = '';
-    }
+  // Toggle No Results message
+  const noResults = document.getElementById('noResults');
+  if (noResults) {
+      noResults.style.display = visibleCount === 0 ? 'block' : 'none';
   }
-});
+}
 
 // ==========================================
 // LOAD CATEGORIES FOR FILTER
@@ -250,21 +267,25 @@ async function loadCategoriesForFilter() {
   if (!filterCategory) return;
 
   try {
+    // Joining with job_groups to show group context
     const { data: categories, error } = await supabaseClient
       .from('job_categories')
-      .select('category_id, title')
+      .select(`
+        category_id, 
+        title, 
+        job_groups (title)
+      `)
       .order('title');
 
     if (error) throw error;
 
-    // Clear existing options except "All Categories"
     filterCategory.innerHTML = '<option value="">All Categories</option>';
 
-    // Add category options
     categories.forEach(cat => {
       const option = document.createElement('option');
-      option.value = cat.title;
-      option.textContent = cat.title;
+      option.value = cat.category_id; // Using ID for strictly accurate filtering
+      const groupTitle = cat.job_groups ? `${cat.job_groups.title}: ` : '';
+      option.textContent = `${groupTitle}${cat.title}`;
       filterCategory.appendChild(option);
     });
   } catch (err) {
@@ -348,13 +369,14 @@ async function loadInternships() {
     if (noResults) noResults.style.display = 'none';
 
     // Generate job cards
+    // Generate job cards
     jobsList.innerHTML = positions.map(pos => {
       const company = companyMap[pos.company_id] || {};
       const companyName = company.company_name || 'Unknown Company';
       const location = company.city || 'Remote';
       const category = categoryMap[pos.category_id] || 'General';
 
-      // Format period
+      // Format period for display
       let periodText = 'Flexible';
       if (pos.period_start && pos.period_end) {
         const start = new Date(pos.period_start).toLocaleDateString();
@@ -364,8 +386,15 @@ async function loadInternships() {
         periodText = 'Open-ended';
       }
 
+      // --- START OF UPDATED SECTION ---
+      // We add data-category-id, data-start, and data-end so the filter function can find them
       return `
-        <div class="job-card" data-job-id="${pos.position_id}">
+        <div class="job-card" 
+             data-job-id="${pos.position_id}" 
+             data-category-id="${pos.category_id}" 
+             data-start="${pos.period_start || ''}" 
+             data-end="${pos.period_end || ''}">
+             
           <div class="job-meta" style="display: flex; justify-content: space-between; align-items: start;">
             <div>
               <h3 class="job-title">${pos.title}</h3>
@@ -389,6 +418,7 @@ async function loadInternships() {
           </div>
         </div>
       `;
+      // --- END OF UPDATED SECTION ---
     }).join('');
 
     // Re-attach event listeners for job cards

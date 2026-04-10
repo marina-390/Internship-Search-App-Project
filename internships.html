@@ -36,28 +36,38 @@
   </section>
 
   <!-- Search & Filter Bar -->
-  <section class="section" style="padding: 2rem 0; border-bottom: 1px solid var(--border-color);">
+  <section class="section" style="padding: 2rem 0; border-bottom: 1px solid var(--border-color); background: #f9f9f9;">
     <div class="container">
-      <div class="form-row">
+      <div class="filter-wrapper" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
         <div>
-          <input 
-            type="text" 
-            id="searchInput" 
-            placeholder="Search by position or company..." 
-            style="margin-bottom: 0;"
-          />
+          <label style="font-size: 0.8rem; font-weight: bold; color: var(--text-muted);">POSITION / COMPANY</label>
+          <input type="text" id="searchInput" placeholder="e.g. Developer, Google..." style="width: 100%; margin-bottom: 0;" />
         </div>
+  
         <div>
-          <select id="filterCategory" style="margin-bottom: 0;">
+          <label style="font-size: 0.8rem; font-weight: bold; color: var(--text-muted);">LOCATION</label>
+          <input type="text" id="filterLocation" placeholder="e.g. Helsinki, Remote..." style="width: 100%; margin-bottom: 0;" />
+        </div>
+  
+        <div>
+          <label style="font-size: 0.8rem; font-weight: bold; color: var(--text-muted);">CATEGORY</label>
+          <select id="filterCategory" style="width: 100%; margin-bottom: 0;">
             <option value="">All Categories</option>
-            <option value="Engineering">Engineering</option>
-            <option value="Design">Design</option>
-            <option value="Marketing">Marketing</option>
-            <option value="Business">Business</option>
           </select>
         </div>
+  
         <div>
-          <button class="btn btn-primary" id="filterBtn" style="width: 100%;">Search</button>
+          <label style="font-size: 0.8rem; font-weight: bold; color: var(--text-muted);">START AFTER</label>
+          <input type="date" id="filterDateStart" style="width: 100%; margin-bottom: 0;" />
+        </div>
+  
+        <div>
+          <label style="font-size: 0.8rem; font-weight: bold; color: var(--text-muted);">END BEFORE</label>
+          <input type="date" id="filterDateEnd" style="width: 100%; margin-bottom: 0;" />
+        </div>
+  
+        <div style="display: flex; align-items: flex-end;">
+          <button class="btn btn-primary" id="filterBtn" style="width: 100%; height: 42px;">Apply Filters</button>
         </div>
       </div>
     </div>
