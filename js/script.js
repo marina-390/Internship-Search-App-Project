@@ -61,6 +61,10 @@ function initUserMenu() {
       const isCompany = session.role === 2;
       const fallbackIcon = isCompany ? '🏢' : avatarInitials;
       
+      const isAdmin = session.role === 0;
+      const adminLink = isAdmin ? `<li><a href="admin.html">🛡 Admin Panel</a></li>` : '';
+      const profileLabel = isAdmin ? 'My Account' : 'Profile';
+
       userLi.innerHTML = `
         <div class="user-avatar" style="color:'white'" onclick="toggleUserDropdown(event)" title="${displayName}">
           ${userData.avatar_url ? 
@@ -69,7 +73,8 @@ function initUserMenu() {
           }
         </div>
         <ul class="user-dropdown" id="userDropdown">
-          <li><a href="${getProfileUrl(session.role)}">Profile</a></li>
+          ${adminLink}
+          <li><a href="${getProfileUrl(session.role)}">${profileLabel}</a></li>
           <li><a href="#" onclick="logout(event)">Logout</a></li>
         </ul>
       `;
@@ -104,6 +109,7 @@ document.addEventListener('click', function(event) {
 
 // Get profile URL based on role
 function getProfileUrl(role) {
+  if (role === 0) return 'admin.html';
   return role === 2 ? 'company-profile.html' : 'student-profile.html';
 }
 
@@ -119,7 +125,12 @@ async function getUserData(userId) {
     let name = null;
     let avatar_url = null;
     
-    if (session.role === 2) {
+    if (session.role === 0) {
+      // Admin: just use login email as display name
+      name = session.login || 'Admin';
+      avatar_url = null;
+      return { name, avatar_url };
+    } else if (session.role === 2) {
       // Company: fetch from Companies table
       const { data } = await supabaseClient
         .from('Companies')
@@ -474,4 +485,3 @@ document.addEventListener('DOMContentLoaded', function() {
     attachFilterListeners();
   }
 });
-
