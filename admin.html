@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - InternHub</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .admin-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: white;
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      padding: 1.25rem;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .stat-card .stat-number {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin: 0;
+    }
+    .stat-card .stat-label {
+      font-size: 0.85rem;
+      color: var(--text-light);
+      margin: 0;
+    }
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+    .admin-table th {
+      background: var(--primary-color);
+      color: white;
+      padding: 0.6rem 0.875rem;
+      text-align: left;
+      font-weight: 600;
+    }
+    .admin-table td {
+      padding: 0.6rem 0.875rem;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-color);
+    }
+    .admin-table tr:nth-child(even) td {
+      background: var(--light-color);
+    }
+    .admin-table tr:hover td {
+      background: #eef2ff;
+    }
+    .role-badge {
+      display: inline-block;
+      padding: 0.15rem 0.55rem;
+      border-radius: 9999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .role-admin    { background: #ede9fe; color: #5b21b6; }
+    .role-student  { background: #dbeafe; color: #1e40af; }
+    .role-employer { background: #d1fae5; color: #065f46; }
+    .admin-section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 1.5rem 0 0.75rem 0;
+      padding-bottom: 0.4rem;
+      border-bottom: 2px solid var(--primary-color);
+      color: var(--dark-color);
+    }
+    .action-btn {
+      padding: 0.25rem 0.6rem;
+      font-size: 0.75rem;
+      border: none;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-danger { background: #fee2e2; color: #991b1b; }
+    .btn-danger:hover { background: #fca5a5; }
+    .btn-promote { background: #ede9fe; color: #5b21b6; }
+    .btn-promote:hover { background: #c4b5fd; }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-container">
+      <a href="index.html" class="logo">InternHub</a>
+      <ul class="nav-menu">
+        <li class="nav-item"><a href="internships.html" class="nav-link">Internships</a></li>
+        <li class="nav-item"><a href="#" class="nav-link" onclick="logout(event)">Log Out</a></li>
+      </ul>
+      <div class="hamburger"><span></span><span></span><span></span></div>
+    </div>
+  </nav>
+
+  <section class="section section-light" style="padding: 1.5rem 0;">
+    <div class="container">
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+        <h2 style="margin:0;">Admin Dashboard</h2>
+        <span id="adminEmail" style="font-size:0.85rem; color:var(--text-light);"></span>
+      </div>
+
+      <!-- Stats row -->
+      <div class="admin-stats" id="statsRow">
+        <div class="stat-card"><p class="stat-number" id="statUsers">-</p><p class="stat-label">Total Users</p></div>
+        <div class="stat-card"><p class="stat-number" id="statStudents">-</p><p class="stat-label">Students</p></div>
+        <div class="stat-card"><p class="stat-number" id="statEmployers">-</p><p class="stat-label">Employers</p></div>
+        <div class="stat-card"><p class="stat-number" id="statPositions">-</p><p class="stat-label">Positions</p></div>
+        <div class="stat-card"><p class="stat-number" id="statApplications">-</p><p class="stat-label">Applications</p></div>
+      </div>
+
+      <!-- Users table -->
+      <div class="card" style="padding: 1.25rem;">
+        <div class="admin-section-title">All Users</div>
+        <div style="overflow-x:auto;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Registered</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <tr><td colspan="5" style="text-align:center; color:var(--text-light);">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Positions table -->
+      <div class="card" style="padding: 1.25rem; margin-top: 1rem;">
+        <div class="admin-section-title">All Positions</div>
+        <div style="overflow-x:auto;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Company</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="positionsTableBody">
+              <tr><td colspan="6" style="text-align:center; color:var(--text-light);">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-bottom">
+      <p>&copy; 2026 InternHub Admin Panel</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async function () {
+      // Guard: only role 0 (admin) can access this page
+      const session = getCurrentSession();
+      if (!session) { window.location.href = 'auth.html'; return; }
+      if (session.role !== 0) {
+        alert('Access denied. Admin only.');
+        window.location.href = 'index.html';
+        return;
+      }
+
+      document.getElementById('adminEmail').textContent = 'Logged in as: ' + session.login;
+
+      await loadStats();
+      await loadUsers();
+      await loadPositions();
+    });
+
+    async function loadStats() {
+      try {
+        const [usersRes, posRes, appRes] = await Promise.all([
+          supabaseClient.from('Users').select('user_id, role', { count: 'exact' }),
+          supabaseClient.from('positions').select('position_id', { count: 'exact' }),
+          supabaseClient.from('applications').select('application_id', { count: 'exact' })
+        ]);
+
+        const users       = usersRes.data || [];
+        const students    = users.filter(u => u.role === 1).length;
+        const employers   = users.filter(u => u.role === 2).length;
+
+        document.getElementById('statUsers').textContent        = users.length;
+        document.getElementById('statStudents').textContent     = students;
+        document.getElementById('statEmployers').textContent    = employers;
+        document.getElementById('statPositions').textContent    = (posRes.data || []).length;
+        document.getElementById('statApplications').textContent = (appRes.data || []).length;
+      } catch (err) {
+        console.error('Stats error:', err);
+      }
+    }
+
+    async function loadUsers() {
+      const tbody = document.getElementById('usersTableBody');
+      try {
+        const { data: users, error } = await supabaseClient
+          .from('Users')
+          .select('user_id, user_login, role, created_at')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const roleLabel = { 0: ['Admin','role-admin'], 1: ['Student','role-student'], 2: ['Employer','role-employer'] };
+
+        tbody.innerHTML = users.map(u => {
+          const [label, cls] = roleLabel[u.role] || ['Unknown',''];
+          const date = new Date(u.created_at).toLocaleDateString();
+          return `<tr>
+            <td>${u.user_id}</td>
+            <td>${u.user_login}</td>
+            <td><span class="role-badge ${cls}">${label}</span></td>
+            <td>${date}</td>
+            <td style="display:flex; gap:0.4rem;">
+              <button class="action-btn btn-danger" onclick="deleteUser(${u.user_id}, '${u.user_login}')">Delete</button>
+              ${u.role !== 0 ? `<button class="action-btn btn-promote" onclick="setRole(${u.user_id}, 0)">→ Admin</button>` : ''}
+              ${u.role !== 1 ? `<button class="action-btn" style="background:#dbeafe;color:#1e40af;" onclick="setRole(${u.user_id}, 1)">→ Student</button>` : ''}
+              ${u.role !== 2 ? `<button class="action-btn" style="background:#d1fae5;color:#065f46;" onclick="setRole(${u.user_id}, 2)">→ Employer</button>` : ''}
+            </td>
+          </tr>`;
+        }).join('');
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="5" style="color:red;">Error: ${err.message}</td></tr>`;
+      }
+    }
+
+    async function loadPositions() {
+      const tbody = document.getElementById('positionsTableBody');
+      try {
+        const { data: positions, error } = await supabaseClient
+          .from('positions')
+          .select('position_id, title, status, created_at, Companies(company_name)')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const statusColors = {
+          active: 'background:#d1fae5;color:#065f46;',
+          draft:  'background:#f3f4f6;color:#374151;',
+          closed: 'background:#fee2e2;color:#991b1b;'
+        };
+
+        tbody.innerHTML = positions.map(p => {
+          const sc = statusColors[p.status] || '';
+          const date = new Date(p.created_at).toLocaleDateString();
+          const company = p.Companies?.company_name || 'Unknown';
+          return `<tr>
+            <td>${p.position_id}</td>
+            <td>${p.title}</td>
+            <td>${company}</td>
+            <td><span class="role-badge" style="${sc}">${p.status}</span></td>
+            <td>${date}</td>
+            <td>
+              <button class="action-btn btn-danger" onclick="deletePosition(${p.position_id})">Delete</button>
+            </td>
+          </tr>`;
+        }).join('');
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" style="color:red;">Error: ${err.message}</td></tr>`;
+      }
+    }
+
+    async function deleteUser(id, email) {
+      if (!confirm(`Delete user "${email}"? This cannot be undone.`)) return;
+      const { error } = await supabaseClient.from('Users').delete().eq('user_id', id);
+      if (error) { alert('Error: ' + error.message); return; }
+      await loadStats();
+      await loadUsers();
+    }
+
+    async function setRole(id, newRole) {
+      const labels = {0:'Admin', 1:'Student', 2:'Employer'};
+      if (!confirm(`Change this user's role to ${labels[newRole]}?`)) return;
+      const { error } = await supabaseClient.from('Users').update({ role: newRole }).eq('user_id', id);
+      if (error) { alert('Error: ' + error.message); return; }
+      await loadStats();
+      await loadUsers();
+    }
+
+    async function deletePosition(id) {
+      if (!confirm('Delete this position? This cannot be undone.')) return;
+      const { error } = await supabaseClient.from('positions').delete().eq('position_id', id);
+      if (error) { alert('Error: ' + error.message); return; }
+      await loadStats();
+      await loadPositions();
+    }
+  </script>
+</body>
+</html>
