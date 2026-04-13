@@ -233,7 +233,7 @@ To connect this template to a backend:
 
 ## 📄 License
 
-This template is free to use and customize for your projects.
+Apache-2.0 license
 
 ## 💡 Tips & Best Practices
 
