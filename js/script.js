@@ -216,46 +216,47 @@ function filterJobs() {
   const searchText = document.getElementById('searchInput').value.toLowerCase();
   const locationText = document.getElementById('filterLocation').value.toLowerCase();
   const categoryId = document.getElementById('filterCategory').value;
-  const dateStartLimit = document.getElementById('filterDateStart').value; // YYYY-MM-DD
+  const favoritesFilter = document.getElementById('favoritesFilter')?.value || 'all';
+  const dateStartLimit = document.getElementById('filterDateStart').value;
   const dateEndLimit = document.getElementById('filterDateEnd').value;
 
   const jobCards = document.querySelectorAll('.job-card');
   let visibleCount = 0;
 
   jobCards.forEach(card => {
-      // 1. Get data from card (we use data attributes or text content)
-      const title = card.querySelector('.job-title').textContent.toLowerCase();
-      const company = card.querySelector('.job-company').textContent.toLowerCase();
-      const location = card.querySelector('.badge-primary').textContent.toLowerCase();
-      const cardCategoryId = card.getAttribute('data-category-id');
-      
-      // Dates from data attributes (make sure to add these in loadInternships)
-      const jobStart = card.getAttribute('data-start'); // YYYY-MM-DD
-      const jobEnd = card.getAttribute('data-end');
+    const title = card.querySelector('.job-title').textContent.toLowerCase();
+    const company = card.querySelector('.job-company').textContent.toLowerCase();
+    const location = card.querySelector('.badge-primary').textContent.toLowerCase();
+    const cardCategoryId = card.getAttribute('data-category-id');
+    const jobId = card.getAttribute('data-job-id');
+    const jobStart = card.getAttribute('data-start');
+    const jobEnd = card.getAttribute('data-end');
 
-      // 2. Logic Checks
-      const matchesSearch = !searchText || title.includes(searchText) || company.includes(searchText);
-      const matchesLocation = !locationText || location.includes(locationText);
-      const matchesCategory = !categoryId || cardCategoryId === categoryId;
-      
-      // Date Logic: 
-      // Job must start AFTER our filter start
-      const matchesStart = !dateStartLimit || (jobStart && jobStart >= dateStartLimit);
-      // Job must end BEFORE our filter end
-      const matchesEnd = !dateEndLimit || (jobEnd && jobEnd <= dateEndLimit);
+    const matchesSearch = !searchText || title.includes(searchText) || company.includes(searchText);
+    const matchesLocation = !locationText || location.includes(locationText);
+    const matchesCategory = !categoryId || cardCategoryId === categoryId;
+    const matchesStart = !dateStartLimit || (jobStart && jobStart >= dateStartLimit);
+    const matchesEnd = !dateEndLimit || (jobEnd && jobEnd <= dateEndLimit);
 
-      if (matchesSearch && matchesLocation && matchesCategory && matchesStart && matchesEnd) {
-          card.style.display = '';
-          visibleCount++;
-      } else {
-          card.style.display = 'none';
-      }
+    const favoritesOnly = document.getElementById('favoritesOnly')?.checked || false;
+
+    if (favoritesOnly) {
+      matchesFavorites = getFavorites().includes(jobId);
+    } else {
+      matchesFavorites = true;
+    }
+
+    if (matchesSearch && matchesLocation && matchesCategory && matchesStart && matchesEnd && matchesFavorites) {
+      card.style.display = '';
+      visibleCount++;
+    } else {
+      card.style.display = 'none';
+    }
   });
 
-  // Toggle No Results message
   const noResults = document.getElementById('noResults');
   if (noResults) {
-      noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+    noResults.style.display = visibleCount === 0 ? 'block' : 'none';
   }
 }
 
@@ -318,7 +319,8 @@ async function loadInternships() {
         is_open_ended,
         status,
         company_id,
-        category_id
+        category_id,
+        created_at
       `)
       .eq('status', 'active')
       .order('created_at', { ascending: false });
@@ -368,8 +370,8 @@ async function loadInternships() {
     // Hide no results message
     if (noResults) noResults.style.display = 'none';
 
-    // Generate job cards
-    jobsList.innerHTML = positions.map(pos => {
+    // Generate job cards with data-created-at
+    jobsList.innerHTML = positions.map((pos, index) => {
       const company = companyMap[pos.company_id] || {};
       const companyName = company.company_name || 'Unknown Company';
       const location = company.city || 'Remote';
@@ -385,14 +387,13 @@ async function loadInternships() {
         periodText = 'Open-ended';
       }
 
-      // --- START OF UPDATED SECTION ---
-      // We add data-category-id, data-start, and data-end so the filter function can find them
       return `
         <div class="job-card" 
              data-job-id="${pos.position_id}" 
              data-category-id="${pos.category_id}" 
              data-start="${pos.period_start || ''}" 
-             data-end="${pos.period_end || ''}">
+             data-end="${pos.period_end || ''}"
+             data-created-at="${pos.created_at}">
              
           <div class="job-meta" style="display: flex; justify-content: space-between; align-items: start;">
             <div>
@@ -417,7 +418,6 @@ async function loadInternships() {
           </div>
         </div>
       `;
-      // --- END OF UPDATED SECTION ---
     }).join('');
 
     // Re-attach event listeners for job cards
@@ -447,20 +447,71 @@ function attachJobCardListeners() {
     });
   });
 
-  // Add to Favorites (Demo)
+// --- IMPROVED FAVORITE SYSTEM ---
+
+function getFavorites() {
+  return JSON.parse(localStorage.getItem('favorites') || '[]');
+}
+
+function saveFavorites(favorites) {
+  localStorage.setItem('favorites', JSON.stringify(favorites));
+}
+
+function toggleFavorite(jobId, btn) {
+  if (!jobId) return;
+  const favorites = getFavorites();
+  const jobIdStr = jobId.toString();
+  const index = favorites.indexOf(jobIdStr);
+  
+  if (index > -1) {
+      favorites.splice(index, 1);
+      btn.innerHTML = '🤍';
+  } else {
+      favorites.push(jobIdStr);
+      btn.innerHTML = '❤️';
+  }
+  
+  saveFavorites(favorites);
+  
+  // If we are on the search page, refresh the list
+  if (typeof filterJobs === 'function') {
+      filterJobs();
+  }
+}
+
+function updateFavoriteStates() {  
+  const favorites = getFavorites();  
+  
+  document.querySelectorAll('.favorite-btn').forEach(btn => {    
+      // 1. Try to get ID from a parent container (like the job-card or favBtnContainer)
+      const jobContainer = btn.closest('[data-job-id]'); 
+      // 2. Or check if we are on the detail page and it's stored in the window
+      const jobId = jobContainer ? jobContainer.getAttribute('data-job-id') : window.currentPosition?.position_id;    
+
+      if (jobId && favorites.includes(jobId.toString())) {      
+          btn.innerHTML = '❤️';    
+      } else {
+          btn.innerHTML = '🤍';
+      }
+  });
+}
+
+// Make sure these are globally accessible
+window.getFavorites = getFavorites;
+window.toggleFavorite = toggleFavorite;
+window.updateFavoriteStates = updateFavoriteStates;
+
+// Real Favorites Toggle
   const favoriteButtons = document.querySelectorAll('.job-card .favorite-btn');
   favoriteButtons.forEach(btn => {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
-      this.classList.toggle('active');
-      const jobTitle = this.closest('.job-card').querySelector('.job-title').textContent;
-      if (this.classList.contains('active')) {
-        alert(`Added "${jobTitle}" to favorites!`);
-      } else {
-        alert(`Removed "${jobTitle}" from favorites!`);
-      }
+      const jobId = this.closest('.job-card').getAttribute('data-job-id');
+      toggleFavorite(jobId, this);
     });
   });
+
+  updateFavoriteStates();
 }
 
 // ==========================================

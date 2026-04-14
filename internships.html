@@ -56,6 +56,11 @@
           <label style="font-size: 0.8rem; font-weight: bold; color: var(--text-muted);">END BEFORE</label>
           <input type="date" id="filterDateEnd" style="width: 100%; margin-bottom: 0;" />
         </div>
+
+        <div class="checkbox-group" style="margin-bottom: 1.5rem;">
+          <input type="checkbox" id="favoritesOnly" name="favoritesOnly" onchange="filterJobs()">
+          <label for="favoritesOnly" style="margin: 0; font-weight: 400;">My Favorites </label>
+        </div>
   
         <div style="display: flex; align-items: flex-end;">
           <button class="btn btn-primary" id="filterBtn" style="width: 100%; height: 42px;">Apply Filters</button>
