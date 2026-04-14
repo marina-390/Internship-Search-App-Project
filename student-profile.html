@@ -366,6 +366,68 @@
         grid-template-columns: 1fr;
       }
     }
+
+    /* Application Item Styling */
+.application-card {
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: transform 0.2s;
+}
+
+.application-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.app-info h5 {
+    margin: 0 0 0.25rem 0;
+    color: var(--primary-color);
+}
+
+.app-info p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-light);
+}
+
+.app-actions {
+    display: flex;
+    gap: 8px; /* Space between buttons */
+    margin-top: 12px;
+}
+
+.app-actions button {
+    flex: 1; /* Makes all buttons equal width */
+    padding: 6px 4px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s;
+}
+
+.btn-view {
+    color: var(--primary-color);
+    background: #eef2ff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.btn-delete {
+    color: #ef4444;
+    background: #fef2f2;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
   </style>
 </head>
 <body>
@@ -390,11 +452,11 @@
   </nav>
 
   <!-- Profile Section -->
-  <section class="section section-light">
+  <section class="section section-light" style="padding:1.5rem 0;">
     <div class="container">
-      <div class="grid-2">
+      <div class="profile-page-layout">
         <!-- Main Profile Content -->
-        <div>
+        <div class="main-content">
           <div class="card">
             <!-- Profile Header -->
             <div class="profile-header">
@@ -566,41 +628,76 @@
         </div>
 
         <!-- Sidebar -->
-        <div>
-          <!-- CV / Files Card -->
-          <div class="card" style="position: sticky; top: 90px; margin-bottom: 2rem;">
-            <div class="card-header">
-              <h3 class="card-title">CV / Resume</h3>
-            </div>
-            <div class="card-content">
-              <div id="cvFileInfo" style="margin-bottom: 1rem;">
-                <p class="text-muted">No CV uploaded yet.</p>
-              </div>
-              <label for="cvUpload" class="btn btn-secondary" style="width:100%; margin-bottom:0.75rem; display:block; text-align:center; cursor:pointer;">
-                Upload CV (PDF)
-              </label>
-            
-              <input 
-                type="file" 
-                id="cvUpload" 
-                accept=".pdf" 
-                style="display:none;" 
-                onchange="uploadCV(this)" 
-              />
-            </div>
+        <div class="sidebar">
+          <!-- Sidebar wrapper -->
+          <div class="sidebar-col-inner">
 
-          <!-- Applications Card -->
-          <div class="card" style="margin-bottom: 2rem;">
-            <div class="card-header">
-              <h3 class="card-title">My Applications</h3>
+          <!-- CV card — compact -->
+          <div class="sidebar-card" style="position:sticky; top:80px;">
+            <h4>📄 CV / Resume</h4>
+            <div id="cvFileInfo">
+              <p>No CV uploaded yet.</p>
             </div>
-            <div class="card-content" id="applicationsContainer">
-              <p class="text-muted">No applications yet.</p>
+            <label for="cvUpload" class="btn btn-secondary" style="width:100%; display:block; text-align:center; cursor:pointer;">
+              Upload CV (PDF)
+            </label>
+            <input type="file" id="cvUpload" accept=".pdf" style="display:none;" onchange="uploadCV(this)" />
+          </div>
+
+          <!-- Applications card — compact -->
+          <div class="sidebar-card">
+            <h4>📋 My Applications</h4>
+            <div id="applicationsContainer">
+              <p>No applications yet.</p>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+          <div id="editAppModal" class="modal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); overflow-y: auto;">
+            <div class="modal-content" style="background:#fff; margin:5% auto; padding:30px; width:95%; max-width:600px; border-radius:12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+              <h3 style="margin-top:0; margin-bottom:1.5rem; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">Edit Your Application</h3>
+              
+              <input type="hidden" id="editAppId">
+          
+              <div id="dynamicFormFields">
+                  <div class="form-group" style="margin-bottom: 1rem;">
+                      <label style="display:block; font-weight:600; margin-bottom:5px;">Full Name</label>
+                      <input type="text" id="editAppName" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                  </div>
+          
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                      <div class="form-group">
+                          <label style="display:block; font-weight:600; margin-bottom:5px;">Email Address</label>
+                          <input type="email" id="editAppEmail" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                      </div>
+                      <div class="form-group">
+                          <label style="display:block; font-weight:600; margin-bottom:5px;">Phone Number</label>
+                          <input type="tel" id="editAppPhone" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                      </div>
+                  </div>
+          
+                  <div class="sidebar-card" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #eee;">
+                    <h4 style="margin-top:0;">📄 CV / Resume</h4>
+                    
+                    <div id="editCvContainer"></div>
+                
+                    <input type="file" id="editCvUpload" accept=".pdf" style="display:none;" onchange="handleEditCVSelection(this)" />
+                </div>
+          
+                  <div class="form-group" style="margin-bottom: 1rem;">
+                      <label style="display:block; font-weight:600; margin-bottom:5px;">Cover Letter / Why should we hire you?</label>
+                      <textarea id="editAppLetter" rows="6" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-family: inherit; resize: vertical;"></textarea>
+                  </div>
+              </div>
+          
+              <div style="display:flex; gap:10px; margin-top:20px;">
+                <button onclick="updateApplication()" class="btn btn-primary" style="flex:2; padding: 12px;">Save Changes</button>
+                <button onclick="document.getElementById('editAppModal').style.display='none'" class="btn btn-secondary" style="flex:1; padding: 12px;">Cancel</button>
+              </div>
+            </div>
+          </div>
+
+          </div><!-- end sidebar-col -->
+        </div><!-- end profile-page-layout -->
+      </div><!-- end container -->
   </section>
 
   <!-- Footer -->
@@ -656,5 +753,6 @@
   <script src="js/auth.js"></script>
   <script src="js/profile.js"></script>
   <script src="js/script.js"></script>
+
 </body>
 </html>

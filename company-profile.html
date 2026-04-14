@@ -78,6 +78,38 @@
         font-size: 2rem;
       }
     }
+
+    .modal-overlay {
+        display: none; 
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 10000;
+        overflow-y: auto;
+        padding: 2rem 1rem;
+    }
+    .modal-content {
+        background: #fff;
+        border-radius: 1rem;
+        max-width: 600px;
+        margin: 2rem auto;
+        padding: 2rem;
+        position: relative;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 1rem; right: 1rem;
+        background: none; border: none;
+        font-size: 1.5rem; cursor: pointer;
+        color: var(--text-light);
+    }
+
+    .form-group { margin-bottom: 1.2rem; }
+    .form-group label { display: block; margin-bottom: 0.4rem; font-weight: 600; }
+    .form-control { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 0.5rem; }
   </style>
 </head>
 <body>
@@ -158,10 +190,14 @@
 
     <div id="companyEditMode" style="display: none; margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
       <div class="company-section-title">Edit Company Details</div>
-      <div class="form-group">
-        <label>Company Name</label>
-        <input type="text" id="eCompanyName" class="edit-input" style="width:100%; margin-bottom:1rem;" placeholder="Company">
-      </div>
+<div class="form-group">
+          <label>Company Name</label>
+          <input type="text" id="eCompanyName" class="edit-input" style="width:100%; margin-bottom:1rem;" placeholder="Company">
+        </div>
+        <div class="form-group">
+          <label>Company Email</label>
+          <input type="email" id="eCompanyEmail" class="edit-input" style="width:100%; margin-bottom:1rem;" placeholder="company@example.com">
+        </div>
       <div class="form-group">
         <label>About Company</label>
         <textarea id="eCompanyDesc" rows="4" style="width:100%; margin-bottom:1rem;" placeholder="Write somthing about your company"></textarea>
@@ -275,14 +311,24 @@
         </div>
 
         <div class="form-group">
-            <label>Description *</label>
+            <label>About As *</label>
             <textarea id="pDesc" class="form-control" rows="4" placeholder="Describe the role and responsibilities..."></textarea>
         </div>
 
         <div class="form-group">
-          <label>Requirements</label>
+          <label>Responsibilities</label>
+          <textarea id="pRespon" class="form-control" rows="3" placeholder="Daily tasks and duties..."></textarea>
+        </div>
+
+        <div class="form-group">
+
           <textarea id="pReqs" class="form-control" rows="2" placeholder="Skills, tools..."></textarea>
       </div>
+      
+      <div class="form-group">
+        <label>Salary / Compensation</label>
+        <input type="text" id="pSalary" class="form-control" placeholder="e.g., 2000€/month or Negotiable">
+    </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
             <div class="form-group">

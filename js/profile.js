@@ -453,7 +453,7 @@ async function loadCompanyProfile() {
     if (error) throw error;
     if (profile) {
       currentProfile = profile; 
-      fillCompanyDisplay(profile);
+fillCompanyDisplay(profile, session);
       fillCompanyLogo(profile);
       fillCompanyCvInfo();
       await loadCompanyTeam();
@@ -533,7 +533,8 @@ function fillCompanyDisplay(profile) {
 
 
 
-async function saveCompanyProfile() {
+
+async function saveCompanyProfile() { 
     const session = getCurrentSession(); 
     if (!session) {
         alert("You must be logged in to save.");
@@ -563,11 +564,24 @@ async function saveCompanyProfile() {
 
         if (error) throw error;
 
+        const emailInput = document.getElementById('eCompanyEmail');
+        if (emailInput && emailInput.value.trim() && session?.user?.id) {
+            await supabaseClient
+                .from('Users')
+                .update({ email: emailInput.value.trim() })
+                .eq('id', session.user.id);
+        }
+
         document.getElementById('dCompanyName').innerText = updates.company_name;
         document.getElementById('dCompanyDesc').innerText = updates.description;
-        document.getElementById('dHeadquarters').innerText = updates.city;
+  document.getElementById('dHeadquarters').innerText = updates.city;
         document.getElementById('dTeamSize').innerText = updates.y_tunnus;
+        if(document.getElementById('dYTunnus'))
+            document.getElementById('dYTunnus').innerText = updates.y_tunnus;
         document.getElementById('dWebsite').innerText = updates.website;
+        if (document.getElementById('dCompanyEmail')) {
+            document.getElementById('dCompanyEmail').innerText = emailInput ? emailInput.value.trim() : session.login || 'Not set';
+        }
 
         // Update local cache so toggleCompanyEdit pre-fills correctly next time
         Object.assign(currentProfile, updates);
@@ -967,84 +981,251 @@ function fillCompanyLogo(profile) {
 // ==========================================
 // FILL APPLICATIONS
 // ==========================================
+// ==========================================
+// APPLICATIONS MANAGEMENT
+// ==========================================
+
 function fillApplications(applications) {
   const container = document.getElementById('applicationsContainer');
   if (!container) return;
 
-  if (applications.length === 0) {
-    container.innerHTML = '<p class="text-muted">No applications yet.</p>';
-    return;
+  if (!applications || applications.length === 0) {
+      container.innerHTML = '<p>No applications yet.</p>';
+      return;
   }
 
   container.innerHTML = applications.map(app => {
-    const title = app.positions?.title || 'Position';
-    const statusClass = 'status-' + app.status;
-    return `
-      <div class="application-item">
-        <p style="margin:0; font-weight:600;">${title}</p>
-        <span class="status-badge ${statusClass}">${app.status}</span>
-        <p style="margin:0.25rem 0 0; font-size:0.8rem; color:var(--text-light);">
-          ${new Date(app.applied_at).toLocaleDateString()}
-        </p>
-      </div>
-    `;
+      const jobTitle = app.positions?.title || 'Unknown Position';
+      
+      // Convert the app object to a string so it can be passed into the function
+      const appData = JSON.stringify(app).replace(/"/g, '&quot;');
+
+      return `
+          <div class="application-card" id="app-${app.id}">
+              <div class="app-info">
+                  <h5>${jobTitle}</h5>
+                  <p>Status: <span class="status-badge status-${(app.status || 'pending').toLowerCase()}">${app.status || 'Pending'}</span></p>
+              </div>
+              <div class="app-actions" style="display: flex; gap: 8px; margin-top: 10px;">
+                  <button class="btn-view" onclick="viewApplication(${app.position_id})">View</button>
+                  
+                  <button class="btn-view" style="background:#f3f4f6; color:#374151;" onclick="openEditAppModal(${appData})">Edit</button>
+                  
+                  <button class="btn-delete" onclick="deleteApplication(${app.id})">Delete</button>
+              </div>
+          </div>
+      `;
   }).join('');
 }
 
+
+// Function to open the modal and fill it with current data
+function openEditAppModal(app) {
+  document.getElementById('editAppId').value = app.application_id;
+  document.getElementById('editAppName').value = app.full_name || '';
+  document.getElementById('editAppEmail').value = app.email || '';
+  document.getElementById('editAppPhone').value = app.phone || '';
+  document.getElementById('editAppLetter').value = app.cover_letter || '';
+  
+  // Store current CV state in global variables or data attributes
+  renderCvEditSection(app.cv_original_name, app.cv_url);
+
+  document.getElementById('editAppModal').style.display = 'block';
+}
+
+function renderCvEditSection(fileName, fileUrl) {
+  const container = document.getElementById('editCvContainer');
+  
+  if (fileName && fileUrl) {
+      // CASE: File exists - show name and 'X' button
+      container.innerHTML = `
+          <div style="display: flex; align-items: center; justify-content: space-between; background: white; padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd;">
+              <span style="font-size: 0.9rem; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80%;">
+                  ✅ ${fileName}
+              </span>
+              <button type="button" onclick="removeCvFromEdit()" style="background: #fee2e2; color: #ef4444; border: none; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-weight: bold;">✕</button>
+          </div>
+      `;
+  } else {
+      // CASE: No file - show upload button
+      container.innerHTML = `
+          <label for="editCvUpload" class="btn btn-secondary" style="width:100%; display:block; text-align:center; cursor:pointer; padding: 8px 0; background:#6366f1; color:white; border-radius:6px;">
+              Upload CV (PDF)
+          </label>
+      `;
+  }
+}
+
+// Variable to track if the user deleted their CV during this edit session
+let isCvDeleted = false;
+
+function removeCvFromEdit() {
+    if(confirm("Remove this CV? You will need to upload a new one before saving.")) {
+        isCvDeleted = true;
+        // Reset the file input value
+        document.getElementById('editCvUpload').value = "";
+        // Re-render to show the upload button
+        renderCvEditSection(null, null);
+    }
+}
+
+function handleEditCVSelection(input) {
+    if (input.files && input.files[0]) {
+        isCvDeleted = false; // They uploaded a new one
+        renderCvEditSection(input.files[0].name, "pending-upload");
+    }
+}
+
+// Function to save the updated data
+async function updateApplication() {
+  const appId = document.getElementById('editAppId').value;
+  const saveBtn = document.querySelector('#editAppModal .btn-primary');
+
+  const updatedData = {
+      full_name: document.getElementById('editAppName').value,
+      email: document.getElementById('editAppEmail').value,
+      phone: document.getElementById('editAppPhone').value,
+      cover_letter: document.getElementById('editAppLetter').value,
+      updated_at: new Date().toISOString()
+  };
+
+  // If user clicked 'X' and didn't upload a new one, set fields to null
+  if (isCvDeleted) {
+      updatedData.cv_url = null;
+      updatedData.cv_original_name = null;
+  }
+
+  try {
+      saveBtn.disabled = true;
+      
+      const cvInput = document.getElementById('editCvUpload');
+      if (cvInput.files && cvInput.files[0]) {
+          // ... (Same upload logic as before) ...
+          const file = cvInput.files[0];
+          const filePath = `resumes/${Date.now()}_${file.name}`;
+          await supabaseClient.storage.from('resumes').upload(filePath, file);
+          const { data: urlData } = supabaseClient.storage.from('resumes').getPublicUrl(filePath);
+          
+          updatedData.cv_url = urlData.publicUrl;
+          updatedData.cv_original_name = file.name;
+      }
+
+      const { error } = await supabaseClient
+          .from('applications')
+          .update(updatedData)
+          .eq('application_id', appId);
+
+      if (error) throw error;
+
+      alert("Update successful!");
+      isCvDeleted = false; // reset
+      document.getElementById('editAppModal').style.display = 'none';
+      loadStudentProfile();
+
+  } catch (err) {
+      alert("Error: " + err.message);
+  } finally {
+      saveBtn.disabled = false;
+  }
+}
+
+/**
+* Redirects user to the internship detail page
+*/
+function viewApplication(positionId) {
+  window.location.href = `internship-detail.html?id=${positionId}`;
+}
+
+/**
+* Deletes an application from the database
+*/
+async function deleteApplication(applicationId) {
+  if (!confirm("Are you sure you want to withdraw this application? This cannot be undone.")) return;
+
+  try {
+      const { error } = await supabaseClient
+          .from('applications')
+          .delete()
+          .eq('id', applicationId);
+
+      if (error) throw error;
+
+      // Remove from UI
+      const element = document.getElementById(`app-${applicationId}`);
+      if (element) {
+          element.style.opacity = '0';
+          setTimeout(() => element.remove(), 300);
+      }
+
+      // If no items left, show empty message
+      const container = document.getElementById('applicationsContainer');
+      if (container.children.length === 0) {
+          container.innerHTML = '<p>No applications yet.</p>';
+      }
+
+      alert("Application withdrawn successfully.");
+  } catch (err) {
+      console.error('Delete error:', err);
+      alert("Failed to delete application: " + err.message);
+  }
+}
+
+async function deleteApplication(applicationId) {
+  if (!confirm("Withdraw this application?")) return;
+
+  try {
+      const { error } = await supabaseClient
+          .from('applications')
+          .delete()
+          .eq('application_id', applicationId); // Changed from 'id' to 'application_id'
+
+      if (error) throw error;
+      loadStudentProfile();
+  } catch (err) {
+      alert("Delete failed: " + err.message);
+  }
+}
+/**
+ * Fetches city suggestions from Digitransit API
+ * @param {string} query - The city name being typed
+ */
 async function handleCityInput(query) {
-    const datalist = document.getElementById('citySuggestions');
-    if (!datalist) return;
+  const datalist = document.getElementById('citySuggestions');
+  const cleanQuery = query.trim();
 
-    // 1. CLEAR list immediately if query is too short
-    if (!query || query.length < 2) {
-        datalist.innerHTML = ''; 
-        return;
-    }
+  // Only search if 2 or more characters are typed
+  if (!cleanQuery || cleanQuery.length < 2) {
+      if (datalist) datalist.innerHTML = '';
+      return;
+  }
 
-    try {
-        // Broad search for speed, we filter the "city" part manually below
-        const url = `https://api.digitransit.fi/geocoding/v1/autocomplete?text=${encodeURIComponent(query)}&boundary.country=FIN&size=20`;
+  try {
+      const url = `https://api.digitransit.fi/geocoding/v1/autocomplete?text=${encodeURIComponent(cleanQuery)}&sources=oa,osm&layers=address,locality&digitransit-subscription-key=${DIGITRANSIT_API_KEY}`;
 
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: { 
-                'digitransit-subscription-key': DIGITRANSIT_API_KEY 
-            }
-        });
+      const response = await fetch(url);
+      const data = await response.json();
 
-        if (!response.ok) return;
+      if (datalist) {
+          datalist.innerHTML = ''; // Clear previous suggestions
 
-        const data = await response.json();
-        const uniqueCities = new Set();
-        
-        // 2. Clear previous options before adding new ones
-        datalist.innerHTML = ''; 
-
-        if (data.features) {
-            data.features.forEach(feature => {
-                const props = feature.properties;
-                
-                // 3. PRIORITY: Take the 'locality' (this is the actual City name)
-                const cityName = props.locality || props.name;
-
-                // 4. FILTER: If it has a number or a street ending, SKIP IT
-                const hasNumber = /\d/.test(cityName);
-                const isStreet = cityName.toLowerCase().endsWith('tie') || 
-                                 cityName.toLowerCase().endsWith('katu') || 
-                                 cityName.toLowerCase().endsWith('kuja');
-
-                if (!hasNumber && !isStreet && !uniqueCities.has(cityName)) {
-                    uniqueCities.add(cityName);
-                    
-                    const option = document.createElement('option');
-                    option.value = cityName;
-                    datalist.appendChild(option);
-                }
-            });
-        }
-    } catch (err) {
-        console.error('City Search Error:', err);
-    }
+          if (data.features && data.features.length > 0) {
+              // Filter and display unique city/locality names
+              const uniqueCities = new Set();
+              
+              data.features.forEach(feature => {
+                  const cityName = feature.properties.locality || feature.properties.name;
+                  if (cityName && !uniqueCities.has(cityName)) {
+                      uniqueCities.add(cityName);
+                      const option = document.createElement('option');
+                      option.value = cityName;
+                      datalist.appendChild(option);
+                  }
+              });
+          }
+      }
+  } catch (err) {
+      console.error("City Search Error:", err);
+  }
 }
 // ==========================================
 // EDIT MODE
@@ -1107,6 +1288,7 @@ function toggleCompanyEdit(isEditing) {
     if (isEditing) {
         // 1. Copy current text INTO the input boxes so you can edit them
         document.getElementById('eCompanyName').value = document.getElementById('dCompanyName').innerText;
+        document.getElementById('eCompanyEmail').value = document.getElementById('dCompanyEmail').innerText;
         document.getElementById('eCompanyDesc').value = document.getElementById('dCompanyDesc').innerText;
         document.getElementById('eHeadquarters').value = document.getElementById('dHeadquarters').innerText;
         document.getElementById('eTeamSize').value = document.getElementById('dTeamSize').innerText;

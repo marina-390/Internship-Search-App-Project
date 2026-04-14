@@ -589,8 +589,10 @@
       localStorage.setItem('userRole', user.role);
       localStorage.setItem('userLogin', email);
 
-      // Redirect: role 1 = student, role 2 = employer, role 0 = admin
-      if (user.role === 1) {
+      // Redirect: role 0 = admin, role 1 = student, role 2 = employer
+      if (user.role === 0) {
+        window.location.href = 'admin.html';
+      } else if (user.role === 1) {
         window.location.href = 'student-profile.html';
       } else if (user.role === 2) {
         window.location.href = 'company-profile.html';
