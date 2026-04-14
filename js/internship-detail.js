@@ -88,30 +88,65 @@ async function loadInternshipDetail(positionId) {
         if (document.getElementById('dHeadquarters')) document.getElementById('dHeadquarters').textContent = company?.city || 'N/A';
         if (document.getElementById('dYTunnus')) document.getElementById('dYTunnus').textContent = company?.y_tunnus || 'N/A';
   
+        if (document.getElementById('displayResponsibilities')) document.getElementById('displayResponsibilities').textContent = position.responsibilities || 'No responsibilities.';
+        if (document.getElementById('pReqs')) document.getElementById('pReqs').textContent = position.requirements || 'No requirements.';
+
+        // --- 4. FAVORITES LOGIC ---
+        // --- 4. FAVORITES LOGIC ---
+        const favContainer = document.getElementById('favBtnContainer');
+        if (favContainer) {
+            // Force the ID onto the container so the button can find it
+            favContainer.setAttribute('data-job-id', position.position_id);
+        }
+
         window.currentPosition = position;
         window.currentCompany = company;
 
-        // THIS IS WHAT TRIGGERS THE SIDEBAR
+        // Set the heart color immediately
+        updateFavoriteStates();
+
+        // Attach listener specifically to the heart on the detail page
+        const detailFavBtn = document.querySelector('#favBtnContainer .favorite-btn');
+        if (detailFavBtn) {
+            // Remove old listeners
+            const newBtn = detailFavBtn.cloneNode(true);
+            detailFavBtn.parentNode.replaceChild(newBtn, detailFavBtn);
+            
+            newBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleFavorite(position.position_id, this);
+            });
+        }
+
+        if (typeof updateFavoriteStates === 'function') {
+            updateFavoriteStates();
+        }
+
+        // Attach listener to the heart
+        document.querySelectorAll('.favorite-btn').forEach(btn => {
+            btn.replaceWith(btn.cloneNode(true)); 
+        });
+
+        document.querySelectorAll('.favorite-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const jobId = position.position_id;
+                if (jobId && typeof toggleFavorite === 'function') {
+                    toggleFavorite(jobId.toString(), this);
+                }
+            });
+        });
+
+        // --- 5. OWNER / SIDEBAR LOGIC ---
         if (position.company_id) {
             await checkOwnerAndLoadApplicants(position.company_id, position.position_id);
         }
 
     } catch (err) {
-        console.error('Error:', err);
+        console.error('Error loading detail:', err);
         alert("Could not load details.");
     }
-
-
-
-  // Store the INTEGER ID
-  window.currentStudentId = profile.id;
-
-  // Show modal
-  document.getElementById('applyModal').style.display = "block";
 }
-        console.error('Error:', err);
-
-
 
   // --- MODAL LOGIC ---
 

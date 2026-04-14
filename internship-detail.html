@@ -52,7 +52,9 @@
                     <span id="badgeDuration" class="badge badge-secondary">Duration</span>
                   </div>
                 </div>
-                <button class="favorite-btn" style="background: none; border: none; font-size: 2rem; cursor: pointer;">🤍</button>
+                <div id="favBtnContainer" data-job-id="">
+                  <button class="favorite-btn">🤍</button>
+              </div>
               </div>
             </div>
 
@@ -106,7 +108,7 @@
   <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
     <h3 class="card-title">Company Profile</h3>
     <div id="companyAuthControls">
-      <button class="btn btn-small btn-primary" id="editCompanyBtn" onclick="toggleCompanyEdit(true)">Edit</button>
+
       <div id="editActionButtons" style="display: none; gap: 0.5rem;">
         <button class="btn btn-small btn-primary" id="saveCompanyBtn" onclick="saveCompanyProfile()">Save</button>
         <button class="btn btn-small btn-secondary" id="cancelCompanyBtn" onclick="toggleCompanyEdit(false)">Cancel</button>
@@ -114,7 +116,6 @@
     </div>
   </div>
   <div id="companyDisplayMode" class="card-content">
-    
     <p id="dCompanyDesc" style="white-space: pre-wrap;">Add company description here...</p>
     <p>
       <strong>Email:</strong> <span id="dCompanyEmail"> No Added Email</span><br>
@@ -299,15 +300,6 @@
           }
         });
       }
-
-      // Favorite toggle
-      const favoriteBtns = document.querySelectorAll('.favorite-btn');
-      favoriteBtns.forEach(btn => {
-        btn.addEventListener('click', function(e) {
-          e.stopPropagation();
-          this.textContent = this.textContent === '🤍' ? '❤️' : '🤍';
-        });
-      });
     });
   </script>
 </body>
