@@ -61,15 +61,20 @@ function initUserMenu() {
       const isCompany = session.role === 2;
       const fallbackIcon = isCompany ? '🏢' : avatarInitials;
       
+      const isAdmin = session.role === 0;
+      const adminLink = isAdmin ? `<li><a href="admin.html">🛡 Admin Panel</a></li>` : '';
+      const profileLabel = isAdmin ? 'My Account' : 'Profile';
+
       userLi.innerHTML = `
         <div class="user-avatar" style="color:'white'" onclick="toggleUserDropdown(event)" title="${displayName}">
-          ${userData.avatar_url ? 
-            `<img src="${userData.avatar_url}" alt="${isCompany ? 'Company Logo' : 'Profile'}">` : 
+          ${userData.avatar_url ?
+            `<img src="${userData.avatar_url}" alt="${isCompany ? 'Company Logo' : 'Profile'}">` :
             fallbackIcon
           }
         </div>
         <ul class="user-dropdown" id="userDropdown">
-          <li><a href="${getProfileUrl(session.role)}">Profile</a></li>
+          ${adminLink}
+          <li><a href="${getProfileUrl(session.role)}">${profileLabel}</a></li>
           <li><a href="#" onclick="logout(event)">Logout</a></li>
         </ul>
       `;
@@ -104,6 +109,7 @@ document.addEventListener('click', function(event) {
 
 // Get profile URL based on role
 function getProfileUrl(role) {
+  if (role === 0) return 'admin.html';
   return role === 2 ? 'company-profile.html' : 'student-profile.html';
 }
 
@@ -119,7 +125,10 @@ async function getUserData(userId) {
     let name = null;
     let avatar_url = null;
     
-    if (session.role === 2) {
+    if (session.role === 0) {
+      // Admin: use login email directly
+      return { name: session.login || 'Admin', avatar_url: null };
+    } else if (session.role === 2) {
       // Company: fetch from Companies table
       const { data } = await supabaseClient
         .from('Companies')
@@ -306,7 +315,7 @@ async function loadInternships() {
     // Load categories for filter
     await loadCategoriesForFilter();
 
-    // Fetch all active positions
+    // Fetch all active positions with application count
     const { data: positions, error } = await supabaseClient
       .from('positions')
       .select(`
@@ -320,7 +329,8 @@ async function loadInternships() {
         status,
         company_id,
         category_id,
-        created_at
+        created_at,
+        applications(count)
       `)
       .eq('status', 'active')
       .order('created_at', { ascending: false });
@@ -414,6 +424,9 @@ async function loadInternships() {
           </p>
 
           <div class="job-footer">
+            <span style="font-size:0.8rem; color:var(--text-light);">
+              👥 ${pos.applications?.[0]?.count ?? 0} applied
+            </span>
             <a href="internship-detail.html?id=${pos.position_id}" class="btn btn-small btn-primary">View Details</a>
           </div>
         </div>
@@ -559,4 +572,3 @@ document.addEventListener('DOMContentLoaded', function() {
     attachFilterListeners();
   }
 });
-

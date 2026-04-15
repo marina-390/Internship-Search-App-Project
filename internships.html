@@ -27,44 +27,40 @@
     </div>
   </nav>
 
-  <section class="section" style="padding: 2rem 0; border-bottom: 1px solid var(--border-color); background: #f9f9f9;">
+  <section class="section" style="padding: 1.5rem 0; border-bottom: 1px solid var(--border-color); background: #f9f9f9;">
     <div class="container">
-      <div class="filter-wrapper" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+      <!-- Row 1: main search fields — all same height -->
+      <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 1rem; margin-bottom: 0.875rem; align-items: end;">
         <div>
-          <label style="font-size: 0.8rem; font-weight: bold; color: var(--text-muted);">POSITION / COMPANY</label>
-          <input type="text" id="searchInput" placeholder="e.g. Developer, Google..." style="width: 100%; margin-bottom: 0;" />
+          <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-light); display:block; margin-bottom:0.35rem; text-transform:uppercase; letter-spacing:0.04em;">Position / Company</label>
+          <input type="text" id="searchInput" placeholder="e.g. Developer, Google..." style="width:100%; height:42px; margin:0;" />
         </div>
-  
         <div>
-          <label style="font-size: 0.8rem; font-weight: bold; color: var(--text-muted);">LOCATION</label>
-          <input type="text" id="filterLocation" placeholder="e.g. Helsinki, Remote..." style="width: 100%; margin-bottom: 0;" />
+          <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-light); display:block; margin-bottom:0.35rem; text-transform:uppercase; letter-spacing:0.04em;">Location</label>
+          <input type="text" id="filterLocation" placeholder="Helsinki, Remote..." style="width:100%; height:42px; margin:0;" />
         </div>
-  
         <div>
-          <label style="font-size: 0.8rem; font-weight: bold; color: var(--text-muted);">CATEGORY</label>
-          <select id="filterCategory" style="width: 100%; margin-bottom: 0;">
+          <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-light); display:block; margin-bottom:0.35rem; text-transform:uppercase; letter-spacing:0.04em;">Category</label>
+          <select id="filterCategory" style="width:100%; height:42px; margin:0;">
             <option value="">All Categories</option>
           </select>
         </div>
-  
         <div>
-          <label style="font-size: 0.8rem; font-weight: bold; color: var(--text-muted);">START AFTER</label>
-          <input type="date" id="filterDateStart" style="width: 100%; margin-bottom: 0;" />
+          <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-light); display:block; margin-bottom:0.35rem; text-transform:uppercase; letter-spacing:0.04em;">Start After</label>
+          <input type="date" id="filterDateStart" style="width:100%; height:42px; margin:0;" />
         </div>
-  
         <div>
-          <label style="font-size: 0.8rem; font-weight: bold; color: var(--text-muted);">END BEFORE</label>
-          <input type="date" id="filterDateEnd" style="width: 100%; margin-bottom: 0;" />
+          <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-light); display:block; margin-bottom:0.35rem; text-transform:uppercase; letter-spacing:0.04em;">End Before</label>
+          <input type="date" id="filterDateEnd" style="width:100%; height:42px; margin:0;" />
         </div>
-
-        <div class="checkbox-group" style="margin-bottom: 1.5rem;">
-          <input type="checkbox" id="favoritesOnly" name="favoritesOnly" onchange="filterJobs()">
-          <label for="favoritesOnly" style="margin: 0; font-weight: 400;">My Favorites </label>
-        </div>
-  
-        <div style="display: flex; align-items: flex-end;">
-          <button class="btn btn-primary" id="filterBtn" style="width: 100%; height: 42px;">Apply Filters</button>
-        </div>
+      </div>
+      <!-- Row 2: checkbox + button aligned right -->
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.875rem; color:var(--text-color); cursor:pointer;">
+          <input type="checkbox" id="favoritesOnly" name="favoritesOnly" onchange="filterJobs()" style="width:auto; margin:0;">
+          My Favourites
+        </label>
+        <button class="btn btn-primary" id="filterBtn" style="height:42px; padding: 0 2rem;">Apply Filters</button>
       </div>
     </div>
   </section>
@@ -73,31 +69,7 @@
   <section class="section">
     <div class="container">
       <div id="jobsList" class="grid" style="grid-template-columns: 1fr;">
-        <!-- Job Card Template -->
-        <div class="job-card" data-job-id="1">
-          <div class="job-meta" style="display: flex; justify-content: space-between; align-items: start;">
-            <div>
-              <h3 class="job-title">Position Title</h3>
-              <p class="job-company">Company Name</p>
-            </div>
-            <button class="favorite-btn" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">🤍</button>
-          </div>
-          
-          <div class="job-meta">
-            <span class="badge badge-primary">Location</span>
-            <span class="badge badge-secondary">Duration</span>
-            <span class="badge">Skills</span>
-          </div>
-
-          <p class="job-description">
-            Brief description of the internship position and what the intern will be doing.
-          </p>
-
-          <div class="job-footer">
-            <span class="job-salary">$XX/hr - $XX/hr</span>
-            <a href="internship-detail.html?id=1" class="btn btn-small btn-primary">View Details</a>
-          </div>
-        </div>
+        <!-- Dynamic job cards will be loaded here -->
       </div>
 
       <!-- No Results Message -->
