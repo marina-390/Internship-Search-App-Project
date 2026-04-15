@@ -275,6 +275,16 @@
             <p style="color:var(--text-light); text-align:center;">No postings yet.</p>
           </div>
         </div>
+
+        <!-- Received Applications Card -->
+        <div class="card" style="margin-top: 1rem;">
+          <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 class="card-title">Received Applications</h3>
+          </div>
+          <div class="card-content" id="companyApplicationsContainer">
+            <p style="color:var(--text-light); text-align:center;">No applications yet.</p>
+          </div>
+        </div>
         </div><!-- end main col -->
 
         <!-- Sidebar -->
@@ -425,54 +435,45 @@
     });
   </script>
 
-  <!-- POST POSITION MODAL -->
-  <div id="postJobModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9999; overflow-y:auto; padding:2rem 1rem;">
-    <div style="background:#fff; border-radius:1rem; max-width:640px; margin:0 auto; padding:2rem; position:relative;">
-      <button onclick="closePostModal()" style="position:absolute; top:1rem; right:1rem; background:none; border:none; font-size:1.5rem; cursor:pointer; color:#666;">&times;</button>
-      <h2 id="modalTitle" style="margin:0 0 1.5rem 0;">Post New Position</h2>
-      <!-- Hidden field to track edit vs create -->
-      <input type="hidden" id="editPositionId" value="">
+  <!-- Company Application Review Modal -->
+  <div id="companyAppModal" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:10000; overflow-y:auto;">
+    <div class="modal-content" style="background:#fff; margin:4% auto; padding:2rem; width:95%; max-width:700px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.2); position:relative;">
+      <button onclick="document.getElementById('companyAppModal').style.display='none'" style="position:absolute; top:1rem; right:1rem; background:none; border:none; font-size:1.8rem; cursor:pointer; color:#666;">&times;</button>
+      <h2 style="margin-top:0; margin-bottom:1rem;">Review Application</h2>
+      <input type="hidden" id="companyAppId">
 
-      <div class="form-group" style="margin-bottom:1rem;">
-        <label>Job Title <span style="color:red;">*</span></label>
-        <input type="text" id="pTitle" placeholder="e.g. Frontend Developer Intern" style="width:100%;">
-      </div>
-      <div class="form-group" style="margin-bottom:1rem;">
-        <label>Description <span style="color:red;">*</span></label>
-        <textarea id="pDesc" rows="4" placeholder="Describe the role and responsibilities..." style="width:100%;"></textarea>
-      </div>
-      <div class="form-group" style="margin-bottom:1rem;">
-        <label>Requirements</label>
-        <textarea id="pReqs" rows="3" placeholder="Skills, experience, education..." style="width:100%;"></textarea>
-      </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
-        <div class="form-group">
-          <label>Start Date</label>
-          <input type="date" id="pStart" style="width:100%;">
+      <div style="display:grid; gap:1rem;">
+        <div>
+          <p style="margin:0 0 0.25rem 0;"><strong>Position:</strong> <span id="companyAppPosition"></span></p>
+          <p style="margin:0 0 0.25rem 0;"><strong>Applicant:</strong> <span id="companyAppName"></span></p>
+          <p style="margin:0 0 0.25rem 0;"><strong>Email:</strong> <span id="companyAppEmail"></span></p>
+          <p style="margin:0 0 0.25rem 0;"><strong>Phone:</strong> <span id="companyAppPhone"></span></p>
+          <p style="margin:0 0 0.25rem 0;"><strong>Status:</strong> <span id="companyAppStatus"></span></p>
         </div>
-        <div class="form-group">
-          <label>End Date</label>
-          <input type="date" id="pEnd" style="width:100%;">
+
+        <div style="background:#f8fafc; padding:1rem; border-radius:10px; border:1px solid #e5e7eb;">
+          <p style="margin:0 0 0.5rem 0; font-weight:600;">Cover Letter</p>
+          <p id="companyAppCoverLetter" style="margin:0; white-space:pre-wrap; color:#374151;">No cover letter provided.</p>
+        </div>
+
+        <div style="background:#f8fafc; padding:1rem; border-radius:10px; border:1px solid #e5e7eb;">
+          <p style="margin:0 0 0.5rem 0; font-weight:600;">CV / Resume</p>
+          <p id="companyAppCvLink" style="margin:0;"></p>
+        </div>
+
+        <div class="form-group" style="margin:0;">
+          <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Response message</label>
+          <textarea id="companyAppResponse" rows="5" style="width:100%; padding:10px; border:1px solid #d1d5db; border-radius:8px; font-family:inherit; resize:vertical;"></textarea>
         </div>
       </div>
-      <div class="form-group" style="margin-bottom:1rem;">
-        <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
-          <input type="checkbox" id="pOpenEnded" onchange="toggleEndDate()">
-          <span>Open-ended (no fixed end date)</span>
-        </label>
+
+      <div style="display:flex; flex-wrap:wrap; gap:0.75rem; margin-top:1.5rem; justify-content:flex-end;">
+        <button class="btn btn-primary" onclick="saveCompanyApplicationStatus('accepted')">Accept</button>
+        <button class="btn btn-secondary" onclick="saveCompanyApplicationStatus('rejected')">Decline</button>
+        <button class="btn btn-outline" onclick="saveCompanyApplicationStatus('viewed')">Mark Viewed</button>
+        <button class="btn btn-secondary" onclick="document.getElementById('companyAppModal').style.display='none'">Close</button>
       </div>
-      <div class="form-group" style="margin-bottom:1rem;">
-        <label>Job Category <span style="color:red;">*</span></label>
-        <select id="pCategory" style="width:100%;">
-          <option value="">Loading categories...</option>
-        </select>
-      </div>
-      <div class="form-group" style="margin-bottom:1.5rem;">
-        <label>Status</label>
-        <select id="pStatus" style="width:100%;">
-          <option value="active">Active — visible to students</option>
-          <option value="draft">Draft — save for later</option>
-        </select>
-      </div>
-      <div style="display:flex; gap:1rem; justify-content:flex-end;">
-        <button class="btn btn-secondary" onclick="closePostModal()">Cancel</button>
+    </div>
+  </div>
+</body>
+</html>

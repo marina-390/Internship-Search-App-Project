@@ -52,25 +52,47 @@ function initUserMenu() {
   if (session) {
     if (loginLi) loginLi.style.display = 'none';
 
-    const userLi = document.createElement('li');
-    userLi.className = 'nav-item user-menu';
-
+    // Build nav item AFTER data loads, then append — prevents empty flash
     getUserData(session.userId).then(userData => {
+      // Remove any stale menu that crept in during the async wait
+      navMenu.querySelectorAll('.user-menu').forEach(m => m.remove());
+
       const displayName = userData.name || session.login;
       const avatarInitials = displayName.charAt(0).toUpperCase();
       const isCompany = session.role === 2;
       const fallbackIcon = isCompany ? '🏢' : avatarInitials;
-      
       const isAdmin = session.role === 0;
       const adminLink = isAdmin ? `<li><a href="admin.html">🛡 Admin Panel</a></li>` : '';
       const profileLabel = isAdmin ? 'My Account' : 'Profile';
 
+      const userLi = document.createElement('li');
+      userLi.className = 'nav-item user-menu';
       userLi.innerHTML = `
-        <div class="user-avatar" style="color:'white'" onclick="toggleUserDropdown(event)" title="${displayName}">
+        <div class="user-avatar" onclick="toggleUserDropdown(event)" title="${displayName}">
           ${userData.avatar_url ?
             `<img src="${userData.avatar_url}" alt="${isCompany ? 'Company Logo' : 'Profile'}">` :
             fallbackIcon
           }
+        </div>
+        <ul class="user-dropdown" id="userDropdown">
+          ${adminLink}
+          <li><a href="${getProfileUrl(session.role)}">${profileLabel}</a></li>
+          <li><a href="#" onclick="logout(event)">Logout</a></li>
+        </ul>
+      `;
+      navMenu.appendChild(userLi);
+    }).catch(err => {
+      // Even if getUserData fails, show a minimal nav with initials
+      console.warn('getUserData error, using fallback nav:', err);
+      navMenu.querySelectorAll('.user-menu').forEach(m => m.remove());
+      const isAdmin = session.role === 0;
+      const adminLink = isAdmin ? `<li><a href="admin.html">🛡 Admin Panel</a></li>` : '';
+      const profileLabel = isAdmin ? 'My Account' : 'Profile';
+      const userLi = document.createElement('li');
+      userLi.className = 'nav-item user-menu';
+      userLi.innerHTML = `
+        <div class="user-avatar" onclick="toggleUserDropdown(event)">
+          ${session.login ? session.login.charAt(0).toUpperCase() : '?'}
         </div>
         <ul class="user-dropdown" id="userDropdown">
           ${adminLink}
