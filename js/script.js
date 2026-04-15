@@ -554,6 +554,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
   if (isLoggedIn()) {
     initUserMenu();
+    // Hide CTA for logged-in users
+    const ctaSection = document.getElementById('cta-section');
+    if (ctaSection) {
+      ctaSection.style.display = 'none';
+    }
   }
 
   // Load student profile if on that page
