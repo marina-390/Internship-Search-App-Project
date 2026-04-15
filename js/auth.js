@@ -99,3 +99,51 @@ document.addEventListener('DOMContentLoaded', function () {
   switchTab(params.get('mode') === 'register' ? 'register' : 'login');
   toggleRoleFields(); // ensure correct fields shown on first load
 });
+
+async function showForgotPrompt() {
+  const email = prompt("Enter your Gmail address:");
+  if (!email) return;
+
+  const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+    // USE THE FULL URL HERE
+    redirectTo: 'http://127.0.0.1:5500/update-password.html',
+  });
+
+  if (error) {
+    alert("Error: " + error.message);
+  } else {
+    alert("Check your email! The link will now take you to the correct page.");
+  }
+}
+
+async function loginUser(email, password) {
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email: email,
+      password: password,
+  });
+
+  if (error) {
+      console.error("Login Error:", error.message);
+      alert("Login failed: " + error.message);
+  } else {
+      // Success!
+      window.location.href = 'student-profile.html';
+  }
+}
+
+// Function to update the user's password in Supabase Auth
+async function updateSupabasePassword(newPassword) {
+  try {
+      const { data, error } = await supabaseClient.auth.updateUser({
+          password: newPassword
+      });
+
+      if (error) {
+          return { success: false, message: error.message };
+      }
+      
+      return { success: true, data: data };
+  } catch (err) {
+      return { success: false, message: err.message };
+  }
+}
