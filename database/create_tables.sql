@@ -184,6 +184,7 @@ CREATE TABLE IF NOT EXISTS applications (
     cover_letter    TEXT,
     status          VARCHAR(20) NOT NULL DEFAULT 'pending'
                         CHECK (status IN ('pending', 'viewed', 'accepted', 'rejected')),
+    company_response TEXT,
     applied_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
     UNIQUE (student_id, position_id),

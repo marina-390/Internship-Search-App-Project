@@ -791,43 +791,51 @@ async function loadCompanyPostings() {
   if (!container || !currentProfile) return;
 
   try {
-      // Fetch positions for this company
+      // Fetch positions with application counts in one query
       const { data: positions, error } = await supabaseClient
           .from('positions')
-          .select('position_id, title, status')
+          .select('position_id, title, status, applications(count)')
           .eq('company_id', currentProfile.company_id)
           .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      if (positions.length === 0) {
-          container.innerHTML = '<p style="text-align:center; color:gray;">No active postings.</p>';
+      if (!positions || positions.length === 0) {
+          container.innerHTML = '<p style="text-align:center; color:var(--text-light); font-size:0.85rem;">No postings yet.</p>';
           return;
       }
 
-      // Generate the HTML for each item
-      container.innerHTML = positions.map(pos => `
-          <div class="posting-item" id="posting-${pos.position_id}">
-              <div id="view-mode-${pos.position_id}">
-                  <h4 id="title-${pos.position_id}">${pos.title}</h4>
-                  <p class="applications">📊 0 Applications</p>
-                  <p style="font-size: 0.875rem; margin: 0.5rem 0 0 0;">
-                      <a href="internship-detail.html?id=${pos.position_id}" class="text-primary">View Posting</a> | 
-                      <a href="javascript:void(0)" onclick="openEditModal(${pos.position_id})" class="text-primary">Edit</a>| 
-                      <a href="javascript:void(0)" onclick="deletePosition(${pos.position_id})" class="text-primary" style="color:red;">Delete</a>
-                  </p>
+      const statusColors = {
+        active: 'background:#d1fae5;color:#065f46;',
+        draft:  'background:#f3f4f6;color:#374151;',
+        closed: 'background:#fee2e2;color:#991b1b;'
+      };
+
+      container.innerHTML = positions.map(pos => {
+          const appCount = pos.applications?.[0]?.count ?? 0;
+          const sc = statusColors[pos.status] || '';
+          return `
+          <div class="position-card" id="posting-${pos.position_id}">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                  <h4>${pos.title}</h4>
+                  <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.25rem;">
+                    <span class="status-badge" style="${sc}">${pos.status}</span>
+                    <span style="font-size:0.78rem; color:var(--text-light);">👥 ${appCount} application${appCount !== 1 ? 's' : ''}</span>
+                  </div>
+                  <div class="pos-actions">
+                      <a href="internship-detail.html?id=${pos.position_id}" class="text-primary">View</a>
+                      <a href="javascript:void(0)" onclick="openEditModal(${pos.position_id})" class="text-primary">Edit</a>
+                      <a href="javascript:void(0)" onclick="deletePosition(${pos.position_id})" style="color:#dc3545;">Delete</a>
+                  </div>
+                </div>
               </div>
-              
-              <div id="edit-mode-${pos.position_id}" style="display: none; margin-top: 10px;">
-                  <input type="text" id="input-title-${pos.position_id}" class="form-control" value="${pos.title}" style="margin-bottom: 5px;">
-                  <button type="button" onclick="updatePositionTitle(${pos.position_id})" class="btn-small btn-primary">Update</button>
-                  <button class="btn-cancel" onclick="togglePostEdit(${pos.position_id}, false)" style="background: #ccc; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Cancel</button>
-              </div>
-          </div>
-      `).join('');
+          </div>`;
+      }).join('');
 
   } catch (err) {
       console.error("Error loading postings:", err);
+      container.innerHTML = '<p style="color:red; font-size:0.85rem;">Error loading postings.</p>';
   }
 }
 
@@ -838,7 +846,7 @@ async function loadCompanyApplications() {
   try {
     const { data: positions, error: posErr } = await supabaseClient
       .from('positions')
-      .select('position_id, title')
+      .select('position_id')
       .eq('company_id', currentProfile.company_id);
 
     if (posErr) throw posErr;
@@ -851,27 +859,112 @@ async function loadCompanyApplications() {
 
     const { data: apps, error: appErr } = await supabaseClient
       .from('applications')
-      .select('application_id, position_id, student_id, status, applied_at, positions(title)')
+      .select('*, positions(title)')
       .in('position_id', positionIds)
       .order('applied_at', { ascending: false });
 
     if (appErr) throw appErr;
 
-    if (!apps || !apps.length) {
-      container.innerHTML = '<p style="color: var(--text-light); text-align: center;">No applications yet.</p>';
-      return;
-    }
-
-    container.innerHTML = apps.map(app => `
-      <div class="application-item">
-        <p style="margin:0; font-weight:600;">${app.positions?.title || 'Position'}</p>
-        <span class="status-badge status-${app.status}">${app.status}</span>
-        <p style="margin:0.25rem 0 0; font-size:0.8rem; color:var(--text-light);">${new Date(app.applied_at).toLocaleDateString()}</p>
-      </div>
-    `).join('');
+    fillCompanyApplications(apps || []);
   } catch (err) {
     console.error('Error loading company applications:', err);
     container.innerHTML = '<p style="color: var(--text-light); text-align: center;">Unable to load applications.</p>';
+  }
+}
+
+function fillCompanyApplications(applications) {
+  const container = document.getElementById('companyApplicationsContainer');
+  if (!container) return;
+
+  if (!applications || applications.length === 0) {
+    container.innerHTML = '<p style="color: var(--text-light); text-align: center;">No applications yet.</p>';
+    return;
+  }
+
+  container.innerHTML = applications.map(app => {
+    const appData = JSON.stringify(app).replace(/"/g, '&quot;');
+    const status = app.status || 'pending';
+    const responseSnippet = app.company_response ? `<div style="margin-top:0.5rem; color:#555;"><strong>Response:</strong> ${app.company_response}</div>` : '';
+
+    return `
+      <div class="application-card" id="company-app-${app.application_id}" style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 12px; background: #fff;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
+          <div style="min-width:0; flex:1;">
+            <h5 style="margin:0 0 0.5rem 0; font-size:1rem;">${app.positions?.title || 'Position'}</h5>
+            <p style="margin:0; color:#374151; font-weight:600;">${app.full_name || 'Applicant'}</p>
+            <p style="margin:0.25rem 0 0; font-size:0.9rem; color:#6b7280;">${app.email || ''}${app.phone ? ' · ' + app.phone : ''}</p>
+            <p style="margin:0.75rem 0 0; font-size:0.85rem; color:#6b7280;">Applied: ${new Date(app.applied_at).toLocaleDateString()}</p>
+            <p style="margin:0.4rem 0 0; font-size:0.85rem;">Status: <span class="status-badge status-${status}">${status}</span></p>
+            ${responseSnippet}
+          </div>
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top: 0.5rem;">
+            <button class="btn btn-view" onclick="openCompanyAppModal(${appData})">View</button>
+            <button class="btn btn-secondary" onclick="openCompanyAppModal(${appData})">Review</button>
+            <button class="btn btn-delete" onclick="deleteApplication(${app.application_id})">Delete</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openCompanyAppModal(app) {
+  const modal = document.getElementById('companyAppModal');
+  if (!modal) return;
+
+  document.getElementById('companyAppId').value = app.application_id;
+  document.getElementById('companyAppPosition').textContent = app.positions?.title || 'Position';
+  document.getElementById('companyAppName').textContent = app.full_name || 'Applicant';
+  document.getElementById('companyAppEmail').textContent = app.email || 'No email provided';
+  document.getElementById('companyAppPhone').textContent = app.phone || 'No phone provided';
+  document.getElementById('companyAppStatus').textContent = app.status || 'pending';
+  document.getElementById('companyAppCoverLetter').textContent = app.cover_letter || 'No cover letter provided.';
+
+  const cvLink = document.getElementById('companyAppCvLink');
+  if (cvLink) {
+    cvLink.innerHTML = app.cv_url
+      ? `<a href="${app.cv_url}" target="_blank" rel="noreferrer noopener">Download CV</a>`
+      : 'No CV uploaded.';
+  }
+
+  document.getElementById('companyAppResponse').value = app.company_response || '';
+  modal.style.display = 'block';
+}
+
+async function saveCompanyApplicationStatus(newStatus) {
+  const appId = document.getElementById('companyAppId').value;
+  const response = document.getElementById('companyAppResponse').value;
+  const modal = document.getElementById('companyAppModal');
+
+  if (!appId) return;
+
+  try {
+    const updatedData = {
+      status: newStatus,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (response !== undefined) {
+      updatedData.company_response = response;
+    }
+
+    const { error } = await supabaseClient
+      .from('applications')
+      .update(updatedData)
+      .eq('application_id', parseInt(appId, 10));
+
+    if (error) {
+      console.error('Company application update error:', error);
+      alert('Failed to update application: ' + error.message);
+      return;
+    }
+
+    alert(newStatus === 'accepted' ? 'Application accepted.' : newStatus === 'rejected' ? 'Application declined.' : 'Application updated.');
+    if (modal) modal.style.display = 'none';
+    await loadCompanyApplications();
+  } catch (err) {
+    console.error('Error saving company application status:', err);
+    alert('Error: ' + err.message);
   }
 }
 
