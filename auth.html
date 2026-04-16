@@ -318,6 +318,20 @@
                     placeholder="https://www.yourcompany.com"
                   />
                 </div>
+                
+                <div class="form-group">
+                  <label for="yTunnus">Y-Tunnus <small style="color: #666;">(Finnish Business ID, required)</small></label>
+                  <input 
+                    type="text" 
+                    id="yTunnus" 
+                    name="yTunnus" 
+                    placeholder="123456-7" 
+                    pattern="[0-9]{6,7}-[0-9]" 
+                    maxlength="9"
+                    required
+                  />
+                  <small class="text-muted">Format: 6-7 digits - 1 digit</small>
+                </div>
               </div> <div class="form-group">
                 <label for="regPassword">Password</label>
                 <div class="password-toggle">
@@ -717,13 +731,37 @@
             const companyName = document.getElementById('companyName').value.trim() || (firstName + " " + lastName);
             const jobTitle = document.getElementById('jobTitle').value.trim() || "Administrator";
 
+            // NEW: Y-Tunnus validation & duplicate check
+            const yTunnus = document.getElementById('yTunnus').value.trim();
+            if (!/^\d{6,7}-\d$/.test(yTunnus)) {
+              alert('Invalid Y-Tunnus format. Use: 123456-7 (6-7 digits - 1 digit)');
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Create Account';
+              return;
+            }
+
+            const { data: existing, error: checkError } = await supabaseClient
+              .from('Companies')
+              .select('company_id, company_name')
+              .eq('y_tunnus', yTunnus)
+              .maybeSingle();
+
+            if (checkError) throw checkError;
+            if (existing) {
+              alert(`Y-Tunnus "${yTunnus}" already registered! Only one account per company. If someone else is using your y-tunnus not from your company,notify the admin.`);
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Create Account';
+              return;
+            }
+
             // A. Create the Company Entry
             const { data: newCompany, error: compError } = await supabaseClient
                 .from('Companies')
                 .insert({
                     user_id: newUser.user_id,
                     company_name: companyName,
-                    website: document.getElementById('companyWebsite').value.trim() || null
+                    website: document.getElementById('companyWebsite').value.trim() || null,
+                    y_tunnus: yTunnus
                 })
                 .select('company_id')
                 .single();
