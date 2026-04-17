@@ -485,10 +485,22 @@ function attachJobCardListeners() {
 // --- IMPROVED FAVORITE SYSTEM ---
 
 function getFavorites() {
-  return JSON.parse(localStorage.getItem('favorites') || '[]');
+  const raw = localStorage.getItem('favorites');
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.map(item => item?.toString?.() ?? '') : [];
+  } catch (err) {
+    console.warn('Clearing invalid favorites data from localStorage:', err);
+    localStorage.removeItem('favorites');
+    return [];
+  }
 }
 
 function saveFavorites(favorites) {
+  if (!Array.isArray(favorites)) {
+    favorites = [];
+  }
   localStorage.setItem('favorites', JSON.stringify(favorites));
 }
 
