@@ -112,6 +112,10 @@
         <div class="stat-card"><p class="stat-number" id="statEmployers">-</p><p class="stat-label">Employers</p></div>
         <div class="stat-card"><p class="stat-number" id="statPositions">-</p><p class="stat-label">Positions</p></div>
         <div class="stat-card"><p class="stat-number" id="statApplications">-</p><p class="stat-label">Applications</p></div>
+        <div class="stat-card">
+          <p class="stat-number" id="statMessages">0</p>
+          <p class="stat-label">Contact Messages</p>
+        </div>
       </div>
 
       <!-- Users table -->
@@ -157,8 +161,42 @@
         </div>
       </div>
 
+      <div class="card" style="padding: 1.25rem; margin-top: 1rem;">
+        <div class="admin-section-title">Message</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>From</th>
+                <th>Subject</th>
+                <th>Message</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="messagesTableBody">
+              <tr><td colspan="5" style="text-align:center;">Loading messages...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   </section>
+
+  <div id="messageModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background-color: rgba(0,0,0,0.5);">
+    <div class="modal-content" style="background-color:white; margin:10% auto; padding:2rem; border-radius:0.5rem; width:50%; max-width:600px; position:relative; box-shadow: var(--shadow);">
+      <span onclick="closeModal()" style="position:absolute; right:1.5rem; top:1rem; font-size:1.5rem; cursor:pointer;">&times;</span>
+      <h2 id="viewSubject" style="margin-top:0; color:var(--primary-color);"></h2>
+      <hr style="border:0; border-top:1px solid var(--border-color); margin:1rem 0;">
+      <p><strong>From:</strong> <span id="viewName"></span> (<span id="viewEmail"></span>)</p>
+      <p><strong>Date:</strong> <span id="viewDate"></span></p>
+      <div style="background:#f9fafb; padding:1rem; border-radius:0.25rem; margin-top:1rem; white-space: pre-wrap;" id="viewFullMessage"></div>
+      <button class="btn btn-primary" style="margin-top:1.5rem; width:100%;" onclick="closeModal()">Close</button>
+    </div>
+  </div>
 
   <footer>
     <div class="footer-bottom">
@@ -186,30 +224,37 @@
       await loadStats();
       await loadUsers();
       await loadPositions();
+      await loadMessages();
     });
 
     async function loadStats() {
-      try {
-        const [usersRes, posRes, appRes] = await Promise.all([
-          supabaseClient.from('Users').select('user_id, role', { count: 'exact' }),
-          supabaseClient.from('positions').select('position_id', { count: 'exact' }),
-          supabaseClient.from('applications').select('application_id', { count: 'exact' })
-        ]);
+  try {
+    // Add msgRes to the list of things to fetch
+    const [usersRes, posRes, appRes, msgRes] = await Promise.all([
+      supabaseClient.from('Users').select('user_id, role', { count: 'exact' }),
+      supabaseClient.from('positions').select('position_id', { count: 'exact' }),
+      supabaseClient.from('applications').select('application_id', { count: 'exact' }),
+      supabaseClient.from('contact_messages').select('id', { count: 'exact' })
+    ]);
 
-        const users       = usersRes.data || [];
-        const students    = users.filter(u => u.role === 1).length;
-        const employers   = users.filter(u => u.role === 2).length;
+    const users       = usersRes.data || [];
+    const students    = users.filter(u => u.role === 1).length;
+    const employers   = users.filter(u => u.role === 2).length;
 
-        document.getElementById('statUsers').textContent        = users.length;
-        document.getElementById('statStudents').textContent     = students;
-        document.getElementById('statEmployers').textContent    = employers;
-        document.getElementById('statPositions').textContent    = (posRes.data || []).length;
-        document.getElementById('statApplications').textContent = (appRes.data || []).length;
-      } catch (err) {
-        console.error('Stats error:', err);
-      }
-    }
+    document.getElementById('statUsers').textContent        = users.length;
+    document.getElementById('statStudents').textContent     = students;
+    document.getElementById('statEmployers').textContent    = employers;
+    document.getElementById('statPositions').textContent    = (posRes.data || []).length;
+    document.getElementById('statApplications').textContent = (appRes.data || []).length;
+    
+    // UPDATE THIS LINE TO SHOW THE COUNT
+    document.getElementById('statMessages').textContent = msgRes.count || 0;
+    console.log('Stats Messages count:', msgRes.count || 0);
 
+  } catch (err) {
+    console.error('Stats error:', err);
+  }
+}
     async function loadUsers() {
       const tbody = document.getElementById('usersTableBody');
       try {
@@ -303,6 +348,125 @@
       await loadStats();
       await loadPositions();
     }
+
+    async function handleContactForm(event) {
+    event.preventDefault();
+    
+    // Debugging: Check if client exists
+    if (typeof supabaseClient === 'undefined') {
+        console.error("Supabase client is missing!");
+        alert("System Error: Connection to database failed.");
+        return;
+    }
+
+    const formData = new FormData(event.target);
+    const contactData = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        subject: formData.get('subject'),
+        message: formData.get('message')
+    };
+
+    try {
+        // Use .select() to force a response check
+        const { data, error: dbError } = await supabaseClient
+            .from('contact_messages')
+            .insert([contactData])
+            .select(); 
+
+        if (dbError) throw dbError;
+
+        // Only send email if database insert succeeded
+        await emailjs.send('service_q4hp8tj', 'template_vq3sxru', {
+            to_email: 'internhub88@gmail.com',
+            from_name: contactData.name,
+            from_email: contactData.email,
+            subject: `[CONTACT FORM] ${contactData.subject}`,
+            message: contactData.message
+        });
+
+        alert('Success! Message saved and Admin notified.');
+        event.target.reset();
+        
+    } catch (err) {
+        console.error('Full Error Object:', err);
+        alert('Error: ' + (err.message || "Check console for details"));
+    }
+}
+
+async function loadMessages() {
+  const tbody = document.getElementById('messagesTableBody');
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('contact_messages')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('DB ERROR:', error);
+      tbody.innerHTML = `<tr><td colspan="5">${error.message}</td></tr>`;
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5">No messages found</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = data.map(m => `
+      <tr>
+        <td><strong>${m.name}</strong></td>
+        <td>${m.subject}</td>
+        <td>${m.message.substring(0, 30)}...</td>
+        <td>${new Date(m.created_at).toLocaleDateString()}</td>
+          <td style="display:flex; gap:0.4rem;">
+  <button class="action-btn btn-view" onclick='viewMessage(${JSON.stringify(m)})'>
+    View
+  </button>
+  <button class="action-btn btn-danger" onclick="deleteMessage(${m.id})">
+    Delete
+  </button>
+</td>
+        </td>
+      </tr>
+    `).join('');
+
+  } catch (err) {
+    console.error(err);
+    tbody.innerHTML = `<tr><td colspan="5">Error loading messages</td></tr>`;
+  }
+}
+
+async function deleteMessage(id) {
+  if (!confirm('Delete this message?')) return;
+  await supabaseClient.from('contact_messages').delete().eq('id', id);
+  await loadMessages(); // Add await here
+  await loadStats();    // Add this to update the count at the top too!
+}
+
+function viewMessage(data) {
+  document.getElementById('viewSubject').textContent = data.subject;
+  document.getElementById('viewName').textContent = data.name;
+  document.getElementById('viewEmail').textContent = data.email;
+  document.getElementById('viewDate').textContent = new Date(data.created_at).toLocaleString();
+  document.getElementById('viewFullMessage').textContent = data.message;
+  
+  document.getElementById('messageModal').style.display = 'block';
+}
+
+function closeModal() {
+  document.getElementById('messageModal').style.display = 'none';
+}
+
+// Close modal if clicking outside the white box
+window.onclick = function(event) {
+  const modal = document.getElementById('messageModal');
+  if (event.target == modal) {
+    closeModal();
+  }
+}
+
   </script>
 </body>
 </html>

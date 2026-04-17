@@ -4,19 +4,25 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Contact - InternHub</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
   <nav>
     <div class="nav-container">
-      <a href="index.html" class="logo">InternHub</a>
+      <a href="../index.html" class="logo">InternHub</a>
       <ul class="nav-menu">
-        <li class="nav-item"><a href="index.html" class="nav-link">Home</a></li>
-        <li class="nav-item"><a href="internships.html" class="nav-link">Internships</a></li>
-        <li class="nav-item"><a href="company-profile.html" class="nav-link">Employers</a></li>
-        <li class="nav-item"><a href="auth.html" class="nav-link">Login/Register</a></li>
+        <li class="nav-item">
+          <a href="../internships.html" class="nav-link">Internships</a>
+        </li>
+        <li class="nav-item">
+          <a href="../auth.html" class="nav-link active">Login/Register</a>
+        </li>
       </ul>
-      <div class="hamburger"><span></span><span></span><span></span></div>
+      <div class="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
     </div>
   </nav>
 
@@ -65,13 +71,12 @@
 
             <div style="margin: 2rem 0;">
               <h4>📍 Address</h4>
-              <p>123 Tech Street<br>San Francisco, CA 94105<br>United States</p>
+              <p>Talonpojankatu 6<br>Kokkola, 67100<br>Finland</p>
             </div>
 
             <div style="margin: 2rem 0;">
               <h4>📧 Email</h4>
-              <p><a href="mailto:hello@internhub.com" class="text-primary">hello@internhub.com</a></p>
-              <p><a href="mailto:support@internhub.com" class="text-primary">support@internhub.com</a></p>
+              <p><a href="mailto:internhub88@gmail.com" class="text-primary">internhub88@gmail.com</a></p>
             </div>
 
             <div style="margin: 2rem 0;">
@@ -89,14 +94,15 @@
     </div>
   </section>
 
+  
+
   <footer>
     <div class="footer-content">
       <div class="footer-section">
         <h4>About InternHub</h4>
         <ul>
-          <li><a href="about-us.html">About Us</a></li>
+          <li><a href="footer_info/about-us.html">About Us</a></li>
           <li><a href="team.html">Our Team</a></li>
-          <li><a href="blog.html">Blog</a></li>
           <li><a href="contact.html">Contact</a></li>
         </ul>
       </div>
@@ -132,13 +138,63 @@
     </div>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script src="../js/supabase.js"></script>
+  
+  <script src="../js/auth.js"></script> 
+  <script src="../js/script.js"></script>
+  
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  
   <script>
-    function handleContactForm(event) {
+    // Initialize EmailJS
+    (function() {
+      emailjs.init("sEPTKkb6HZBc_Qopf");
+    })();
+  
+    async function handleContactForm(event) {
       event.preventDefault();
-      alert('Thank you for contacting us! We will get back to you shortly.');
-      event.target.reset();
+      
+      // Check if client exists
+      if (typeof supabaseClient === 'undefined') {
+          alert("Error: Supabase is not connected. Check your file paths!");
+          return;
+      }
+  
+      const formData = new FormData(event.target);
+      const contactData = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        subject: formData.get('subject'),
+        message: formData.get('message')
+      };
+  
+      try {
+        // THE FIX: Use .select() to confirm it was added
+        const { data, error: dbError } = await supabaseClient
+          .from('contact_messages')
+          .insert([contactData])
+          .select(); 
+  
+        if (dbError) throw dbError;
+  
+        await emailjs.send('service_q4hp8tj', 'template_vq3sxru', {
+          to_email: 'internhub88@gmail.com',
+          from_name: contactData.name,
+          from_email: contactData.email,
+          subject: `[CONTACT FORM] ${contactData.subject}`,
+          message: contactData.message
+        });
+  
+        alert('Success! Message saved and sent to Admin.');
+        event.target.reset();
+  
+      } catch (err) {
+        console.error('Submission Error:', err);
+        alert('Failed to send: ' + err.message);
+      }
     }
   </script>
-  <script src="js/script.js"></script>
 </body>
 </html>
