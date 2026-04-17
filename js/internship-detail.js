@@ -28,13 +28,22 @@ async function loadInternshipDetail(positionId) {
         const companyNameEl = document.querySelector('.card-header .text-muted');
         if (companyNameEl) companyNameEl.textContent = company?.company_name || 'Unknown Company';
 
-        // Load and show application count on the detail page
-        const { count: appCount } = await supabaseClient
-            .from('applications')
-            .select('*', { count: 'exact', head: true })
-            .eq('position_id', positionId);
-        const countBadge = document.getElementById('applicationCountBadge');
-        if (countBadge) countBadge.textContent = `👥 ${appCount ?? 0} applied`;
+        // Load and show application count on the detail page (non-fatal if it fails)
+        try {
+            const { count: appCount, error: appError } = await supabaseClient
+                .from('applications')
+                .select('*', { count: 'exact', head: true })
+                .eq('position_id', normalizedPositionId);
+
+            if (appError) throw appError;
+
+            const countBadge = document.getElementById('applicationCountBadge');
+            if (countBadge) countBadge.textContent = `👥 ${appCount ?? 0} applied`;
+        } catch (appCountErr) {
+            console.warn('Unable to load application count:', appCountErr);
+            const countBadge = document.getElementById('applicationCountBadge');
+            if (countBadge) countBadge.textContent = '👥 N/A';
+        }
 
         const bLocation = document.getElementById('badgeLocation');
         if (bLocation) {
@@ -50,9 +59,8 @@ async function loadInternshipDetail(positionId) {
   
         const salaryEl = document.getElementById('displaySalary');
         if (salaryEl) {
-            salaryEl.textContent = position.salary && position.salary.trim() !== "" 
-                                ? position.salary 
-                                : 'Negotiable';
+            const salaryValue = position.salary != null ? String(position.salary).trim() : '';
+            salaryEl.textContent = salaryValue !== '' ? salaryValue : 'Negotiable';
         }
         
                 const durationEl = document.getElementById('displayDuration');
@@ -93,15 +101,16 @@ async function loadInternshipDetail(positionId) {
         // displayResponsibilities shows requirements; pReqs also shows requirements (same field)
         const responsibilitiesEl = document.getElementById('displayResponsibilities');
         if (responsibilitiesEl) {
-            if (position.requirements && position.requirements.trim()) {
-                responsibilitiesEl.textContent = position.requirements;
+            const requirementsValue = position.requirements != null ? String(position.requirements).trim() : '';
+            if (requirementsValue !== '') {
+                responsibilitiesEl.textContent = requirementsValue;
             } else {
                 responsibilitiesEl.closest('.card-content').style.display = 'none';
             }
         }
   
         const reqsElement = document.getElementById('pReqs');
-        if (reqsElement) reqsElement.textContent = position.requirements || '';
+        if (reqsElement) reqsElement.textContent = position.requirements != null ? String(position.requirements) : '';
 
         // 5. COMPANY CARD
         if (document.getElementById('dCompanyDesc')) document.getElementById('dCompanyDesc').textContent = company?.description || '';
@@ -123,33 +132,27 @@ async function loadInternshipDetail(positionId) {
         window.currentPosition = position;
         window.currentCompany = company;
 
-        // Set the heart color immediately
-        updateFavoriteStates();
+        // Set the heart color immediately if the helper exists
+        if (typeof updateFavoriteStates === 'function') {
+            updateFavoriteStates();
+        }
 
         // Attach listener specifically to the heart on the detail page
         const detailFavBtn = document.querySelector('#favBtnContainer .favorite-btn');
         if (detailFavBtn) {
-            // Remove old listeners
             const newBtn = detailFavBtn.cloneNode(true);
             detailFavBtn.parentNode.replaceChild(newBtn, detailFavBtn);
-            
             newBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
                 toggleFavorite(position.position_id, this);
             });
         }
 
-        if (typeof updateFavoriteStates === 'function') {
-            updateFavoriteStates();
-        }
-
-        // Attach listener to the heart
+        // Re-attach favorite button listeners safely
         document.querySelectorAll('.favorite-btn').forEach(btn => {
-            btn.replaceWith(btn.cloneNode(true)); 
-        });
-
-        document.querySelectorAll('.favorite-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
+            const clonedBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(clonedBtn, btn);
+            clonedBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
                 const jobId = position.position_id;
                 if (jobId && typeof toggleFavorite === 'function') {
@@ -158,14 +161,19 @@ async function loadInternshipDetail(positionId) {
             });
         });
 
-        // --- 5. OWNER / SIDEBAR LOGIC ---
+        // Try owner-specific loading, but don’t fail the whole page if it cannot complete
         if (position.company_id) {
-            await checkOwnerAndLoadApplicants(position.company_id, position.position_id);
+            try {
+                await checkOwnerAndLoadApplicants(position.company_id, position.position_id);
+            } catch (ownerErr) {
+                console.warn('Could not load owner/applicant data:', ownerErr);
+            }
         }
 
     } catch (err) {
         console.error('Error loading detail:', err);
-        alert("Could not load details.");
+        const message = err?.message || err?.toString() || 'Unknown error';
+        alert("Could not load details: " + message);
     }
 }
 
