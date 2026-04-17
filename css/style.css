@@ -132,6 +132,55 @@ a:hover {
   font-size: 1.125rem;
 }
 
+.btn-view {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+}
+
+.btn-view:hover {
+  background-color: #4338ca;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-danger {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+}
+
+.btn-danger:hover {
+  background-color: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-delete {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+.btn-delete:hover {
+  background-color: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-accept {
+  background-color: var(--secondary-color);
+  color: white;
+}
+
+.btn-accept:hover {
+  background-color: #059669;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
 /* ==========================================
    LAYOUT & CONTAINERS
    ========================================== */

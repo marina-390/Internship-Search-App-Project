@@ -893,7 +893,7 @@ function fillCompanyApplications(applications) {
             <h5 style="margin:0 0 0.5rem 0; font-size:1rem;">${app.positions?.title || 'Position'}</h5>
             <p style="margin:0; color:#374151; font-weight:600;">${app.full_name || 'Applicant'}</p>
             <p style="margin:0.25rem 0 0; font-size:0.9rem; color:#6b7280;">${app.email || ''}${app.phone ? ' · ' + app.phone : ''}</p>
-            <p style="margin:0.75rem 0 0; font-size:0.85rem; color:#6b7280;">Applied: ${new Date(app.applied_at).toLocaleDateString()}</p>
+            <p style="margin:0.75rem 0 0; font-size:0.85rem; color:#6b7280;">Applied: ${formatDateEuropean(app.applied_at)}</p>
             <p style="margin:0.4rem 0 0; font-size:0.85rem;">Status: <span class="status-badge status-${status}">${status}</span></p>
             ${responseSnippet}
           </div>
