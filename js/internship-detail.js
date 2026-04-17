@@ -161,8 +161,18 @@ async function loadInternshipDetail(positionId) {
             });
         });
 
-        // Try owner-specific loading, but don’t fail the whole page if it cannot complete
+        // Show the application sidebar only if the current user is the company owner
+        let isOwner = false;
         if (position.company_id) {
+            try {
+                isOwner = await updateSidebarVisibility(position.company_id);
+            } catch (visibilityErr) {
+                console.warn('Sidebar visibility check failed:', visibilityErr);
+            }
+        }
+
+        // Try owner-specific loading, but don’t fail the whole page if it cannot complete
+        if (position.company_id && isOwner) {
             try {
                 await checkOwnerAndLoadApplicants(position.company_id, position.position_id);
             } catch (ownerErr) {
@@ -449,6 +459,45 @@ async function checkOwnerAndLoadApplicants(companyId, positionId) {
   } catch (err) {
       console.error("Error in owner check:", err);
   }
+}
+
+async function updateSidebarVisibility(companyId) {
+  const sidebar = document.querySelector('.sidebar');
+  const section = document.getElementById('applicantsSection');
+
+  if (sidebar) sidebar.style.display = 'none';
+  if (section) section.style.display = 'none';
+
+  let session = null;
+  if (typeof getCurrentSession === 'function') {
+      session = getCurrentSession();
+  }
+
+  if (!session) {
+      return false;
+  }
+
+  if (session.role !== 2) {
+      return false;
+  }
+
+  const userId = session.userId;
+  if (!userId) {
+      return false;
+  }
+
+  const { data: company, error } = await supabaseClient
+      .from('Companies')
+      .select('user_id')
+      .eq('company_id', companyId)
+      .single();
+
+  if (error || !company || company.user_id !== userId) {
+      return false;
+  }
+
+  if (sidebar) sidebar.style.display = '';
+  return true;
 }
 
 function formatDateEuropean(dateString) {
