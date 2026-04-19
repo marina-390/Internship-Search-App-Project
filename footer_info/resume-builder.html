@@ -21,11 +21,11 @@
 #resume {
   display: block;
   width: 100%;
-  background: white;
+  background: var(--card-bg);
 }
 
 .resume-preview {
-  background: white;
+  background: var(--card-bg);
   padding: 2rem;
   border-radius: 0.5rem;
   box-shadow: 0 5px 15px rgba(0,0,0,0.1);
@@ -40,6 +40,10 @@
 input, textarea {
   width: 100%;
   padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  background: var(--bg-color);
+  color: var(--text-color);
 }
 </style>
 </head>
@@ -56,6 +60,7 @@ input, textarea {
           <a href="../auth.html" class="nav-link active">Login/Register</a>
         </li>
       </ul>
+      <button id="theme-toggle" class="theme-toggle" title="Toggle Theme">??</button>
       <div class="hamburger">
         <span></span>
         <span></span>
@@ -221,4 +226,8 @@ function downloadPDF() {
 
   <script src="../js/script.js"></script>
 </body>
+</xai:function_call">
+
+<xai:function_call name="edit_file">
+<parameter name="path">footer_info/support.html
 </html>

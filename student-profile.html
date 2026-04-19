@@ -369,16 +369,16 @@
 
     /* Application Item Styling */
 .application-card {
-    background: #fff;
+    background: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 1rem;
     margin-bottom: 1rem;
-    transition: transform 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .application-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    box-shadow: var(--shadow-lg);
 }
 
 .app-info h5 {
@@ -406,28 +406,36 @@
     font-weight: 600;
     cursor: pointer;
     border: none;
-    transition: background 0.2s;
+    transition: background 0.2s, color 0.2s;
 }
 
 .btn-view {
     color: var(--primary-color);
-    background: #eef2ff;
-    border: none;
+    background: var(--section-bg);
+    border: 1px solid transparent;
     padding: 5px 10px;
     border-radius: 4px;
     font-size: 0.8rem;
     cursor: pointer;
 }
 
+.btn-view:hover {
+    background: rgba(79, 70, 229, 0.12);
+}
+
 .btn-delete {
     color: #ef4444;
-    background: #fef2f2;
-    border: none;
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.25);
     padding: 5px 10px;
     border-radius: 4px;
     font-size: 0.8rem;
     cursor: pointer;
 }
+
+.btn-delete:hover {
+    background: rgba(239, 68, 68, 0.18);
+} 
   </style>
 </head>
 <body>
@@ -443,6 +451,7 @@
           <a href="auth.html" class="nav-link">Login/Register</a>
         </li>
       </ul>
+      <button id="theme-toggle" class="theme-toggle" title="Toggle Theme">🌙</button>
       <div class="hamburger">
         <span></span>
         <span></span>
@@ -633,14 +642,12 @@
           <div class="sidebar-col-inner">
 
           <!-- CV card — compact -->
-          <div class="sidebar-card" style="position:sticky; top:80px;">
-            <h4>📄 CV / Resume</h4>
+          <div class="cv-upload-section">
+            <h4 class="cv-title">📄 CV / Resume</h4>
             <div id="cvFileInfo">
-              <p>No CV uploaded yet.</p>
+              <p class="cv-status">No CV uploaded yet.</p>
             </div>
-            <label for="cvUpload" class="btn btn-secondary" style="width:100%; display:block; text-align:center; cursor:pointer;">
-              Upload CV (PDF)
-            </label>
+            <label for="cvUpload" class="cv-upload-btn">Upload CV (PDF)</label>
             <input type="file" id="cvUpload" accept=".pdf" style="display:none;" onchange="uploadCV(this)" />
           </div>
 
@@ -659,18 +666,18 @@
           
               <div id="dynamicFormFields">
                   <div class="form-group" style="margin-bottom: 1rem;">
-                      <label style="display:block; font-weight:600; margin-bottom:5px;">Full Name</label>
-                      <input type="text" id="editAppName" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                      <label style="display:block; font-weight:600; margin-bottom:5px; color: var(--text-color);">Full Name</label>
+                      <input type="text" id="editAppName" required style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-color); color:var(--text-color);">
                   </div>
           
                   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                       <div class="form-group">
-                          <label style="display:block; font-weight:600; margin-bottom:5px;">Email Address</label>
-                          <input type="email" id="editAppEmail" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                          <label style="display:block; font-weight:600; margin-bottom:5px; color: var(--text-color);">Email Address</label>
+                          <input type="email" id="editAppEmail" required style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-color); color:var(--text-color);">
                       </div>
                       <div class="form-group">
-                          <label style="display:block; font-weight:600; margin-bottom:5px;">Phone Number</label>
-                          <input type="tel" id="editAppPhone" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                          <label style="display:block; font-weight:600; margin-bottom:5px; color: var(--text-color);">Phone Number</label>
+                          <input type="tel" id="editAppPhone" required style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-color); color:var(--text-color);">
                       </div>
                   </div>
           
@@ -683,14 +690,13 @@
                 </div>
           
                   <div class="form-group" style="margin-bottom: 1rem;">
-                      <label style="display:block; font-weight:600; margin-bottom:5px;">Cover Letter / Why should we hire you?</label>
-                      <textarea id="editAppLetter" rows="6" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-family: inherit; resize: vertical;"></textarea>
+                      <label style="display:block; font-weight:600; margin-bottom:5px; color: var(--text-color);">Cover Letter / Why should we hire you?</label>
+                      <textarea id="editAppLetter" rows="6" style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-family: inherit; resize: vertical; background:var(--bg-color); color:var(--text-color);"></textarea>
                   </div>
               </div>
           
-              <div style="display:flex; gap:10px; margin-top:20px;">
-                <button onclick="updateApplication()" class="btn btn-primary" style="flex:2; padding: 12px;">Save Changes</button>
-                <button onclick="document.getElementById('editAppModal').style.display='none'" class="btn btn-secondary" style="flex:1; padding: 12px;">Cancel</button>
+                <button onclick="updateApplication()" class="btn btn-primary" style="flex:2; padding: 12px; background:var(--primary-color); color: white;">Save Changes</button>
+                <button onclick="document.getElementById('editAppModal').style.display='none'" class="btn btn-secondary" style="flex:1; padding: 12px; background:var(--bg-color); color:var(--text-color);">Cancel</button>
               </div>
             </div>
           </div>

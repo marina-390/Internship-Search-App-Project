@@ -884,20 +884,20 @@ function fillCompanyApplications(applications) {
   container.innerHTML = applications.map(app => {
     const appData = JSON.stringify(app).replace(/"/g, '&quot;');
     const status = app.status || 'pending';
-    const responseSnippet = app.company_response ? `<div style="margin-top:0.5rem; color:#555;"><strong>Response:</strong> ${app.company_response}</div>` : '';
+    const responseSnippet = app.company_response?.response_text ? `<div class="application-response"><strong>Response:</strong> ${app.company_response.response_text}</div>` : '';
 
     return `
-      <div class="application-card" id="company-app-${app.application_id}" style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 12px; background: #fff;">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
-          <div style="min-width:0; flex:1;">
-            <h5 style="margin:0 0 0.5rem 0; font-size:1rem;">${app.positions?.title || 'Position'}</h5>
-            <p style="margin:0; color:#374151; font-weight:600;">${app.full_name || 'Applicant'}</p>
-            <p style="margin:0.25rem 0 0; font-size:0.9rem; color:#6b7280;">${app.email || ''}${app.phone ? ' · ' + app.phone : ''}</p>
-            <p style="margin:0.75rem 0 0; font-size:0.85rem; color:#6b7280;">Applied: ${new Date(app.applied_at).toLocaleDateString()}</p>
-            <p style="margin:0.4rem 0 0; font-size:0.85rem;">Status: <span class="status-badge status-${status}">${status}</span></p>
+      <div class="application-card" id="company-app-${app.application_id}">
+        <div class="application-card-content">
+          <div class="application-info">
+            <h5 class="application-title">${app.positions?.title || 'Position'}</h5>
+            <p class="application-name">${app.student_profiles ? `${app.student_profiles.first_name || ''} ${app.student_profiles.last_name || ''}`.trim() || 'Applicant' : 'Applicant'}</p>
+            <p class="application-contact">${app.student_profiles?.email || ''}${app.student_profiles?.phone ? ' · ' + app.student_profiles.phone : ''}</p>
+            <p class="application-date">Applied: ${new Date(app.applied_at).toLocaleDateString()}</p>
+            <p class="application-status">Status: <span class="status-badge status-${status}">${status}</span></p>
             ${responseSnippet}
           </div>
-          <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top: 0.5rem;">
+          <div class="application-actions">
             <button class="btn btn-view" onclick="openCompanyAppModal(${appData})">View</button>
             <button class="btn btn-secondary" onclick="openCompanyAppModal(${appData})">Review</button>
             <button class="btn btn-delete" onclick="deleteApplication(${app.application_id})">Delete</button>
@@ -1951,22 +1951,14 @@ function renderCVList() {
   }
 
   container.innerHTML = `
-    <div style="display: flex; align-items: center; justify-content: space-between; background: #f8f9fa; padding: 12px; border-radius: 8px; border: 1px solid #dee2e6;">
-      <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
+    <div class="cv-file-preview">
+      <div class="cv-file-preview-info">
         <span>📄</span>
-        <span style="font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">
-          ${currentProfile.cv_original_name || 'Resume.pdf'}
-        </span>
+        <span class="cv-file-name">${currentProfile.cv_original_name || 'Resume.pdf'}</span>
       </div>
-      <div style="display: flex; gap: 6px;">
-        <a href="${currentProfile.cv_url}" target="_blank" 
-           style="background: #007bff; color: white; padding: 4px 10px; border-radius: 4px; text-decoration: none; font-size: 0.8rem;">
-           Download
-        </a>
-        <button onclick="deleteCV()" 
-           style="background: #dc3545; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
-           ✕
-        </button>
+      <div class="cv-file-preview-actions">
+        <a href="${currentProfile.cv_url}" target="_blank" rel="noreferrer noopener" class="cv-download-btn">Download</a>
+        <button type="button" class="cv-remove-btn" onclick="deleteCV()">✕</button>
       </div>
     </div>
   `;
@@ -1981,15 +1973,13 @@ function renderCompanyCvList() {
   }
 
   container.innerHTML = `
-    <div style="display: flex; align-items: center; justify-content: space-between; background: #f8f9fa; padding: 12px; border-radius: 8px; border: 1px solid #dee2e6;">
-      <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
+    <div class="cv-file-preview">
+      <div class="cv-file-preview-info">
         <span>📄</span>
-        <span style="font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">
-          ${currentProfile.company_cv_original_name || 'CompanyProfile.pdf'}
-        </span>
+        <span class="cv-file-name">${currentProfile.company_cv_original_name || 'CompanyProfile.pdf'}</span>
       </div>
-      <div style="display: flex; gap: 6px;">
-        <a href="${currentProfile.company_cv_url}" target="_blank" style="background: #007bff; color: white; padding: 4px 10px; border-radius: 4px; text-decoration: none; font-size: 0.8rem;">Download</a>
+      <div class="cv-file-preview-actions">
+        <a href="${currentProfile.company_cv_url}" target="_blank" rel="noreferrer noopener" class="cv-download-btn">Download</a>
       </div>
     </div>`;
 }

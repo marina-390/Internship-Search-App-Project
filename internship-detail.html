@@ -10,7 +10,7 @@
   <!-- Navigation Bar -->
   <nav>
     <div class="nav-container">
-      <a href="index.html" class="logo">InternHub</a>
+href="index.html"
       <ul class="nav-menu">
         <li class="nav-item">
           <a href="internships.html" class="nav-link">Internships</a>
@@ -19,6 +19,8 @@
           <a href="auth.html" class="nav-link">Login/Register</a>
         </li>
       </ul>
+<button id="theme-toggle" class="theme-toggle" title="Toggle Theme">🌙</button>
+
       <div class="hamburger">
         <span></span>
         <span></span>
@@ -171,58 +173,56 @@
     </div>
   </section>
 
-  <div id="applyModal" class="modal" style="display:none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); overflow-y: auto;">
+  <div id="applyModal" class="modal">
   
-    <div class="modal-content" style="background-color: white; margin: 5% auto; padding: 30px; border-radius: 12px; width: 90%; max-width: 550px; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
-      <span onclick="closeApplyModal()" style="position: absolute; right: 20px; top: 15px; font-size: 28px; cursor: pointer; color: #999;">&times;</span>
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeApplyModal()">&times;</span>
       
       <h2>Apply for <span id="modalTitle">...</span></h2>
       <p id="modalCompany">...</p>
   
-      <div id="companyFormControls" style="display: none; background: #f0f7ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px dashed #007bff;">
-          <p style="font-weight: bold; font-size: 0.8rem; color: #007bff; margin-top: 0;">COMPANY ADMIN CONTROLS</p>
+      <div id="companyFormControls" class="company-admin-controls">
+          <p class="company-admin-label">COMPANY ADMIN CONTROLS</p>
           <div id="customLinesContainer"></div>
-          <button type="button" class="btn btn-small btn-outline" onclick="addNewLine()" style="margin-top: 10px;">
+          <button type="button" class="btn btn-small btn-outline" onclick="addNewLine()">
               + Add Question Field
           </button>
       </div>
   
       <form id="modalApplyForm">
         <div id="dynamicFormFields">
-            <div class="form-group" style="margin-bottom: 1rem;">
+            <div class="form-group modal-form-group">
                 <label>Full Name</label>
-                <input type="text" id="applyName" required placeholder="Antonio" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                <input type="text" id="applyName" required placeholder="Antonio">
             </div>
     
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div class="form-row modal-form-row">
                 <div class="form-group">
                     <label>Email Address</label>
-                    <input type="email" id="applyEmail" required placeholder="me@gmail.com" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                    <input type="email" id="applyEmail" required placeholder="me@gmail.com">
                 </div>
                 <div class="form-group">
                     <label>Phone Number</label>
-                    <input type="tel" id="applyPhone" required placeholder="40 814 7203" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                    <input type="tel" id="applyPhone" required placeholder="40 814 7203">
                 </div>
             </div>
     
-            <div class="sidebar-card" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #eee;">
-                <h4 style="margin-top:0;">📄 CV / Resume</h4>
+            <div class="cv-upload-section">
+                <h4 class="cv-title">📄 CV / Resume</h4>
                 <div id="cvFileInfo">
-                    <p id="cvStatusText" style="font-size: 0.9rem; color: #666;">No CV uploaded yet.</p>
+                    <p id="cvStatusText" class="cv-status">No CV uploaded yet.</p>
                 </div>
-                <label for="cvUpload" class="btn btn-secondary" style="width:100%; display:block; text-align:center; cursor:pointer; padding: 8px 0;">
-                    Upload CV (PDF)
-                </label>
+                <label for="cvUpload" class="cv-upload-btn">Upload CV (PDF)</label>
                 <input type="file" id="cvUpload" accept=".pdf" style="display:none;" onchange="handleCVSelection(this)" />
             </div>
     
-            <div class="form-group" style="margin-bottom: 1rem;">
+            <div class="form-group modal-form-group">
                 <label>Cover Letter / Why should we hire you?</label>
-                <textarea id="applyLetter" rows="4" placeholder="Write something to the employer..." style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-family: inherit;"></textarea>
+                <textarea id="applyLetter" rows="4" placeholder="Write something to the employer..."></textarea>
             </div>
         </div>
         
-        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; padding: 12px;">Submit Application</button>
+        <button type="submit" class="btn btn-primary modal-submit-btn">Submit Application</button>
       </form>
     </div>
   </div> 
@@ -273,11 +273,13 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script src="js/supabase.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/profile.js"></script>
   <script src="js/script.js"></script>
-<script src="js/internship-detail.js"></script>
+  <script src="js/internship-detail.js"></script>
+
   <script>
     // Page init - load from URL param
     document.addEventListener('DOMContentLoaded', async function() {

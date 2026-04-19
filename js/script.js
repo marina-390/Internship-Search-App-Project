@@ -420,21 +420,21 @@ async function loadInternships() {
       }
 
       return `
-        <div class="job-card" 
-             data-job-id="${pos.position_id}" 
-             data-category-id="${pos.category_id}" 
-             data-start="${pos.period_start || ''}" 
+        <div class="job-card"
+             data-job-id="${pos.position_id}"
+             data-category-id="${pos.category_id}"
+             data-start="${pos.period_start || ''}"
              data-end="${pos.period_end || ''}"
              data-created-at="${pos.created_at}">
-             
-          <div class="job-meta" style="display: flex; justify-content: space-between; align-items: start;">
-            <div>
+
+          <div class="job-header">
+            <div class="job-title-section">
               <h3 class="job-title">${pos.title}</h3>
               <p class="job-company">${companyName}</p>
             </div>
-            <button class="favorite-btn" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">🤍</button>
+            <button class="favorite-btn">🤍</button>
           </div>
-          
+
           <div class="job-meta">
             <span class="badge badge-primary">${location}</span>
             <span class="badge badge-secondary">${periodText}</span>
@@ -446,7 +446,7 @@ async function loadInternships() {
           </p>
 
           <div class="job-footer">
-            <span style="font-size:0.8rem; color:var(--text-light);">
+            <span class="job-applications">
               👥 ${pos.applications?.[0]?.count ?? 0} applied
             </span>
             <a href="internship-detail.html?id=${pos.position_id}" class="btn btn-small btn-primary">View Details</a>
@@ -594,3 +594,30 @@ document.addEventListener('DOMContentLoaded', function() {
     attachFilterListeners();
   }
 });
+
+// Theme Toggle Functionality
+function initThemeToggle() {
+  const themeToggle = document.getElementById('theme-toggle');
+  if (!themeToggle) return;
+
+  // Load saved theme
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+  themeToggle.title = savedTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+
+  // Toggle theme on click
+  themeToggle.addEventListener('click', () => {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+
+    themeToggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+    themeToggle.title = newTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+  });
+}
+
+// Initialize theme toggle
+initThemeToggle();
