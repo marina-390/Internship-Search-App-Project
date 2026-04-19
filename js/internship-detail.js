@@ -28,13 +28,22 @@ async function loadInternshipDetail(positionId) {
         const companyNameEl = document.querySelector('.card-header .text-muted');
         if (companyNameEl) companyNameEl.textContent = company?.company_name || 'Unknown Company';
 
-        // Load and show application count on the detail page
-        const { count: appCount } = await supabaseClient
-            .from('applications')
-            .select('*', { count: 'exact', head: true })
-            .eq('position_id', positionId);
-        const countBadge = document.getElementById('applicationCountBadge');
-        if (countBadge) countBadge.textContent = `👥 ${appCount ?? 0} applied`;
+        // Load and show application count on the detail page (non-fatal if it fails)
+        try {
+            const { count: appCount, error: appError } = await supabaseClient
+                .from('applications')
+                .select('*', { count: 'exact', head: true })
+                .eq('position_id', normalizedPositionId);
+
+            if (appError) throw appError;
+
+            const countBadge = document.getElementById('applicationCountBadge');
+            if (countBadge) countBadge.textContent = `👥 ${appCount ?? 0} applied`;
+        } catch (appCountErr) {
+            console.warn('Unable to load application count:', appCountErr);
+            const countBadge = document.getElementById('applicationCountBadge');
+            if (countBadge) countBadge.textContent = '👥 N/A';
+        }
 
         const bLocation = document.getElementById('badgeLocation');
         if (bLocation) {
@@ -43,22 +52,21 @@ async function loadInternshipDetail(positionId) {
   
         const bDuration = document.getElementById('badgeDuration');
         if (bDuration) {
-            const startDate = position.period_start ? new Date(position.period_start).toLocaleDateString() : 'TBD';
-            const endDate = position.period_end ? new Date(position.period_end).toLocaleDateString() : 'Open';
+            const startDate = position.period_start ? formatDateEuropean(position.period_start) : 'TBD';
+            const endDate = position.period_end ? formatDateEuropean(position.period_end) : 'Open';
             bDuration.textContent = `${startDate} - ${endDate}`;
         }
   
         const salaryEl = document.getElementById('displaySalary');
         if (salaryEl) {
-            salaryEl.textContent = position.salary && position.salary.trim() !== "" 
-                                ? position.salary 
-                                : 'Negotiable';
+            const salaryValue = position.salary != null ? String(position.salary).trim() : '';
+            salaryEl.textContent = salaryValue !== '' ? salaryValue : 'Negotiable';
         }
         
                 const durationEl = document.getElementById('displayDuration');
                 if (durationEl) {
                     if (position.period_start && position.period_end) {
-                        durationEl.textContent = `${position.period_start} - ${position.period_end}`;
+                        durationEl.textContent = `${formatDateEuropean(position.period_start)} - ${formatDateEuropean(position.period_end)}`;
                     } else {
                         durationEl.textContent = position.duration || 'Not specified';
                     }
@@ -93,15 +101,16 @@ async function loadInternshipDetail(positionId) {
         // displayResponsibilities shows requirements; pReqs also shows requirements (same field)
         const responsibilitiesEl = document.getElementById('displayResponsibilities');
         if (responsibilitiesEl) {
-            if (position.requirements && position.requirements.trim()) {
-                responsibilitiesEl.textContent = position.requirements;
+            const requirementsValue = position.requirements != null ? String(position.requirements).trim() : '';
+            if (requirementsValue !== '') {
+                responsibilitiesEl.textContent = requirementsValue;
             } else {
                 responsibilitiesEl.closest('.card-content').style.display = 'none';
             }
         }
   
         const reqsElement = document.getElementById('pReqs');
-        if (reqsElement) reqsElement.textContent = position.requirements || '';
+        if (reqsElement) reqsElement.textContent = position.requirements != null ? String(position.requirements) : '';
 
         // 5. COMPANY CARD
         if (document.getElementById('dCompanyDesc')) document.getElementById('dCompanyDesc').textContent = company?.description || '';
@@ -123,33 +132,27 @@ async function loadInternshipDetail(positionId) {
         window.currentPosition = position;
         window.currentCompany = company;
 
-        // Set the heart color immediately
-        updateFavoriteStates();
+        // Set the heart color immediately if the helper exists
+        if (typeof updateFavoriteStates === 'function') {
+            updateFavoriteStates();
+        }
 
         // Attach listener specifically to the heart on the detail page
         const detailFavBtn = document.querySelector('#favBtnContainer .favorite-btn');
         if (detailFavBtn) {
-            // Remove old listeners
             const newBtn = detailFavBtn.cloneNode(true);
             detailFavBtn.parentNode.replaceChild(newBtn, detailFavBtn);
-            
             newBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
                 toggleFavorite(position.position_id, this);
             });
         }
 
-        if (typeof updateFavoriteStates === 'function') {
-            updateFavoriteStates();
-        }
-
-        // Attach listener to the heart
+        // Re-attach favorite button listeners safely
         document.querySelectorAll('.favorite-btn').forEach(btn => {
-            btn.replaceWith(btn.cloneNode(true)); 
-        });
-
-        document.querySelectorAll('.favorite-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
+            const clonedBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(clonedBtn, btn);
+            clonedBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
                 const jobId = position.position_id;
                 if (jobId && typeof toggleFavorite === 'function') {
@@ -158,14 +161,29 @@ async function loadInternshipDetail(positionId) {
             });
         });
 
-        // --- 5. OWNER / SIDEBAR LOGIC ---
+        // Show the application sidebar only if the current user is the company owner
+        let isOwner = false;
         if (position.company_id) {
-            await checkOwnerAndLoadApplicants(position.company_id, position.position_id);
+            try {
+                isOwner = await updateSidebarVisibility(position.company_id);
+            } catch (visibilityErr) {
+                console.warn('Sidebar visibility check failed:', visibilityErr);
+            }
+        }
+
+        // Try owner-specific loading, but don’t fail the whole page if it cannot complete
+        if (position.company_id && isOwner) {
+            try {
+                await checkOwnerAndLoadApplicants(position.company_id, position.position_id);
+            } catch (ownerErr) {
+                console.warn('Could not load owner/applicant data:', ownerErr);
+            }
         }
 
     } catch (err) {
         console.error('Error loading detail:', err);
-        alert("Could not load details.");
+        const message = err?.message || err?.toString() || 'Unknown error';
+        alert("Could not load details: " + message);
     }
 }
 
@@ -443,6 +461,54 @@ async function checkOwnerAndLoadApplicants(companyId, positionId) {
   }
 }
 
+async function updateSidebarVisibility(companyId) {
+  const sidebar = document.querySelector('.sidebar');
+  const section = document.getElementById('applicantsSection');
+
+  if (sidebar) sidebar.style.display = 'none';
+  if (section) section.style.display = 'none';
+
+  let session = null;
+  if (typeof getCurrentSession === 'function') {
+      session = getCurrentSession();
+  }
+
+  if (!session) {
+      return false;
+  }
+
+  if (session.role !== 2) {
+      return false;
+  }
+
+  const userId = session.userId;
+  if (!userId) {
+      return false;
+  }
+
+  const { data: company, error } = await supabaseClient
+      .from('Companies')
+      .select('user_id')
+      .eq('company_id', companyId)
+      .single();
+
+  if (error || !company || company.user_id !== userId) {
+      return false;
+  }
+
+  if (sidebar) sidebar.style.display = '';
+  return true;
+}
+
+function formatDateEuropean(dateString) {
+  if (!dateString) return 'N/A';
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}.${month}.${year}`;
+}
+
 function renderSidebarApplicants(apps) {
   const container = document.getElementById('companyApplicationsContainer');
   const countEl = document.getElementById('applicantsCount');
@@ -456,22 +522,132 @@ function renderSidebarApplicants(apps) {
   }
 
   // Creating a clean list for the sidebar
-  container.innerHTML = apps.map(app => `
-      <div class="application-item" style="padding: 12px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
-          <div>
-              <p style="margin: 0; font-weight: 600; font-size: 0.95rem;">${app.full_name}</p>
-              <small style="color: #888;">${new Date(app.created_at).toLocaleDateString()}</small>
+  container.innerHTML = apps.map(app => {
+    const statusDisplay = getStatusDisplay(app.status);
+    const appliedDate = formatDateEuropean(app.created_at);
+    return `
+      <div class="application-item" style="padding: 12px 0; border-bottom: 1px solid #eee;">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+              <div>
+                  <p style="margin: 0; font-weight: 600; font-size: 0.95rem;">${app.full_name}</p>
+                  <small style="color: #888; font-size: 0.85rem;">${app.email || 'N/A'}</small>
+                  <div style="margin-top: 4px;">
+                      <small style="color: #888; font-size: 0.8rem;">Applied: ${appliedDate}</small>
+                  </div>
+                  <div style="margin-top: 4px;">
+                      ${statusDisplay}
+                  </div>
+              </div>
           </div>
-          <button class="btn btn-small btn-outline" 
-              onclick="console.log('View application:', ${JSON.stringify(app)})" 
-              style="padding: 4px 8px; font-size: 0.75rem;">
-              View
-          </button>
+          <div style="display: flex; gap: 8px; margin-top: 8px;">
+              <button class="btn btn-small btn-view" onclick="viewStudentProfile(${app.student_id})">View</button>
+              <button class="btn btn-small btn-accept" onclick="reviewApplication(${app.application_id}, '${app.full_name}')">Review</button>
+              <button class="btn btn-small btn-danger" onclick="deleteApplicationFromSidebar(${app.application_id}, '${app.full_name}')">Delete</button>
+          </div>
       </div>
-  `).join('');
+    `;
+  }).join('');
+}
+
+function getStatusDisplay(status) {
+  let bgColor = '#fef3c7';
+  let textColor = '#92400e';
+  let statusText = 'pending';
+  
+  if (status === 'viewed' || status === 'in review') {
+    bgColor = '#dbeafe';
+    textColor = '#1e40af';
+    statusText = 'in review';
+  } else if (status === 'accepted' || status === 'rejected' || status === 'ready') {
+    bgColor = '#dcfce7';
+    textColor = '#166534';
+    statusText = 'ready';
+  }
+  
+  return `<span style="display: inline-block; background: ${bgColor}; color: ${textColor}; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Status: ${statusText}</span>`;
 }
 
 function showFullApplication(app) {
   console.log('Full application details:', app);
   alert('Application details: ' + JSON.stringify(app, null, 2));
+}
+
+// View student profile
+async function viewStudentProfile(studentId) {
+  try {
+    const { data: student, error } = await supabaseClient
+      .from('student_profiles')
+      .select('*')
+      .eq('id', studentId)
+      .single();
+
+    if (error || !student) {
+      alert('Student profile not found.');
+      return;
+    }
+
+    // Display student profile in a modal or redirect
+    const profileHTML = `
+      <div style="max-height: 500px; overflow-y: auto; padding: 20px;">
+        <h3>${student.first_name} ${student.last_name}</h3>
+        <p><strong>Email:</strong> ${student.user_id || 'N/A'}</p>
+        <p><strong>Phone:</strong> ${student.phone || 'N/A'}</p>
+        <p><strong>City:</strong> ${student.city || 'N/A'}</p>
+        <p><strong>Education:</strong> ${student.type_education || 'N/A'}</p>
+        <p><strong>About:</strong></p>
+        <p>${student.about || 'No information provided.'}</p>
+        ${student.cv_url ? `<p><a href="${student.cv_url}" target="_blank" class="btn btn-primary btn-small">Download CV</a></p>` : ''}
+      </div>
+    `;
+    alert(profileHTML);
+  } catch (err) {
+    console.error('Error viewing student profile:', err);
+    alert('Error loading student profile: ' + err.message);
+  }
+}
+
+// Review application - update status to 'viewed'
+async function reviewApplication(applicationId, studentName) {
+  try {
+    const { error } = await supabaseClient
+      .from('applications')
+      .update({ status: 'viewed' })
+      .eq('application_id', applicationId);
+
+    if (error) throw error;
+
+    alert(`Application from ${studentName} marked as "in review".`);
+    
+    // Reload applications
+    if (window.currentPosition && window.currentPosition.company_id) {
+      await checkOwnerAndLoadApplicants(window.currentPosition.company_id, window.currentPosition.position_id);
+    }
+  } catch (err) {
+    console.error('Error reviewing application:', err);
+    alert('Error updating application: ' + err.message);
+  }
+}
+
+// Delete application from sidebar
+async function deleteApplicationFromSidebar(applicationId, studentName) {
+  if (!confirm(`Delete application from ${studentName}?`)) return;
+
+  try {
+    const { error } = await supabaseClient
+      .from('applications')
+      .delete()
+      .eq('application_id', applicationId);
+
+    if (error) throw error;
+
+    alert(`Application from ${studentName} deleted.`);
+    
+    // Reload applications
+    if (window.currentPosition && window.currentPosition.company_id) {
+      await checkOwnerAndLoadApplicants(window.currentPosition.company_id, window.currentPosition.position_id);
+    }
+  } catch (err) {
+    console.error('Error deleting application:', err);
+    alert('Error deleting application: ' + err.message);
+  }
 }

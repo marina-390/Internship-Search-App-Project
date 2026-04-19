@@ -887,6 +887,7 @@ function fillCompanyApplications(applications) {
     const responseSnippet = app.company_response?.response_text ? `<div class="application-response"><strong>Response:</strong> ${app.company_response.response_text}</div>` : '';
 
     return `
+<<<<<<< HEAD
       <div class="application-card" id="company-app-${app.application_id}">
         <div class="application-card-content">
           <div class="application-info">
@@ -895,6 +896,16 @@ function fillCompanyApplications(applications) {
             <p class="application-contact">${app.student_profiles?.email || ''}${app.student_profiles?.phone ? ' · ' + app.student_profiles.phone : ''}</p>
             <p class="application-date">Applied: ${new Date(app.applied_at).toLocaleDateString()}</p>
             <p class="application-status">Status: <span class="status-badge status-${status}">${status}</span></p>
+=======
+      <div class="application-card" id="company-app-${app.application_id}" style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 12px; background: #fff;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
+          <div style="min-width:0; flex:1;">
+            <h5 style="margin:0 0 0.5rem 0; font-size:1rem;">${app.positions?.title || 'Position'}</h5>
+            <p style="margin:0; color:#374151; font-weight:600;">${app.full_name || 'Applicant'}</p>
+            <p style="margin:0.25rem 0 0; font-size:0.9rem; color:#6b7280;">${app.email || ''}${app.phone ? ' · ' + app.phone : ''}</p>
+            <p style="margin:0.75rem 0 0; font-size:0.85rem; color:#6b7280;">Applied: ${formatDateEuropean(app.applied_at)}</p>
+            <p style="margin:0.4rem 0 0; font-size:0.85rem;">Status: <span class="status-badge status-${status}">${status}</span></p>
+>>>>>>> a8f2835364ada9b3355b21fd24a52fc71b5cdfb4
             ${responseSnippet}
           </div>
           <div class="application-actions">

@@ -283,9 +283,18 @@ href="index.html"
   <script>
     // Page init - load from URL param
     document.addEventListener('DOMContentLoaded', async function() {
-      const positionId = getUrlParameter('id');
-      if (positionId) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const positionId = urlParams.get('id') || (typeof getUrlParameter === 'function' ? getUrlParameter('id') : null);
+
+      if (!positionId) {
+        console.error('Missing internship ID in URL.');
+        return;
+      }
+
+      try {
         await loadInternshipDetail(positionId);
+      } catch (err) {
+        console.error('Detail page initialization failed:', err);
       }
       
       // Existing form handlers...

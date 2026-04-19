@@ -241,6 +241,16 @@ function getUrlParameter(name) {
   return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
 }
 
+// Format date to European format DD.MM.YYYY
+function formatDateEuropean(dateString) {
+  if (!dateString) return 'N/A';
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}.${month}.${year}`;
+}
+
 // Search/Filter functionality - now handled by attachFilterListeners on internships page
 
 function filterJobs() {
@@ -412,8 +422,8 @@ async function loadInternships() {
       // Format period for display
       let periodText = 'Flexible';
       if (pos.period_start && pos.period_end) {
-        const start = new Date(pos.period_start).toLocaleDateString();
-        const end = new Date(pos.period_end).toLocaleDateString();
+        const start = formatDateEuropean(pos.period_start);
+        const end = formatDateEuropean(pos.period_end);
         periodText = `${start} - ${end}`;
       } else if (pos.is_open_ended) {
         periodText = 'Open-ended';
@@ -485,10 +495,22 @@ function attachJobCardListeners() {
 // --- IMPROVED FAVORITE SYSTEM ---
 
 function getFavorites() {
-  return JSON.parse(localStorage.getItem('favorites') || '[]');
+  const raw = localStorage.getItem('favorites');
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.map(item => item?.toString?.() ?? '') : [];
+  } catch (err) {
+    console.warn('Clearing invalid favorites data from localStorage:', err);
+    localStorage.removeItem('favorites');
+    return [];
+  }
 }
 
 function saveFavorites(favorites) {
+  if (!Array.isArray(favorites)) {
+    favorites = [];
+  }
   localStorage.setItem('favorites', JSON.stringify(favorites));
 }
 
