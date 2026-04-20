@@ -947,17 +947,9 @@ footer {
 .sidebar-card h4 {
   font-size: 0.95rem;
   font-weight: 700;
-<<<<<<< HEAD
-  margin: 0 0 0.35rem 0;
-<<<<<<< HEAD
-  color: var(--text-color);
-=======
   margin: 0 0 0.75rem 0;
   color: var(--dark-color);
->>>>>>> a8f2835364ada9b3355b21fd24a52fc71b5cdfb4
-=======
-  color: var(--dark-color);
->>>>>>> parent of 5956bdf (Added dark light theme)
+
 }
 
 .sidebar-card p {
@@ -977,8 +969,6 @@ footer {
   padding: 0.4rem 0.875rem;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 .benefits-section {
   padding: 2rem 0;
 }
@@ -1028,7 +1018,7 @@ footer {
   font-size: 0.9rem;
   color: var(--text-light);
   line-height: 1.4;
-=======
+}
 /* Application items in applications sidebar card */
 #companyApplicationsContainer {
   display: flex;
@@ -1056,11 +1046,8 @@ footer {
 .application-item small {
   font-size: 0.8rem;
   color: #888;
->>>>>>> a8f2835364ada9b3355b21fd24a52fc71b5cdfb4
 }
 
-=======
->>>>>>> parent of 5956bdf (Added dark light theme)
 /* Status badge pills */
 .status-badge {
   display: inline-block;
