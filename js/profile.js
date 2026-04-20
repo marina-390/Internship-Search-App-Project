@@ -887,40 +887,19 @@ function fillCompanyApplications(applications) {
     const responseSnippet = app.company_response ? `<div style="margin-top:0.5rem; color:#555;"><strong>Response:</strong> ${app.company_response}</div>` : '';
 
     return `
-<<<<<<< HEAD
-<<<<<<< HEAD
-      <div class="application-card" id="company-app-${app.application_id}">
-        <div class="application-card-content">
-          <div class="application-info">
-            <h5 class="application-title">${app.positions?.title || 'Position'}</h5>
-            <p class="application-name">${app.student_profiles ? `${app.student_profiles.first_name || ''} ${app.student_profiles.last_name || ''}`.trim() || 'Applicant' : 'Applicant'}</p>
-            <p class="application-contact">${app.student_profiles?.email || ''}${app.student_profiles?.phone ? ' · ' + app.student_profiles.phone : ''}</p>
-            <p class="application-date">Applied: ${new Date(app.applied_at).toLocaleDateString()}</p>
-            <p class="application-status">Status: <span class="status-badge status-${status}">${status}</span></p>
-=======
-=======
->>>>>>> parent of 5956bdf (Added dark light theme)
-      <div class="application-card" id="company-app-${app.application_id}" style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 12px; background: #fff;">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
-          <div style="min-width:0; flex:1;">
-            <h5 style="margin:0 0 0.5rem 0; font-size:1rem;">${app.positions?.title || 'Position'}</h5>
-            <p style="margin:0; color:#374151; font-weight:600;">${app.full_name || 'Applicant'}</p>
-            <p style="margin:0.25rem 0 0; font-size:0.9rem; color:#6b7280;">${app.email || ''}${app.phone ? ' · ' + app.phone : ''}</p>
-<<<<<<< HEAD
-            <p style="margin:0.75rem 0 0; font-size:0.85rem; color:#6b7280;">Applied: ${formatDateEuropean(app.applied_at)}</p>
-            <p style="margin:0.4rem 0 0; font-size:0.85rem;">Status: <span class="status-badge status-${status}">${status}</span></p>
->>>>>>> a8f2835364ada9b3355b21fd24a52fc71b5cdfb4
-=======
-            <p style="margin:0.75rem 0 0; font-size:0.85rem; color:#6b7280;">Applied: ${new Date(app.applied_at).toLocaleDateString()}</p>
-            <p style="margin:0.4rem 0 0; font-size:0.85rem;">Status: <span class="status-badge status-${status}">${status}</span></p>
->>>>>>> parent of 5956bdf (Added dark light theme)
-            ${responseSnippet}
-          </div>
-          <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top: 0.5rem;">
-            <button class="btn btn-view" onclick="openCompanyAppModal(${appData})">View</button>
-            <button class="btn btn-secondary" onclick="openCompanyAppModal(${appData})">Review</button>
-            <button class="btn btn-delete" onclick="deleteApplication(${app.application_id})">Delete</button>
-          </div>
+      <div class="application-card" id="company-app-${app.application_id}" style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
+        <div style="min-width:0; flex:1;">
+          <h5 style="margin:0 0 0.5rem 0; font-size:1rem;">${app.positions?.title || 'Position'}</h5>
+          <p style="margin:0; color:#374151; font-weight:600;">${app.student_profiles ? `${app.student_profiles.first_name || ''} ${app.student_profiles.last_name || ''}`.trim() || 'Applicant' : 'Applicant'}</p>
+          <p style="margin:0.25rem 0 0; font-size:0.9rem; color:#6b7280;">${app.student_profiles?.email || ''}${app.student_profiles?.phone ? ' · ' + app.student_profiles.phone : ''}</p>
+          <p style="margin:0.75rem 0 0; font-size:0.85rem; color:#6b7280;">Applied: ${new Date(app.applied_at).toLocaleDateString()}</p>
+          <p style="margin:0.4rem 0 0; font-size:0.85rem;">Status: <span class="status-badge status-${status}">${status}</span></p>
+          ${responseSnippet}
+        </div>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+          <button class="btn btn-view" onclick="openCompanyAppModal(${appData})">View</button>
+          <button class="btn btn-secondary" onclick="openCompanyAppModal(${appData})">Review</button>
+          <button class="btn btn-delete" onclick="deleteApplication(${app.application_id})">Delete</button>
         </div>
       </div>
     `;
