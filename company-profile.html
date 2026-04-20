@@ -80,7 +80,7 @@
     }
 
     .modal-overlay {
-        display: none;
+        display: none; 
         position: fixed;
         top: 0; left: 0;
         width: 100%; height: 100%;
@@ -88,22 +88,15 @@
         z-index: 10000;
         overflow-y: auto;
         padding: 2rem 1rem;
-        transition: background-color 0.3s ease;
     }
-
-    [data-theme="dark"] .modal-overlay {
-        background: rgba(0, 0, 0, 0.8);
-    }
-
     .modal-content {
-        background: var(--card-bg);
+        background: #fff;
         border-radius: 1rem;
         max-width: 600px;
         margin: 2rem auto;
         padding: 2rem;
         position: relative;
         box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        transition: background-color 0.3s ease;
     }
 
     .modal-close {
@@ -112,11 +105,6 @@
         background: none; border: none;
         font-size: 1.5rem; cursor: pointer;
         color: var(--text-light);
-        transition: color 0.3s ease;
-    }
-
-    .modal-close:hover {
-        color: var(--text-color);
     }
 
     .form-group { margin-bottom: 1.2rem; }
@@ -137,7 +125,6 @@
           <a href="auth.html" class="nav-link">Login/Register</a>
         </li>
       </ul>
-      <button id="theme-toggle" class="theme-toggle" title="Toggle Theme">🌙</button>
       <div class="hamburger">
         <span></span>
         <span></span>
