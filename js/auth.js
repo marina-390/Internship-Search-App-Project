@@ -100,6 +100,98 @@ document.addEventListener('DOMContentLoaded', function () {
   toggleRoleFields(); // ensure correct fields shown on first load
 });
 
+/* ----------------------------------------------------------
+   OAUTH — GOOGLE & GITHUB
+   ---------------------------------------------------------- */
+async function signInWithGoogle() {
+  sessionStorage.setItem('oauth_pending', '1');
+  const { error } = await supabaseClient.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.origin + '/auth.html' }
+  });
+  if (error) alert('Google sign-in failed: ' + error.message);
+}
+
+async function signInWithGitHub() {
+  sessionStorage.setItem('oauth_pending', '1');
+  const { error } = await supabaseClient.auth.signInWithOAuth({
+    provider: 'github',
+    options: { redirectTo: window.location.origin + '/auth.html' }
+  });
+  if (error) alert('GitHub sign-in failed: ' + error.message);
+}
+
+async function signInWithLinkedIn() {
+  sessionStorage.setItem('oauth_pending', '1');
+  const { error } = await supabaseClient.auth.signInWithOAuth({
+    provider: 'linkedin_oidc',
+    options: { redirectTo: window.location.origin + '/auth.html' }
+  });
+  if (error) alert('LinkedIn sign-in failed: ' + error.message);
+}
+
+// Runs after redirect back from OAuth provider
+supabaseClient.auth.onAuthStateChange(async (event, session) => {
+  if (!session || localStorage.getItem('isLoggedIn') === 'true') return;
+  if (!sessionStorage.getItem('oauth_pending')) return;
+  if (event !== 'SIGNED_IN' && event !== 'INITIAL_SESSION') return;
+  sessionStorage.removeItem('oauth_pending');
+  await _handleOAuthUser(session);
+});
+
+async function _handleOAuthUser(session) {
+  const email    = session.user.email;
+  const fullName = session.user.user_metadata?.full_name ||
+                   session.user.user_metadata?.name || '';
+
+  const { data: existingUser } = await supabaseClient
+    .from('Users')
+    .select('user_id, role')
+    .eq('user_login', email)
+    .maybeSingle();
+
+  if (existingUser) {
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('userId',    existingUser.user_id);
+    localStorage.setItem('userRole',  existingUser.role);
+    localStorage.setItem('userLogin', email);
+    _redirectByRole(existingUser.role);
+    return;
+  }
+
+  // New user — register as student
+  const parts     = fullName.split(' ');
+  const firstName = parts[0] || 'User';
+  const lastName  = parts.slice(1).join(' ') || '';
+
+  const { data: newUser, error: userError } = await supabaseClient
+    .from('Users')
+    .insert({ user_login: email, user_password: 'oauth', role: 1 })
+    .select('user_id')
+    .single();
+
+  if (userError) { alert('Account creation failed: ' + userError.message); return; }
+
+  await supabaseClient.from('student_profiles').insert({
+    user_id:    newUser.user_id,
+    first_name: firstName,
+    last_name:  lastName
+  });
+
+  localStorage.setItem('isLoggedIn', 'true');
+  localStorage.setItem('userId',    newUser.user_id);
+  localStorage.setItem('userRole',  '1');
+  localStorage.setItem('userLogin', email);
+  window.location.href = 'student-profile.html';
+}
+
+function _redirectByRole(role) {
+  if      (role === 0) window.location.href = 'admin.html';
+  else if (role === 1) window.location.href = 'student-profile.html';
+  else if (role === 2) window.location.href = 'company-profile.html';
+  else                 window.location.href = 'index.html';
+}
+
 async function showForgotPrompt() {
   const email = prompt("Enter your Gmail address:");
   if (!email) return;
