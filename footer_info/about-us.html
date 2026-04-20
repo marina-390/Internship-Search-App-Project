@@ -143,6 +143,18 @@
     </div>
   </footer>
 
-  <script src="js/script.js"></script>
-</body>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase.js"></script>
+  
+  <script src="../js/auth.js"></script>
+  <script src="../js/script.js"></script>
+  
+  <script>
+    // Hide CTA login/register section if already logged in
+    document.addEventListener('DOMContentLoaded', function () {
+      const loggedIn = localStorage.getItem('isLoggedIn') === 'true' && localStorage.getItem('userId');
+      const cta = document.getElementById('ctaSection');
+      if (loggedIn && cta) cta.style.display = 'none';
+    });
+  </script>
 </html>
