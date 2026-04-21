@@ -100,6 +100,7 @@ async function loadStudentProfile() {
     fillCvInfo(profile);
     fillLinks();
     fillApplications(applications || []);
+    await loadPracticeRequests(profile.id);
   } catch (err) {
     console.error('Error loading profile:', err);
   }
@@ -1494,8 +1495,6 @@ function enterEditMode() {
   document.getElementById('ePhone').value = currentProfile.phone || '';
   document.getElementById('eCity').value = currentProfile.city || '';
   document.getElementById('eAbout').value = currentProfile.about || '';
-  document.getElementById('ePracticeStart').value = currentProfile.practice_start || '';
-  document.getElementById('ePracticeEnd').value = currentProfile.practice_end || '';
   document.getElementById('eOpenToOffers').checked = currentProfile.is_open_to_offers;
 
   const container = document.getElementById('eEducationContainer');
@@ -1584,8 +1583,6 @@ async function saveProfile() {
       education_history: educationEntries,
       type_education: educationEntries.length > 0 ? educationEntries[0].name : null,
       about: document.getElementById('eAbout').value.trim() || null,
-      practice_start: document.getElementById('ePracticeStart').value || null,
-      practice_end: document.getElementById('ePracticeEnd').value || null,
       is_open_to_offers: document.getElementById('eOpenToOffers').checked,
       updated_at: new Date().toISOString()
     };
@@ -1741,12 +1738,18 @@ function renderSelectedCategories() {
   }).join('');
 }
 
-// Close dropdown when clicking outside
+// Close dropdowns when clicking outside
 document.addEventListener('click', function(e) {
   const search = document.querySelector('.category-search');
   const dropdown = document.getElementById('categoryDropdown');
   if (dropdown && search && !search.contains(e.target)) {
     dropdown.classList.remove('show');
+  }
+
+  const reqSearch = document.getElementById('reqCategorySearch');
+  const reqDropdown = document.getElementById('reqCategoryDropdown');
+  if (reqDropdown && reqSearch && !reqSearch.contains(e.target) && !reqDropdown.contains(e.target)) {
+    reqDropdown.classList.remove('show');
   }
 });
 
@@ -2159,3 +2162,368 @@ function downloadCV() {
   }
   window.open(currentProfile.cv_url, '_blank');
 }
+
+// ==========================================
+// PRACTICE REQUESTS
+// ==========================================
+
+let practiceRequests = [];
+let showAllRequests = false;
+let reqSelectedCategoryIds = [];
+
+async function loadPracticeRequests(studentId) {
+  const { data, error } = await supabaseClient
+    .from('student_practice_requests')
+    .select('*, student_request_categories(category_id, job_categories(title)), Companies:found_company_id(company_name)')
+    .eq('student_id', studentId)
+    .order('period_start', { ascending: false });
+
+  if (error) { console.error('Error loading practice requests:', error); return; }
+  practiceRequests = data || [];
+  fillPracticeRequests();
+}
+
+function fillPracticeRequests() {
+  const container = document.getElementById('dPracticeRequests');
+  const showAllWrap = document.getElementById('showAllRequestsWrap');
+  if (!container) return;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const active = practiceRequests.filter(r => new Date(r.period_end) >= today);
+  const archived = practiceRequests.filter(r => new Date(r.period_end) < today);
+  const toShow = showAllRequests ? practiceRequests : active;
+
+  if (practiceRequests.length === 0) {
+    container.innerHTML = '<span class="profile-field-value empty">No internship requests added</span>';
+    if (showAllWrap) showAllWrap.style.display = 'none';
+    return;
+  }
+
+  container.innerHTML = toShow.length > 0
+    ? toShow.map(r => renderRequestCard(r, today)).join('')
+    : '<span class="profile-field-value empty">No active requests</span>';
+
+  if (showAllWrap) {
+    if (archived.length > 0) {
+      showAllWrap.style.display = 'block';
+      const btn = document.getElementById('showAllRequestsBtn');
+      if (btn) btn.textContent = showAllRequests
+        ? 'Show active only'
+        : `Show all (${practiceRequests.length})`;
+    } else {
+      showAllWrap.style.display = 'none';
+    }
+  }
+}
+
+function renderRequestCard(r, today) {
+  const isExpired = new Date(r.period_end) < today;
+  const cats = (r.student_request_categories || [])
+    .map(sc => `<span class="category-tag" style="font-size:0.75rem; padding:0.2rem 0.5rem;">${sc.job_categories?.title || ''}</span>`)
+    .join('');
+
+  const statusLabel = r.status === 'found' ? 'Found' : 'Searching';
+  const statusClass = r.status === 'found' ? 'status-found' : 'status-searching';
+  const nextStatus = r.status === 'found' ? 'searching' : 'found';
+  const nextLabel = r.status === 'found' ? 'Back to Searching' : 'Mark as Found';
+  const companyName = r.Companies?.company_name || r.found_company_name || null;
+
+  return `
+    <div class="practice-request-card${isExpired ? ' expired' : ''}">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem; flex-wrap:wrap;">
+        <div>
+          <span style="font-weight:600;">${formatDateEuropean(r.period_start)} — ${formatDateEuropean(r.period_end)}</span>
+          ${isExpired ? '<span class="status-badge" style="background:#f3f4f6; color:#6b7280; margin-left:0.5rem;">Expired</span>' : ''}
+        </div>
+        <span class="status-badge ${statusClass}">${statusLabel}</span>
+      </div>
+      ${cats ? `<div class="selected-categories" style="margin-top:0.5rem; gap:0.35rem;">${cats}</div>` : ''}
+      ${companyName ? `<p style="margin:0.5rem 0 0; font-size:0.85rem;"><span style="color:var(--text-light);">Company:</span> <strong>${companyName}</strong></p>` : ''}
+      ${r.notes ? `<p style="margin:0.4rem 0 0; font-size:0.85rem; color:var(--text-light);">${r.notes}</p>` : ''}
+      <div style="display:flex; gap:0.5rem; margin-top:0.75rem; flex-wrap:wrap;">
+        <button style="background:#eef2ff; color:var(--primary-color); border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:0.8rem; font-weight:600;"
+          onclick="${nextStatus === 'found' ? `openFoundCompanyModal(${r.request_id})` : `togglePracticeRequestStatus(${r.request_id}, 'searching')`}">${nextLabel}</button>
+        <button style="background:#fef2f2; color:#ef4444; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:0.8rem; font-weight:600;"
+          onclick="deletePracticeRequest(${r.request_id})">Delete</button>
+      </div>
+    </div>
+  `;
+}
+
+async function togglePracticeRequestStatus(requestId, newStatus) {
+  const updates = { status: newStatus, updated_at: new Date().toISOString() };
+  if (newStatus === 'searching') {
+    updates.found_company_id = null;
+    updates.found_company_name = null;
+  }
+
+  const { error } = await supabaseClient
+    .from('student_practice_requests')
+    .update(updates)
+    .eq('request_id', requestId);
+
+  if (error) { alert('Error updating status: ' + error.message); return; }
+
+  await loadPracticeRequests(currentProfile.id);
+}
+
+async function deletePracticeRequest(requestId) {
+  if (!confirm('Delete this internship request?')) return;
+
+  const { error } = await supabaseClient
+    .from('student_practice_requests')
+    .delete()
+    .eq('request_id', requestId);
+
+  if (error) { alert('Error: ' + error.message); return; }
+
+  practiceRequests = practiceRequests.filter(r => r.request_id !== requestId);
+  fillPracticeRequests();
+}
+
+function toggleShowAllRequests() {
+  showAllRequests = !showAllRequests;
+  fillPracticeRequests();
+}
+
+// --- Add Request Modal ---
+
+function openAddRequestModal() {
+  reqSelectedCategoryIds = [];
+  document.getElementById('reqPeriodStart').value = '';
+  document.getElementById('reqPeriodEnd').value = '';
+  document.getElementById('reqNotes').value = '';
+  renderReqSelectedCategories();
+  buildReqCategoryDropdown('');
+  document.getElementById('addRequestModal').style.display = 'block';
+}
+
+function closeAddRequestModal() {
+  document.getElementById('addRequestModal').style.display = 'none';
+}
+
+async function savePracticeRequest() {
+  const periodStart = document.getElementById('reqPeriodStart').value;
+  const periodEnd = document.getElementById('reqPeriodEnd').value;
+  const notes = document.getElementById('reqNotes').value.trim();
+
+  if (!periodStart || !periodEnd) { alert('Please set both start and end dates.'); return; }
+  if (periodEnd < periodStart) { alert('End date must be after start date.'); return; }
+
+  try {
+    const { data: newReq, error } = await supabaseClient
+      .from('student_practice_requests')
+      .insert({
+        student_id: currentProfile.id,
+        period_start: periodStart,
+        period_end: periodEnd,
+        status: 'searching',
+        notes: notes || null
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    if (reqSelectedCategoryIds.length > 0) {
+      const catRows = reqSelectedCategoryIds.map(catId => ({
+        request_id: newReq.request_id,
+        category_id: catId
+      }));
+      const { error: catError } = await supabaseClient
+        .from('student_request_categories')
+        .insert(catRows);
+      if (catError) throw catError;
+    }
+
+    await loadPracticeRequests(currentProfile.id);
+    closeAddRequestModal();
+  } catch (err) {
+    console.error('Error saving request:', err);
+    alert('Error saving request: ' + err.message);
+  }
+}
+
+// --- Category selector for request modal ---
+
+function buildReqCategoryDropdown(query) {
+  const dropdown = document.getElementById('reqCategoryDropdown');
+  if (!dropdown) return;
+
+  const q = (query || '').toLowerCase();
+  const groups = {};
+  allCategories.forEach(cat => {
+    if (q && !cat.title.toLowerCase().includes(q)) return;
+    const groupTitle = cat.job_groups?.title || 'Other';
+    if (!groups[groupTitle]) groups[groupTitle] = [];
+    groups[groupTitle].push(cat);
+  });
+
+  dropdown.innerHTML = Object.entries(groups).map(([groupTitle, cats]) => `
+    <div class="category-group-title">${groupTitle}</div>
+    ${cats.map(cat => `
+      <div class="category-option${reqSelectedCategoryIds.includes(cat.category_id) ? ' selected' : ''}"
+           onclick="toggleReqCategory(${cat.category_id})"
+           data-cat-title="${cat.title}">
+        ${cat.title}
+      </div>
+    `).join('')}
+  `).join('');
+}
+
+function showReqCategoryDropdown() {
+  buildReqCategoryDropdown(document.getElementById('reqCategorySearch').value);
+  document.getElementById('reqCategoryDropdown').classList.add('show');
+}
+
+function filterReqCategories() {
+  const query = document.getElementById('reqCategorySearch').value;
+  buildReqCategoryDropdown(query);
+  document.getElementById('reqCategoryDropdown').classList.add('show');
+}
+
+function toggleReqCategory(categoryId) {
+  if (reqSelectedCategoryIds.includes(categoryId)) {
+    reqSelectedCategoryIds = reqSelectedCategoryIds.filter(id => id !== categoryId);
+  } else {
+    reqSelectedCategoryIds.push(categoryId);
+  }
+  renderReqSelectedCategories();
+  buildReqCategoryDropdown(document.getElementById('reqCategorySearch').value);
+}
+
+function renderReqSelectedCategories() {
+  const container = document.getElementById('reqSelectedCategories');
+  if (!container) return;
+  container.innerHTML = reqSelectedCategoryIds.map(id => {
+    const cat = allCategories.find(c => c.category_id === id);
+    return cat ? `
+      <span class="category-tag">
+        ${cat.title}
+        <button onclick="toggleReqCategory(${id})" type="button">×</button>
+      </span>
+    ` : '';
+  }).join('');
+}
+
+// ==========================================
+// FOUND COMPANY MODAL
+// ==========================================
+
+let pendingFoundRequestId = null;
+let foundCompanyId = null;
+let allCompanies = [];
+
+async function openFoundCompanyModal(requestId) {
+  pendingFoundRequestId = requestId;
+  foundCompanyId = null;
+  document.getElementById('foundCompanyInput').value = '';
+  document.getElementById('foundCompanyDropdown').innerHTML = '';
+  document.getElementById('foundCompanyDropdown').classList.remove('show');
+  document.getElementById('foundCompanyChip').style.display = 'none';
+  document.getElementById('foundCompanyChip').innerHTML = '';
+
+  // Load companies once per modal open
+  if (allCompanies.length === 0) {
+    const { data } = await supabaseClient
+      .from('Companies')
+      .select('company_id, company_name')
+      .order('company_name');
+    allCompanies = data || [];
+  }
+
+  document.getElementById('foundCompanyModal').style.display = 'block';
+}
+
+function closeFoundCompanyModal() {
+  document.getElementById('foundCompanyModal').style.display = 'none';
+  pendingFoundRequestId = null;
+  foundCompanyId = null;
+}
+
+function showFoundCompanyDropdown() {
+  renderFoundCompanyDropdown(document.getElementById('foundCompanyInput').value);
+}
+
+function searchFoundCompany(query) {
+  if (foundCompanyId) {
+    foundCompanyId = null;
+    document.getElementById('foundCompanyChip').style.display = 'none';
+  }
+  renderFoundCompanyDropdown(query);
+}
+
+function renderFoundCompanyDropdown(query) {
+  const dropdown = document.getElementById('foundCompanyDropdown');
+  const q = (query || '').toLowerCase().trim();
+
+  const filtered = q
+    ? allCompanies.filter(c => c.company_name.toLowerCase().includes(q))
+    : allCompanies;
+
+  if (filtered.length === 0) {
+    dropdown.classList.remove('show');
+    return;
+  }
+
+  dropdown.innerHTML = filtered.map(c => `
+    <div class="category-option" onclick="selectFoundCompany(${c.company_id}, '${c.company_name.replace(/'/g, "\\'")}')">
+      ${c.company_name}
+    </div>
+  `).join('');
+  dropdown.classList.add('show');
+}
+
+function selectFoundCompany(companyId, companyName) {
+  foundCompanyId = companyId;
+  document.getElementById('foundCompanyInput').value = companyName;
+  document.getElementById('foundCompanyDropdown').classList.remove('show');
+
+  const chip = document.getElementById('foundCompanyChip');
+  chip.style.display = 'block';
+  chip.innerHTML = `
+    <span class="category-tag" style="font-size:0.85rem;">
+      ${companyName}
+      <button type="button" onclick="clearFoundCompany()">×</button>
+    </span>
+  `;
+}
+
+function clearFoundCompany() {
+  foundCompanyId = null;
+  document.getElementById('foundCompanyInput').value = '';
+  document.getElementById('foundCompanyChip').style.display = 'none';
+}
+
+async function confirmMarkAsFound() {
+  if (!pendingFoundRequestId) return;
+
+  const input = document.getElementById('foundCompanyInput').value.trim();
+  const updates = {
+    status: 'found',
+    updated_at: new Date().toISOString(),
+    found_company_id: foundCompanyId || null,
+    found_company_name: !foundCompanyId && input ? input : null
+  };
+
+  const { error } = await supabaseClient
+    .from('student_practice_requests')
+    .update(updates)
+    .eq('request_id', pendingFoundRequestId);
+
+  if (error) { alert('Error: ' + error.message); return; }
+
+  await loadPracticeRequests(currentProfile.id);
+  closeFoundCompanyModal();
+}
+
+// Close found-company dropdown when clicking outside
+document.addEventListener('click', function(e) {
+  const input = document.getElementById('foundCompanyInput');
+  const dropdown = document.getElementById('foundCompanyDropdown');
+  if (dropdown && input && !input.contains(e.target) && !dropdown.contains(e.target)) {
+    dropdown.classList.remove('show');
+  }
+});
