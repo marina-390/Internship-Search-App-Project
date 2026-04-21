@@ -654,6 +654,7 @@ async function openEditModal(id) {
       // Fill fields
       document.getElementById('pTitle').value = data.title || "";
       document.getElementById('pDesc').value = data.description || "";
+      document.getElementById('pRespon').value = data.responsibilities || "";
       document.getElementById('pReqs').value = data.requirements || "";
       document.getElementById('pStatus').value = data.status || "active";
       document.getElementById('pStart').value = data.period_start || "";
@@ -684,6 +685,7 @@ async function submitPosition() {
       company_id: currentProfile.company_id,
       title: document.getElementById('pTitle').value.trim(),
       description: document.getElementById('pDesc').value,
+      responsibilities: document.getElementById('pRespon').value,
       requirements: document.getElementById('pReqs').value,
       status: document.getElementById('pStatus').value,
       category_id: document.getElementById('pCategory').value ? parseInt(document.getElementById('pCategory').value) : null,
@@ -2527,3 +2529,73 @@ document.addEventListener('click', function(e) {
     dropdown.classList.remove('show');
   }
 });
+
+// ==========================================
+// DELETE ACCOUNT (GDPR Art. 17)
+// ==========================================
+
+function openDeleteAccountModal() {
+  document.getElementById('deleteConfirmInput').value = '';
+  document.getElementById('deleteAccountError').style.display = 'none';
+  document.getElementById('deleteAccountModal').style.display = 'block';
+}
+
+function closeDeleteAccountModal() {
+  document.getElementById('deleteAccountModal').style.display = 'none';
+}
+
+async function confirmDeleteAccount() {
+  const input = document.getElementById('deleteConfirmInput').value.trim();
+  const errorEl = document.getElementById('deleteAccountError');
+
+  if (input !== 'DELETE') {
+    errorEl.textContent = 'Please type DELETE exactly to confirm.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  errorEl.style.display = 'none';
+
+  const session = getCurrentSession();
+  if (!session || !currentProfile) return;
+
+  try {
+    // 1. Delete CV file from storage
+    if (currentProfile.cv_url) {
+      const cvPath = currentProfile.cv_url.split('/practice-files/')[1]?.split('?')[0];
+      if (cvPath) {
+        await supabaseClient.storage.from('practice-files').remove([decodeURIComponent(cvPath)]);
+      }
+    }
+
+    // 2. Delete avatar from storage
+    if (currentProfile.photo_url) {
+      const photoPath = currentProfile.photo_url.split('/foto/')[1]?.split('?')[0];
+      if (photoPath) {
+        await supabaseClient.storage.from('foto').remove([decodeURIComponent(photoPath)]);
+      }
+    }
+
+    // 3. Delete user record — cascades to student_profiles, applications,
+    //    student_categories, Student_links, student_practice_requests, etc.
+    const { error } = await supabaseClient
+      .from('Users')
+      .delete()
+      .eq('user_id', session.userId);
+
+    if (error) throw error;
+
+    // 4. Clear session and redirect
+    localStorage.removeItem('userId');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userLogin');
+    localStorage.removeItem('isLoggedIn');
+
+    window.location.href = 'index.html';
+
+  } catch (err) {
+    console.error('Delete account error:', err);
+    errorEl.textContent = 'Error: ' + err.message;
+    errorEl.style.display = 'block';
+  }
+}
