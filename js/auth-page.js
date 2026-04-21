@@ -2,6 +2,29 @@
 
 console.log('[auth-page.js] loaded');
 
+function showToast(message, type) {
+  var existing = document.getElementById('auth-toast');
+  if (existing) existing.remove();
+
+  var toast = document.createElement('div');
+  toast.id = 'auth-toast';
+  toast.textContent = message;
+  toast.style.cssText = [
+    'position:fixed', 'top:1.5rem', 'right:1.5rem', 'z-index:9999',
+    'padding:0.85rem 1.25rem', 'border-radius:0.5rem',
+    'font-size:0.95rem', 'font-weight:500', 'max-width:340px',
+    'box-shadow:0 4px 16px rgba(0,0,0,0.15)',
+    'transition:opacity 0.4s ease',
+    type === 'error'
+      ? 'background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5'
+      : 'background:#dcfce7;color:#15803d;border:1px solid #86efac'
+  ].join(';');
+
+  document.body.appendChild(toast);
+  setTimeout(function() { toast.style.opacity = '0'; }, 3500);
+  setTimeout(function() { if (toast.parentNode) toast.remove(); }, 3900);
+}
+
 function switchTab(tab) {
   var loginForm    = document.getElementById('loginForm');
   var registerForm = document.getElementById('registerForm');
@@ -64,13 +87,13 @@ async function handleLogin(event) {
     var error = res.error;
 
     if (error || !user) {
-      alert('No account found with that email. Please register and verify your email first.');
+      showToast('Please check your email and password.', 'error');
       return;
     }
 
     var match = dcodeIO.bcrypt.compareSync(password, user.user_password);
     if (!match) {
-      alert('Incorrect password. Please try again.');
+      showToast('Please check your email and password.', 'error');
       return;
     }
 
@@ -89,7 +112,7 @@ async function handleLogin(event) {
 
   } catch (err) {
     console.error('Login error:', err);
-    alert('An unexpected error occurred. Please try again.');
+    showToast('Something went wrong. Please try again.', 'error');
   } finally {
     submitBtn.disabled    = false;
     submitBtn.textContent = 'Sign In';
@@ -108,11 +131,11 @@ async function handleRegister(event) {
   var submitBtn       = event.target.querySelector('button[type="submit"]');
 
   if (firstName.length > 15 || lastName.length > 15) {
-    alert('First Name and Last Name must not exceed 15 characters.');
+    showToast('First and last name must not exceed 15 characters.', 'error');
     return;
   }
   if (!email.includes('@')) {
-    alert('Please enter a valid email address containing "@".');
+    showToast('Please enter a valid email address.', 'error');
     return;
   }
 
@@ -120,19 +143,19 @@ async function handleRegister(event) {
   var specialCharCount = (password.match(/[!@#$%^&*(),.?":{}|<>]/g) || []).length;
 
   if (password.length < 8) {
-    alert('Password must be at least 8 characters long.');
+    showToast('Password must be at least 8 characters long.', 'error');
     return;
   }
   if (digitCount < 2) {
-    alert('Password must contain at least 2 numbers (0-9).');
+    showToast('Password must contain at least 2 numbers.', 'error');
     return;
   }
   if (specialCharCount < 2) {
-    alert('Password must contain at least 2 special characters (e.g., !!, .., @#).');
+    showToast('Password must contain at least 2 special characters (e.g. !@#).', 'error');
     return;
   }
   if (password !== confirmPassword) {
-    alert('Passwords do not match.');
+    showToast('Passwords do not match.', 'error');
     return;
   }
 
@@ -152,7 +175,7 @@ async function handleRegister(event) {
     console.log('[Register] step 1 result:', dupRes.data, dupRes.error);
 
     if (dupRes.data) {
-      alert('An account with this email already exists. Please sign in.');
+      showToast('An account with this email already exists.', 'error');
       return;
     }
 
@@ -160,7 +183,7 @@ async function handleRegister(event) {
     if (role === 2) {
       var yTunnus = document.getElementById('yTunnus').value.trim();
       if (!/^\d{6,7}-\d$/.test(yTunnus)) {
-        alert('Invalid Y-Tunnus format. Use: 123456-7 (6-7 digits - 1 digit)');
+        showToast('Invalid Y-Tunnus format. Use: 1234567-8', 'error');
         return;
       }
 
@@ -172,7 +195,7 @@ async function handleRegister(event) {
 
       if (ytRes.error) throw ytRes.error;
       if (ytRes.data) {
-        alert('Y-Tunnus "' + yTunnus + '" already registered! Only one account per company.');
+        showToast('This Y-Tunnus is already registered. Only one account per company.', 'error');
         return;
       }
 
@@ -251,8 +274,10 @@ async function handleRegister(event) {
       localStorage.setItem('userId',    newUser.user_id);
       localStorage.setItem('userRole',  metadata.role);
       localStorage.setItem('userLogin', authUser.email);
-      alert('Account created successfully!');
-      window.location.href = metadata.role === 1 ? 'student-profile.html' : 'company-profile.html';
+      showToast('Account created successfully!', 'success');
+      setTimeout(function() {
+        window.location.href = metadata.role === 1 ? 'student-profile.html' : 'company-profile.html';
+      }, 1000);
       return;
     }
 
@@ -263,7 +288,7 @@ async function handleRegister(event) {
 
   } catch (err) {
     console.error('Registration error:', err);
-    alert('Registration failed: ' + (err.message || String(err)));
+    showToast('Registration failed. Please try again.', 'error');
   } finally {
     submitBtn.disabled    = false;
     submitBtn.textContent = 'Create Account';
