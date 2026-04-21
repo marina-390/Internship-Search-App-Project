@@ -5,6 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login & Register - InternHub</title>
   <link rel="stylesheet" href="css/style.css">
+  <script>
+  function switchTab(tab) {
+    var lf   = document.getElementById('loginForm');
+    var rf   = document.getElementById('registerForm');
+    var tabs = document.querySelectorAll('.form-tab');
+    if (!lf || !rf) return;
+    if (tab === 'login') {
+      lf.classList.add('active');    rf.classList.remove('active');
+      if (tabs[0]) tabs[0].classList.add('active');
+      if (tabs[1]) tabs[1].classList.remove('active');
+    } else {
+      lf.classList.remove('active'); rf.classList.add('active');
+      if (tabs[0]) tabs[0].classList.remove('active');
+      if (tabs[1]) tabs[1].classList.add('active');
+    }
+  }
+  </script>
   <style>
     .auth-container {
       display: grid;
@@ -168,7 +185,7 @@
 
           <div id="loginForm" class="auth-form-wrapper active">
             <h2 style="margin-bottom: 1.5rem;">Welcome Back</h2>
-            <form onsubmit="handleLogin(event); return false;">
+            <form id="loginForm_form" action="javascript:void(0)">
               <div class="form-group">
                 <label for="loginEmail">Email Address</label>
                 <input 
@@ -237,8 +254,9 @@
           </div>
 
           <div id="registerForm" class="auth-form-wrapper">
+            <div id="registerFormContent">
             <h2 style="margin-bottom: 1.5rem;">Create Your Account</h2>
-            <form onsubmit="handleRegister(event)">
+            <form id="registerForm_form" action="javascript:void(0)">
               <div class="form-group" style="margin-bottom: 1.5rem;">
                 <label style="margin-bottom: 1rem;">I am a...</label>
                 <div style="display: flex; gap: 1rem;">
@@ -338,13 +356,12 @@
                 <div class="form-group">
                   <label for="yTunnus">Y-Tunnus <small style="color: #666;">(Finnish Business ID, required)</small></label>
                   <input 
-                    type="text" 
-                    id="yTunnus" 
-                    name="yTunnus" 
-                    placeholder="123456-7" 
-                    pattern="[0-9]{6,7}-[0-9]" 
+                    type="text"
+                    id="yTunnus"
+                    name="yTunnus"
+                    placeholder="123456-7"
+                    pattern="[0-9]{6,7}-[0-9]"
                     maxlength="9"
-                    required
                   />
                   <small class="text-muted">Format: 6-7 digits - 1 digit</small>
                 </div>
@@ -419,11 +436,19 @@
             </div>
 
             <p class="text-center text-muted" style="margin-top: 1.5rem;">
-              Already have an account? 
+              Already have an account?
               <a href="#" onclick="switchTab('login'); return false;" class="text-primary">
                 Sign in here
               </a>
             </p>
+            </div>
+            <div id="emailSentMessage" style="display:none; text-align:center; padding: 2rem 0;">
+              <div style="font-size: 3rem; margin-bottom: 1rem;">📧</div>
+              <h3 style="margin-bottom: 1rem;">Check your email!</h3>
+              <p>We sent a confirmation link to <strong id="sentToEmail"></strong></p>
+              <p style="color: #666; font-size: 0.9rem; margin-top: 0.5rem;">Click the link to activate your account. Check your spam folder if you don't see it.</p>
+              <button onclick="switchTab('login')" class="btn btn-primary" style="margin-top: 1.5rem;">Back to Sign In</button>
+            </div>
           </div>
         </div>
 
@@ -529,294 +554,6 @@
   <script src="js/profile.js"></script>
   <script src="js/script.js"></script>
   
-    // Switch between login and register tabs
-    <script>
-  /* ----------------------------------------------------------
-     TAB SWITCHING
-     ---------------------------------------------------------- */
-  function switchTab(tab) {
-    const loginForm   = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
-    const tabs        = document.querySelectorAll('.form-tab');
-
-    if (tab === 'login') {
-      loginForm.classList.add('active');
-      registerForm.classList.remove('active');
-      tabs[0].classList.add('active');
-      tabs[1].classList.remove('active');
-    } else {
-      loginForm.classList.remove('active');
-      registerForm.classList.add('active');
-      tabs[0].classList.remove('active');
-      tabs[1].classList.add('active');
-    }
-  }
-
-  /* ----------------------------------------------------------
-     ROLE FIELD TOGGLE  (student vs company fields)
-     ---------------------------------------------------------- */
-  function toggleRoleFields() {
-    const role          = document.querySelector('input[name="role"]:checked').value;
-    const studentFields = document.getElementById('studentFields');
-    const companyFields = document.getElementById('companyFields');
-
-    if (role === 'student') {
-      studentFields.style.display = 'block';
-      companyFields.style.display = 'none';
-    } else {
-      studentFields.style.display = 'none';
-      companyFields.style.display = 'block';
-    }
-  }
-
-  /* ----------------------------------------------------------
-     PASSWORD VISIBILITY TOGGLE
-     ---------------------------------------------------------- */
-  function togglePasswordVisibility(fieldId) {
-    const field = document.getElementById(fieldId);
-    field.type  = field.type === 'password' ? 'text' : 'password';
-  }
-
-  /* ----------------------------------------------------------
-     LOGIN
-     DB columns used: Users.user_login, Users.user_password,
-                      Users.user_id, Users.role
-     ---------------------------------------------------------- */
-  async function handleLogin(event) {
-    event.preventDefault();
-
-    const email     = document.getElementById('loginEmail').value.trim();
-    const password  = document.getElementById('loginPassword').value;
-    const submitBtn = event.target.querySelector('button[type="submit"]');
-
-    if (!email || !password) return;
-
-    submitBtn.disabled    = true;
-    submitBtn.textContent = 'Signing in...';
-
-    try {
-      // Look up user by user_login (= email)
-      const { data: user, error } = await supabaseClient
-        .from('Users')
-        .select('user_id, user_password, role')
-        .eq('user_login', email)
-        .single();
-
-      if (error || !user) {
-        alert('No account found with that email. Please register first.');
-        return;
-      }
-
-      // Verify hashed password with bcrypt
-      const match = dcodeIO.bcrypt.compareSync(password, user.user_password);
-      if (!match) {
-        alert('Incorrect password. Please try again.');
-        return;
-      }
-
-      // Persist session
-      localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('userId',   user.user_id);
-      localStorage.setItem('userRole', user.role);
-      localStorage.setItem('userLogin', email);
-
-      // Redirect: role 0 = admin, role 1 = student, role 2 = employer
-      if (user.role === 0) {
-        window.location.href = 'admin.html';
-      } else if (user.role === 1) {
-        window.location.href = 'student-profile.html';
-      } else if (user.role === 2) {
-        window.location.href = 'company-profile.html';
-      } else {
-        window.location.href = 'index.html';
-      }
-
-    } catch (err) {
-      console.error('Login error:', err);
-      alert('An unexpected error occurred. Please try again.');
-    } finally {
-      submitBtn.disabled    = false;
-      submitBtn.textContent = 'Sign In';
-    }
-  }
-
-  /* ----------------------------------------------------------
-     REGISTRATION
-     Tables written:
-       Users             → user_login, user_password, role
-       student_profiles  → user_id, first_name, last_name,
-                           type_education   (university field)
-                           NOTE: major / graduationYear have NO
-                           matching columns in the DB schema —
-                           those form fields are display-only
-                           and are not saved.
-       Companies         → user_id, company_name, website
-                           NOTE: jobTitle / companySize have NO
-                           matching columns in the DB schema —
-                           those form fields are display-only.
-     ---------------------------------------------------------- */
-     async function handleRegister(event) {
-    event.preventDefault();
-
-    const firstName = document.getElementById('firstName').value.trim();
-    const lastName = document.getElementById('lastName').value.trim();
-    const email = document.getElementById('regEmail').value.trim();
-    const password = document.getElementById('regPassword').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-    const roleValue = document.querySelector('input[name="role"]:checked').value;
-    const submitBtn = event.target.querySelector('button[type="submit"]');
-
-    if (firstName.length > 15 || lastName.length > 15) {
-        alert('First Name and Last Name must not exceed 15 characters.');
-        return;
-    }
-
-    // 2. Email "@" Check
-    if (!email.includes('@')) {
-        alert('Please enter a valid email address containing "@".');
-        return;
-    }
-
-    // 3. Password Complexity Check
-    // Rules: Min 8 chars, 2 numbers, 2 special chars
-    const hasMinLength = password.length >= 8;
-    const digitCount = (password.match(/\d/g) || []).length; // Counts numbers
-    const specialCharCount = (password.match(/[!@#$%^&*(),.?":{}|<>]/g) || []).length; // Counts symbols
-
-    if (!hasMinLength) {
-        alert('Password must be at least 8 characters long.');
-        return;
-    }
-    if (digitCount < 2) {
-        alert('Password must contain at least 2 numbers (0-9).');
-        return;
-    }
-    if (specialCharCount < 2) {
-        alert('Password must contain at least 2 special characters (e.g., !!, .., @#).');
-        return;
-    }
-
-    if (password !== confirmPassword) {
-        alert('Passwords do not match.');
-        return;
-    }
-
-    // Role: 1 = student, 2 = employer
-    const role = roleValue === 'student' ? 1 : 2;
-
-    // Basic validation
-    if (password !== confirmPassword) {
-        alert('Passwords do not match.');
-        return;
-    }
-
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Creating account...';
-
-    try {
-        // 1. Create the User in the 'Users' table
-        const salt = dcodeIO.bcrypt.genSaltSync(10);
-        const hashedPassword = dcodeIO.bcrypt.hashSync(password, salt);
-
-        const { data: newUser, error: userError } = await supabaseClient
-            .from('Users')
-            .insert({
-                user_login: email,
-                user_password: hashedPassword,
-                role: role
-            })
-            .select('user_id')
-            .single();
-
-        if (userError) throw userError;
-
-        // 2. Role-specific logic
-        if (role === 1) {
-            // Student Profile Logic
-            const eduLevel = document.getElementById('eduType').value;
-            const { error: profileError } = await supabaseClient
-                .from('student_profiles')
-                .insert({
-                    user_id: newUser.user_id,
-                    first_name: firstName,
-                    last_name: lastName,
-                    type_education: eduLevel || null
-                });
-            
-            if (profileError) throw profileError;
-
-        } else if (role === 2) {
-            // COMPANY LOGIC
-            const companyName = document.getElementById('companyName').value.trim() || (firstName + " " + lastName);
-            const jobTitle = document.getElementById('jobTitle').value.trim() || "Administrator";
-
-            // NEW: Y-Tunnus validation & duplicate check
-            const yTunnus = document.getElementById('yTunnus').value.trim();
-            if (!/^\d{6,7}-\d$/.test(yTunnus)) {
-              alert('Invalid Y-Tunnus format. Use: 123456-7 (6-7 digits - 1 digit)');
-              submitBtn.disabled = false;
-              submitBtn.textContent = 'Create Account';
-              return;
-            }
-
-            const { data: existing, error: checkError } = await supabaseClient
-              .from('Companies')
-              .select('company_id, company_name')
-              .eq('y_tunnus', yTunnus)
-              .maybeSingle();
-
-            if (checkError) throw checkError;
-            if (existing) {
-              alert(`Y-Tunnus "${yTunnus}" already registered! Only one account per company. If someone else is using your y-tunnus not from your company,notify the admin.`);
-              submitBtn.disabled = false;
-              submitBtn.textContent = 'Create Account';
-              return;
-            }
-
-            // A. Create the Company Entry
-            const { data: newCompany, error: compError } = await supabaseClient
-                .from('Companies')
-                .insert({
-                    user_id: newUser.user_id,
-                    company_name: companyName,
-                    website: document.getElementById('companyWebsite').value.trim() || null,
-                    y_tunnus: yTunnus
-                })
-                .select('company_id')
-                .single();
-
-            if (compError) throw compError;
-
-            // B. AUTOMATICALLY ADD REGISTERING USER TO THE TEAM
-            // This links the name and job title from the form to the team table
-            const { error: teamError } = await supabaseClient
-                .from('company_team')
-                .insert({
-                    company_id: newCompany.company_id,
-                    name: `${firstName} ${lastName}`,
-                    job_title: jobTitle,
-                    email: email
-                });
-
-            if (teamError) console.error("Team auto-add failed:", teamError);
-        }
-
-        alert('Account created successfully! You can now sign in.');
-        switchTab('login');
-
-    } catch (err) {
-        console.error('Registration error:', err);
-        alert('Registration failed: ' + err.message);
-    } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Create Account';
-    }
-}
-  /* ----------------------------------------------------------
-     URL param: auto-switch tab on page load
-     ---------------------------------------------------------- */
-  window.addEventListener('DOMContentLoaded', function () {
-    const params = new URLSearchParams(window.location.search);
-    switchTab(params.get('mode') === 'register' ? 'register' : 'login');
-  });
-</script>
+    <script src="js/auth-page.js"></script>
+</body>
+</html>

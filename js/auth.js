@@ -26,8 +26,9 @@ function requireAuth() {
   return getCurrentSession();
 }
 
-function logout(event) {
+async function logout(event) {
   event.preventDefault();
+  await supabaseClient.auth.signOut();
   localStorage.removeItem('isLoggedIn');
   localStorage.removeItem('userId');
   localStorage.removeItem('userRole');
