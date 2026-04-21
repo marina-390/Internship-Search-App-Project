@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Email - InternHub</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div style="max-width: 500px; margin: 100px auto; text-align: center; padding: 2rem;">
+
+    <div id="stateLoading">
+      <div style="font-size: 3rem; margin-bottom: 1rem;">⏳</div>
+      <h2 style="color: #4f46e5;">Verifying your email...</h2>
+      <p style="color: #666;">Please wait a moment.</p>
+    </div>
+
+    <div id="stateSuccess" style="display:none;">
+      <div style="font-size: 3rem; margin-bottom: 1rem;">✅</div>
+      <h2 style="color: #4f46e5;">Email confirmed!</h2>
+      <p style="color: #666;">Your account is ready. Redirecting you now...</p>
+    </div>
+
+    <div id="stateError" style="display:none;">
+      <div style="font-size: 3rem; margin-bottom: 1rem;">❌</div>
+      <h2 style="color: #e53e3e;">Verification failed</h2>
+      <p id="errorMsg" style="color: #e53e3e; margin: 1rem 0;"></p>
+      <a href="auth.html" style="color: #4f46e5; text-decoration: underline;">Back to Login</a>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <script>
+    const verifyTimeout = setTimeout(
+      () => showError('Verification link expired or invalid. Please try registering again.'),
+      15000
+    );
+
+    supabaseClient.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        clearTimeout(verifyTimeout);
+        await completeRegistration(session.user);
+      }
+    });
+
+    async function completeRegistration(user) {
+      try {
+        // Idempotency: if user already exists (double-click on link), just log them in
+        const { data: existing } = await supabaseClient
+          .from('Users')
+          .select('user_id, role')
+          .eq('user_login', user.email)
+          .maybeSingle();
+
+        if (existing) {
+          await finishSession(existing.user_id, existing.role, user.email);
+          return;
+        }
+
+        const meta = user.user_metadata;
+
+        // Create Users table entry
+        const { data: newUser, error: userError } = await supabaseClient
+          .from('Users')
+          .insert({
+            user_login: user.email,
+            user_password: meta.hashed_password,
+            role: meta.role
+          })
+          .select('user_id')
+          .single();
+
+        if (userError) throw userError;
+
+        if (meta.role === 1) {
+          // Student profile
+          const { error: profileError } = await supabaseClient
+            .from('student_profiles')
+            .insert({
+              user_id: newUser.user_id,
+              first_name: meta.first_name,
+              last_name: meta.last_name,
+              type_education: meta.edu_level || null
+            });
+          if (profileError) throw profileError;
+
+        } else if (meta.role === 2) {
+          // Company entry
+          const { data: newCompany, error: compError } = await supabaseClient
+            .from('Companies')
+            .insert({
+              user_id: newUser.user_id,
+              company_name: meta.company_name,
+              website: meta.website || null,
+              y_tunnus: meta.y_tunnus
+            })
+            .select('company_id')
+            .single();
+
+          if (compError) throw compError;
+
+          // Add registering user to company team
+          const { error: teamError } = await supabaseClient
+            .from('company_team')
+            .insert({
+              company_id: newCompany.company_id,
+              name: `${meta.first_name} ${meta.last_name}`,
+              job_title: meta.job_title,
+              email: user.email
+            });
+
+          if (teamError) console.error('Team auto-add failed:', teamError);
+        }
+
+        await finishSession(newUser.user_id, meta.role, user.email);
+
+      } catch (err) {
+        console.error('Registration completion error:', err);
+        showError(err.message);
+      }
+    }
+
+    async function finishSession(userId, role, email) {
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('userId', userId);
+      localStorage.setItem('userRole', role);
+      localStorage.setItem('userLogin', email);
+
+      document.getElementById('stateLoading').style.display = 'none';
+      document.getElementById('stateSuccess').style.display = 'block';
+
+      setTimeout(() => {
+        window.location.href = role === 1 ? 'student-profile.html' : 'company-profile.html';
+      }, 1500);
+    }
+
+    function showError(message) {
+      document.getElementById('stateLoading').style.display = 'none';
+      document.getElementById('stateError').style.display = 'block';
+      document.getElementById('errorMsg').textContent = message;
+    }
+  </script>
+</body>
+</html>
