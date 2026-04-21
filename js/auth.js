@@ -43,7 +43,7 @@ function checkCompanyAuth() {
   } else if (session.role === 2) {
     window.location.href = 'company-profile.html';
   } else {
-    alert('Only employer accounts can post internships.');
+    showToast('Only employer accounts can post internships.', 'warning');
   }
 }
 
@@ -110,7 +110,7 @@ async function signInWithGoogle() {
     provider: 'google',
     options: { redirectTo: window.location.origin + '/auth.html' }
   });
-  if (error) alert('Google sign-in failed: ' + error.message);
+  if (error) showToast('Google sign-in failed: ' + error.message, 'error');
 }
 
 async function signInWithGitHub() {
@@ -119,7 +119,7 @@ async function signInWithGitHub() {
     provider: 'github',
     options: { redirectTo: window.location.origin + '/auth.html' }
   });
-  if (error) alert('GitHub sign-in failed: ' + error.message);
+  if (error) showToast('GitHub sign-in failed: ' + error.message, 'error');
 }
 
 async function signInWithLinkedIn() {
@@ -128,7 +128,7 @@ async function signInWithLinkedIn() {
     provider: 'linkedin_oidc',
     options: { redirectTo: window.location.origin + '/auth.html' }
   });
-  if (error) alert('LinkedIn sign-in failed: ' + error.message);
+  if (error) showToast('LinkedIn sign-in failed: ' + error.message, 'error');
 }
 
 // Runs after redirect back from OAuth provider
@@ -171,7 +171,7 @@ async function _handleOAuthUser(session) {
     .select('user_id')
     .single();
 
-  if (userError) { alert('Account creation failed: ' + userError.message); return; }
+  if (userError) { showToast('Account creation failed: ' + userError.message, 'error'); return; }
 
   await supabaseClient.from('student_profiles').insert({
     user_id:    newUser.user_id,
@@ -193,19 +193,29 @@ function _redirectByRole(role) {
   else                 window.location.href = 'index.html';
 }
 
-async function showForgotPrompt() {
-  const email = prompt("Enter your Gmail address:");
-  if (!email) return;
+function showForgotPrompt() {
+  const modal = document.getElementById('forgotModal');
+  const input = document.getElementById('forgotEmailInput');
+  if (modal) { input.value = ''; modal.style.display = 'block'; input.focus(); }
+}
 
-  const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-    // USE THE FULL URL HERE
-    redirectTo: 'http://127.0.0.1:5500/update-password.html',
-  });
+function closeForgotModal() {
+  const modal = document.getElementById('forgotModal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function submitForgotPassword() {
+  const email = document.getElementById('forgotEmailInput').value.trim();
+  if (!email) { showToast('Please enter your email address.', 'warning'); return; }
+
+  const redirectTo = window.location.origin + '/update-password.html';
+  const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo });
 
   if (error) {
-    alert("Error: " + error.message);
+    showToast('Error: ' + error.message, 'error');
   } else {
-    alert("Check your email! The link will now take you to the correct page.");
+    showToast('Reset link sent! Check your email.', 'success');
+    closeForgotModal();
   }
 }
 
@@ -217,7 +227,7 @@ async function loginUser(email, password) {
 
   if (error) {
       console.error("Login Error:", error.message);
-      alert("Login failed: " + error.message);
+      showToast("Login failed: " + error.message, 'error');
   } else {
       // Success!
       window.location.href = 'student-profile.html';
