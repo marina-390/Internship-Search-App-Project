@@ -288,7 +288,7 @@ async function handleRegister(event) {
 
   } catch (err) {
     console.error('Registration error:', err);
-    showToast('Registration failed. Please try again.', 'error');
+    showToast('Registration failed: ' + (err.message || 'Unknown error'), 'error');
   } finally {
     submitBtn.disabled    = false;
     submitBtn.textContent = 'Create Account';

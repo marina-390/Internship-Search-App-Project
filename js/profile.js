@@ -129,7 +129,7 @@ async function savePost(postId) {
     document.getElementById(`title-${postId}`).innerText = newTitle;
     
     togglePostEdit(postId, false);
-    alert("Position updated!");
+    showToast("Position updated!", 'success');
 }
 
 // ==========================================
@@ -379,7 +379,7 @@ async function saveNewTeamMember() {
     const phone = document.getElementById('nmPhone').value.trim();
 
     if (!name || !title) {
-        alert("Name and Job Title are required.");
+        showToast("Name and Job Title are required.", 'warning');
         return;
     }
 
@@ -405,7 +405,7 @@ async function saveNewTeamMember() {
             // Update the local list
             const index = currentTeam.findIndex(m => m.id === editingMemberId);
             currentTeam[index] = data[0];
-            alert("Member updated successfully!");
+            showToast("Member updated successfully!", 'success');
         } else {
             // --- MODE: INSERT ---
             const { data, error } = await supabaseClient
@@ -416,7 +416,7 @@ async function saveNewTeamMember() {
             if (error) throw error;
 
             currentTeam.push(data[0]);
-            alert("Member added successfully!");
+            showToast("Member added successfully!", 'success');
         }
 
         // Refresh UI and close form
@@ -425,7 +425,7 @@ async function saveNewTeamMember() {
 
     } catch (err) {
         console.error("Database Error:", err.message);
-        alert("Error: " + err.message);
+        showToast("Error: " + err.message, 'error');
     }
 }
 
@@ -548,7 +548,7 @@ function fillCompanyDisplay(profile) {
 async function saveCompanyProfile() { 
     const session = getCurrentSession(); 
     if (!session) {
-        alert("You must be logged in to save.");
+        showToast("You must be logged in to save.", 'warning');
         return;
     }
 
@@ -597,11 +597,11 @@ async function saveCompanyProfile() {
         // Update local cache so toggleCompanyEdit pre-fills correctly next time
         Object.assign(currentProfile, updates);
         toggleCompanyEdit(false);
-        alert("Profile updated successfully!");
+        showToast("Profile updated successfully!", 'success');
 
     } catch (err) {
         console.error("Full Save Error:", err);
-        alert("Save failed: " + (err.message || "Unknown error"));
+        showToast("Save failed: " + (err.message || "Unknown error"), 'error');
     } finally {
         if (saveBtn) {
             saveBtn.disabled = false;
@@ -670,7 +670,7 @@ async function openEditModal(id) {
       modal.style.display = 'block';
       document.body.style.overflow = 'hidden';
   } catch (err) {
-      alert("Error loading data: " + err.message);
+      showToast("Error loading data: " + err.message, 'error');
   }
 }
 
@@ -679,7 +679,7 @@ async function submitPosition() {
   const editId = document.getElementById('editPositionId').value;
   const submitBtn = document.getElementById('submitPostBtn');
   
-  if (!currentProfile) return alert("Profile not loaded.");
+  if (!currentProfile) { showToast("Profile not loaded.", 'warning'); return; }
 
   const postData = {
       company_id: currentProfile.company_id,
@@ -709,11 +709,11 @@ async function submitPosition() {
 
       if (error) throw error;
 
-      alert(editId ? "Updated!" : "Posted!");
+      showToast(editId ? "Updated!" : "Posted!", 'success');
       closePostModal();
       loadCompanyPostings();
   } catch (err) {
-      alert("Error: " + err.message);
+      showToast("Error: " + err.message, 'error');
   } finally {
       submitBtn.disabled = false;
       submitBtn.innerText = editId ? "Update Position" : "Post Position";
@@ -794,7 +794,7 @@ async function deletePosition(id) {
       if (error) throw error;
       loadCompanyPostings(); // Refresh the list
   } catch (err) {
-      alert(err.message);
+      showToast(err.message, 'error');
   }
 }
 
@@ -967,7 +967,7 @@ function openCompanyAppModal(app) {
 // STUDENT PROFILE MODAL (read-only, for company reviewers)
 // ==========================================
 async function openStudentProfileModal(studentId) {
-  if (!studentId) { alert('No student ID available.'); return; }
+  if (!studentId) { showToast('No student ID available.', 'warning'); return; }
 
   const modal   = document.getElementById('studentProfileModal');
   const loading = document.getElementById('spLoading');
@@ -1113,16 +1113,16 @@ async function saveCompanyApplicationStatus(newStatus) {
 
     if (error) {
       console.error('Company application update error:', error);
-      alert('Failed to update application: ' + error.message);
+      showToast('Failed to update application: ' + error.message, 'error');
       return;
     }
 
-    alert(newStatus === 'accepted' ? 'Application accepted.' : newStatus === 'rejected' ? 'Application declined.' : 'Application updated.');
+    showToast(newStatus === 'accepted' ? 'Application accepted.' : newStatus === 'rejected' ? 'Application declined.' : 'Application updated.', newStatus === 'accepted' ? 'success' : newStatus === 'rejected' ? 'success' : 'info');
     if (modal) modal.style.display = 'none';
     await loadCompanyApplications();
   } catch (err) {
     console.error('Error saving company application status:', err);
-    alert('Error: ' + err.message);
+    showToast('Error: ' + err.message, 'error');
   }
 }
 
@@ -1166,12 +1166,12 @@ async function handleFormSubmit() {
 
       if (result.error) throw result.error;
 
-      alert(editId ? "Updated!" : "Posted!");
+      showToast(editId ? "Updated!" : "Posted!", 'success');
       closePostModal();
       loadCompanyPostings(); // Refresh the list
 
   } catch (err) {
-      alert("Error: " + err.message);
+      showToast("Error: " + err.message, 'error');
   } finally {
       submitBtn.disabled = false;
   }
@@ -1368,13 +1368,13 @@ async function updateApplication() {
 
       if (error) throw error;
 
-      alert("Update successful!");
+      showToast("Update successful!", 'success');
       isCvDeleted = false; // reset
       document.getElementById('editAppModal').style.display = 'none';
       loadStudentProfile();
 
   } catch (err) {
-      alert("Error: " + err.message);
+      showToast("Error: " + err.message, 'error');
   } finally {
       saveBtn.disabled = false;
   }
@@ -1414,10 +1414,10 @@ async function deleteApplication(applicationId) {
           container.innerHTML = '<p>No applications yet.</p>';
       }
 
-      alert("Application withdrawn successfully.");
+      showToast("Application withdrawn successfully.", 'success');
   } catch (err) {
       console.error('Delete error:', err);
-      alert("Failed to delete application: " + err.message);
+      showToast("Failed to delete application: " + err.message, 'error');
   }
 }
 
@@ -1433,7 +1433,7 @@ async function deleteApplication(applicationId) {
       if (error) throw error;
       loadStudentProfile();
   } catch (err) {
-      alert("Delete failed: " + err.message);
+      showToast("Delete failed: " + err.message, 'error');
   }
 }
 /**
@@ -1625,11 +1625,11 @@ async function saveProfile() {
     fillDisplayMode(currentProfile, session);
     updateEducationDisplay(educationEntries);
     cancelEditMode();
-    alert('Profile saved successfully!');
+    showToast('Profile saved successfully!', 'success');
 
   } catch (err) {
     console.error('Save error:', err);
-    alert(err.message || 'An error occurred while saving.');
+    showToast(err.message || 'An error occurred while saving.', 'error');
   } finally {
     saveBtn.disabled = false;
     saveBtn.textContent = 'Save';
@@ -1894,7 +1894,7 @@ async function uploadAvatar(input) {
 
   // Max 2MB
   if (file.size > 2 * 1024 * 1024) {
-    alert('Photo must be under 2 MB.');
+    showToast('Photo must be under 2 MB.', 'warning');
     return;
   }
 
@@ -1908,7 +1908,7 @@ async function uploadAvatar(input) {
       .upload(filePath, file, { upsert: true });
 
     if (uploadError) {
-      alert('Upload error: ' + uploadError.message);
+      showToast('Upload error: ' + uploadError.message, 'error');
       return;
     }
 
@@ -1929,7 +1929,7 @@ async function uploadAvatar(input) {
     fillAvatar(currentProfile);
   } catch (err) {
     console.error('Avatar upload error:', err);
-    alert('Failed to upload photo.');
+    showToast('Failed to upload photo.', 'error');
   }
 }
 
@@ -1942,13 +1942,13 @@ async function uploadLogo(input) {
   // 2. Check Session (Must be logged in)
   const session = getCurrentSession();
   if (!session) {
-    alert("Please log in to upload a logo.");
+    showToast("Please log in to upload a logo.", 'warning');
     return;
   }
 
   // 3. Size Validation (Max 2MB)
   if (file.size > 2 * 1024 * 1024) {
-    alert('Logo must be under 2 MB.');
+    showToast('Logo must be under 2 MB.', 'warning');
     return;
   }
 
@@ -1966,7 +1966,7 @@ async function uploadLogo(input) {
       });
 
     if (uploadError) {
-      alert('Upload error: ' + uploadError.message);
+      showToast('Upload error: ' + uploadError.message, 'error');
       return;
     }
 
@@ -2008,11 +2008,11 @@ async function uploadLogo(input) {
         if (placeholder) placeholder.style.display = 'none';
     }
 
-    alert('Logo updated successfully!');
+    showToast('Logo updated successfully!', 'success');
 
   } catch (err) {
     console.error('Logo upload error:', err);
-    alert('Failed to upload logo.');
+    showToast('Failed to upload logo.', 'error');
   }
 }
 // ==========================================
@@ -2058,11 +2058,11 @@ async function uploadCV(input) {
     currentProfile.cv_original_name = file.name;
 
     renderCVList(); 
-    alert('CV Uploaded successfully!');
+    showToast('CV uploaded successfully!', 'success');
 
   } catch (err) {
     console.error('Upload Error:', err);
-    alert('Note: ' + err.message);
+    showToast('Note: ' + err.message, 'info');
     renderCVList(); 
   }
 }
@@ -2086,11 +2086,11 @@ async function deleteCV() {
     currentProfile.cv_original_name = null;
     
     renderCVList();
-    alert("CV removed from profile.");
+    showToast("CV removed from profile.", 'success');
     
   } catch (err) {
     console.error("Delete error:", err);
-    alert("Failed to delete: " + err.message);
+    showToast("Failed to delete: " + err.message, 'error');
   }
 }
 
@@ -2159,7 +2159,7 @@ function renderCompanyCvList() {
 // ==========================================
 function downloadCV() {
   if (!currentProfile || !currentProfile.cv_url) {
-    alert('No CV uploaded yet.');
+    showToast('No CV uploaded yet.', 'warning');
     return;
   }
   window.open(currentProfile.cv_url, '_blank');
@@ -2266,7 +2266,7 @@ async function togglePracticeRequestStatus(requestId, newStatus) {
     .update(updates)
     .eq('request_id', requestId);
 
-  if (error) { alert('Error updating status: ' + error.message); return; }
+  if (error) { showToast('Error updating status: ' + error.message, 'error'); return; }
 
   await loadPracticeRequests(currentProfile.id);
 }
@@ -2279,7 +2279,7 @@ async function deletePracticeRequest(requestId) {
     .delete()
     .eq('request_id', requestId);
 
-  if (error) { alert('Error: ' + error.message); return; }
+  if (error) { showToast('Error: ' + error.message, 'error'); return; }
 
   practiceRequests = practiceRequests.filter(r => r.request_id !== requestId);
   fillPracticeRequests();
@@ -2311,8 +2311,8 @@ async function savePracticeRequest() {
   const periodEnd = document.getElementById('reqPeriodEnd').value;
   const notes = document.getElementById('reqNotes').value.trim();
 
-  if (!periodStart || !periodEnd) { alert('Please set both start and end dates.'); return; }
-  if (periodEnd < periodStart) { alert('End date must be after start date.'); return; }
+  if (!periodStart || !periodEnd) { showToast('Please set both start and end dates.', 'warning'); return; }
+  if (periodEnd < periodStart) { showToast('End date must be after start date.', 'warning'); return; }
 
   try {
     const { data: newReq, error } = await supabaseClient
@@ -2344,7 +2344,7 @@ async function savePracticeRequest() {
     closeAddRequestModal();
   } catch (err) {
     console.error('Error saving request:', err);
-    alert('Error saving request: ' + err.message);
+    showToast('Error saving request: ' + err.message, 'error');
   }
 }
 
@@ -2515,7 +2515,7 @@ async function confirmMarkAsFound() {
     .update(updates)
     .eq('request_id', pendingFoundRequestId);
 
-  if (error) { alert('Error: ' + error.message); return; }
+  if (error) { showToast('Error: ' + error.message, 'error'); return; }
 
   await loadPracticeRequests(currentProfile.id);
   closeFoundCompanyModal();

@@ -207,7 +207,7 @@ async function loadInternshipDetail(positionId) {
     } catch (err) {
         console.error('Error loading detail:', err);
         const message = err?.message || err?.toString() || 'Unknown error';
-        alert("Could not load details: " + message);
+        showToast("Could not load details: " + message, 'error');
     }
 }
 
@@ -216,7 +216,7 @@ async function loadInternshipDetail(positionId) {
 async function openApplyModal() {
   const session = requireAuth();
   if (!session || session.role !== 1) {
-      alert("Student login required to apply.");
+      showToast("Student login required to apply.", 'warning');
       return;
   }
 
@@ -228,7 +228,7 @@ async function openApplyModal() {
 
   if (error || !profile) {
       console.error("Profile check error:", error);
-      alert("Student profile not found. Please complete your profile first.");
+      showToast("Student profile not found. Please complete your profile first.", 'warning');
       return;
   }
 
@@ -416,19 +416,19 @@ const { error: dbError } = await supabaseClient
 
 if (dbError) {
 console.error("Insert Error:", dbError);
-alert("Error: " + dbError.message);
+showToast("Error: " + dbError.message, 'error');
 } else {
-alert("Application sent!");
+showToast("Application sent!", 'success');
 }
 
         if (dbError) throw dbError;
 
-        alert("Application sent!");
+        showToast("Application sent!", 'success');
         closeApplyModal();
 
     } catch (err) {
         console.error(err);
-        alert("Error: " + err.message);
+        showToast("Error: " + err.message, 'error');
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerText = "Submit Application";
@@ -605,7 +605,7 @@ async function viewStudentProfile(studentId) {
       .single();
 
     if (error || !student) {
-      alert('Student profile not found.');
+      showToast('Student profile not found.', 'warning');
       return;
     }
 
@@ -625,7 +625,7 @@ async function viewStudentProfile(studentId) {
     alert(profileHTML);
   } catch (err) {
     console.error('Error viewing student profile:', err);
-    alert('Error loading student profile: ' + err.message);
+    showToast('Error loading student profile: ' + err.message, 'error');
   }
 }
 
@@ -639,7 +639,7 @@ async function reviewApplication(applicationId, studentName) {
 
     if (error) throw error;
 
-    alert(`Application from ${studentName} marked as "in review".`);
+    showToast(`Application from ${studentName} marked as "in review".`, 'success');
     
     // Reload applications
     if (window.currentPosition && window.currentPosition.company_id) {
@@ -647,7 +647,7 @@ async function reviewApplication(applicationId, studentName) {
     }
   } catch (err) {
     console.error('Error reviewing application:', err);
-    alert('Error updating application: ' + err.message);
+    showToast('Error updating application: ' + err.message, 'error');
   }
 }
 
@@ -663,7 +663,7 @@ async function deleteApplicationFromSidebar(applicationId, studentName) {
 
     if (error) throw error;
 
-    alert(`Application from ${studentName} deleted.`);
+    showToast(`Application from ${studentName} deleted.`, 'success');
     
     // Reload applications
     if (window.currentPosition && window.currentPosition.company_id) {
@@ -671,6 +671,6 @@ async function deleteApplicationFromSidebar(applicationId, studentName) {
     }
   } catch (err) {
     console.error('Error deleting application:', err);
-    alert('Error deleting application: ' + err.message);
+    showToast('Error deleting application: ' + err.message, 'error');
   }
 }

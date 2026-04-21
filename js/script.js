@@ -2,6 +2,24 @@
    INTERNSHIP SEARCH APP - NAVIGATION & UI
    ========================================== */
 
+function showToast(message, type = 'info') {
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    document.body.appendChild(container);
+  }
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `<span class="toast-message">${message}</span><button class="toast-close" onclick="this.parentElement.remove()">×</button>`;
+  container.appendChild(toast);
+  requestAnimationFrame(() => toast.classList.add('show'));
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 4000);
+}
+
 // Hamburger Menu Toggle
 const hamburger = document.querySelector('.hamburger');
 const navMenu = document.querySelector('.nav-menu');
@@ -29,7 +47,7 @@ function checkCompanyAuth() {
         if (userRole === '2') {
             window.location.href = 'company-profile.html';
         } else {
-            alert("You are logged in as a Student. Please use a Company account if you want to post internships.");
+            showToast("You are logged in as a Student. Please use a Company account to post internships.", 'warning');
         }
     } else {
  
