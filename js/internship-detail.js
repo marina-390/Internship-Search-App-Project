@@ -112,13 +112,22 @@ async function loadInternshipDetail(positionId) {
         const displayY = document.getElementById('dYTunnus');
         if (displayY) displayY.textContent = company?.y_tunnus || 'N/A';
   
-        // DB has no 'responsibilities' column — 'description' = About Us, 'requirements' = Requirements
-        // displayResponsibilities shows requirements; pReqs also shows requirements (same field)
+        const descSection = document.getElementById('descriptionSection');
+        const descEl = document.getElementById('displayDescription');
+        if (descEl) {
+            const descValue = position.description != null ? String(position.description).trim() : '';
+            if (descValue !== '') {
+                descEl.innerHTML = buildExpandable(descValue, 'desc');
+            } else if (descSection) {
+                descSection.style.display = 'none';
+            }
+        }
+
         const responsibilitiesEl = document.getElementById('displayResponsibilities');
         if (responsibilitiesEl) {
-            const requirementsValue = position.requirements != null ? String(position.requirements).trim() : '';
-            if (requirementsValue !== '') {
-                responsibilitiesEl.innerHTML = buildExpandable(requirementsValue, 'resp');
+            const respValue = position.responsibilities != null ? String(position.responsibilities).trim() : '';
+            if (respValue !== '') {
+                responsibilitiesEl.innerHTML = buildExpandable(respValue, 'resp');
             } else {
                 responsibilitiesEl.closest('.card-content').style.display = 'none';
             }

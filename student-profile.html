@@ -693,8 +693,38 @@
             </div>
           </div>
 
+          <!-- Delete Account card -->
+          <div class="sidebar-card" style="border:1px solid #fca5a5; background:#fff5f5;">
+            <h4 style="color:#dc2626; margin-top:0;">Danger Zone</h4>
+            <p style="font-size:0.85rem; color:#6b7280; margin:0 0 0.75rem;">Permanently delete your account and all personal data (GDPR Art. 17).</p>
+            <button class="btn" style="width:100%; background:#dc2626; color:white; border:none; padding:10px; border-radius:6px; cursor:pointer; font-weight:600;"
+              onclick="openDeleteAccountModal()">Delete My Account</button>
+          </div>
+
           </div><!-- end sidebar-col -->
         </div><!-- end profile-page-layout -->
+
+  <!-- Delete Account Modal -->
+  <div id="deleteAccountModal" style="display:none; position:fixed; z-index:3000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.7);" onclick="if(event.target===this) closeDeleteAccountModal()">
+    <div style="background:#fff; margin:8% auto; padding:28px; width:95%; max-width:440px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.3);">
+      <h3 style="color:#dc2626; margin-top:0;">Delete Account</h3>
+      <p style="color:#374151; margin-bottom:0.5rem;">This will permanently delete:</p>
+      <ul style="color:#6b7280; font-size:0.9rem; margin:0 0 1rem; padding-left:1.2rem; line-height:1.8;">
+        <li>Your profile and personal data</li>
+        <li>All applications</li>
+        <li>All internship requests</li>
+        <li>Your CV and photo</li>
+      </ul>
+      <p style="font-size:0.9rem; color:#374151; margin-bottom:0.5rem;"><strong>This action cannot be undone.</strong></p>
+      <p style="font-size:0.9rem; color:#374151; margin-bottom:0.75rem;">Type <strong>DELETE</strong> to confirm:</p>
+      <input type="text" id="deleteConfirmInput" class="edit-input" placeholder="Type DELETE" style="margin-bottom:1rem;" />
+      <div id="deleteAccountError" style="display:none; color:#dc2626; font-size:0.85rem; margin-bottom:0.75rem;"></div>
+      <div style="display:flex; gap:10px;">
+        <button onclick="confirmDeleteAccount()" style="flex:2; padding:11px; background:#dc2626; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:600;">Delete permanently</button>
+        <button onclick="closeDeleteAccountModal()" class="btn btn-secondary" style="flex:1; padding:11px;">Cancel</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Add Practice Request Modal -->
   <div id="addRequestModal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); overflow-y:auto;" onclick="if(event.target===this) closeAddRequestModal()">
