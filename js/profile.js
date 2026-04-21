@@ -3,6 +3,16 @@ const DIGITRANSIT_API_KEY = '4346b471f4ea41cb923eb2b40556c495';
    STUDENT PROFILE (Supabase)
    ========================================== */
 
+// Format date to European format DD.MM.YYYY
+function formatDateEuropean(dateString) {
+  if (!dateString) return 'N/A';
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}.${month}.${year}`;
+}
+
 // Current profile data & categories & links
 let currentProfile = null;
 let currentTeam = []; 
@@ -135,13 +145,13 @@ function fillDisplayMode(profile, session) {
   // Fields
   setField('dFirstName', profile.first_name);
   setField('dLastName', profile.last_name);
-  setField('dBirthDate', profile.birth_date);
+  setField('dBirthDate', formatDateEuropean(profile.birth_date));
   setField('dPhone', profile.phone);
   setField('dCity', profile.city);
   setField('dEducation', profile.type_education);
   setField('dAbout', profile.about);
-  setField('dPracticeStart', profile.practice_start);
-  setField('dPracticeEnd', profile.practice_end);
+  setField('dPracticeStart', formatDateEuropean(profile.practice_start));
+  setField('dPracticeEnd', formatDateEuropean(profile.practice_end));
 
   const openEl = document.getElementById('dOpenToOffers');
   if (openEl) {
@@ -892,13 +902,12 @@ function fillCompanyApplications(applications) {
           <h5 style="margin:0 0 0.5rem 0; font-size:1rem;">${app.positions?.title || 'Position'}</h5>
           <p style="margin:0; color:#374151; font-weight:600;">${app.student_profiles ? `${app.student_profiles.first_name || ''} ${app.student_profiles.last_name || ''}`.trim() || 'Applicant' : 'Applicant'}</p>
           <p style="margin:0.25rem 0 0; font-size:0.9rem; color:#6b7280;">${app.student_profiles?.email || ''}${app.student_profiles?.phone ? ' · ' + app.student_profiles.phone : ''}</p>
-          <p style="margin:0.75rem 0 0; font-size:0.85rem; color:#6b7280;">Applied: ${new Date(app.applied_at).toLocaleDateString()}</p>
+          <p style="margin:0.75rem 0 0; font-size:0.85rem; color:#6b7280;">Applied: ${formatDateEuropean(app.applied_at)}</p>
           <p style="margin:0.4rem 0 0; font-size:0.85rem;">Status: <span class="status-badge status-${status}">${status}</span></p>
           ${responseSnippet}
         </div>
         <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
           <button class="btn btn-view" onclick="openCompanyAppModal(${appData})">View</button>
-          <button class="btn btn-secondary" onclick="openCompanyAppModal(${appData})">Review</button>
           <button class="btn btn-delete" onclick="deleteApplication(${app.application_id})">Delete</button>
         </div>
       </div>
@@ -911,6 +920,11 @@ function openCompanyAppModal(app) {
   if (!modal) return;
 
   document.getElementById('companyAppId').value = app.application_id;
+
+  // Store student_id so "View Student Profile" button can use it
+  const studentIdEl = document.getElementById('companyAppStudentId');
+  if (studentIdEl) studentIdEl.value = app.student_id || '';
+
   document.getElementById('companyAppPosition').textContent = app.positions?.title || 'Position';
   document.getElementById('companyAppName').textContent = app.full_name || 'Applicant';
   document.getElementById('companyAppEmail').textContent = app.email || 'No email provided';
@@ -927,6 +941,132 @@ function openCompanyAppModal(app) {
 
   document.getElementById('companyAppResponse').value = app.company_response || '';
   modal.style.display = 'block';
+}
+
+// ==========================================
+// STUDENT PROFILE MODAL (read-only, for company reviewers)
+// ==========================================
+async function openStudentProfileModal(studentId) {
+  if (!studentId) { alert('No student ID available.'); return; }
+
+  const modal   = document.getElementById('studentProfileModal');
+  const loading = document.getElementById('spLoading');
+  const content = document.getElementById('spContent');
+  const errorEl = document.getElementById('spError');
+  if (!modal) return;
+
+  // Reset to loading state
+  modal.style.display = 'block';
+  loading.style.display = 'block';
+  content.style.display = 'none';
+  errorEl.style.display  = 'none';
+
+  try {
+    // Fetch profile, categories and links in parallel
+    const [profileRes, catsRes, linksRes] = await Promise.all([
+      supabaseClient.from('student_profiles').select('*').eq('id', studentId).single(),
+      supabaseClient.from('student_categories')
+        .select('category_id, job_categories(title)')
+        .eq('student_id', studentId),
+      supabaseClient.from('Student_links')
+        .select('*').eq('student_id', studentId).order('created_at')
+    ]);
+
+    if (profileRes.error || !profileRes.data) throw new Error('Profile not found');
+
+    const p     = profileRes.data;
+    const cats  = catsRes.data  || [];
+    const links = linksRes.data || [];
+
+    // --- Avatar ---
+    const avatarEl = document.getElementById('spAvatar');
+    if (p.photo_url) {
+      avatarEl.innerHTML = `<img src="${p.photo_url}" style="width:100%;height:100%;object-fit:cover;" />`;
+    } else {
+      const initials = [(p.first_name || ''), (p.last_name || '')]
+        .map(n => n.charAt(0).toUpperCase()).join('') || '👤';
+      avatarEl.textContent = initials;
+    }
+
+    // --- Name / city / phone ---
+    document.getElementById('spFullName').textContent =
+      `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Unknown Applicant';
+    document.getElementById('spCity').textContent  = p.city  ? `📍 ${p.city}`  : '';
+    document.getElementById('spPhone').textContent = p.phone ? `📞 ${p.phone}` : '';
+
+    // --- About ---
+    const aboutWrap = document.getElementById('spAboutWrap');
+    document.getElementById('spAbout').textContent = p.about || 'No description provided.';
+    aboutWrap.style.display = p.about ? '' : 'none';
+
+    // --- Education ---
+    const eduEl   = document.getElementById('spEdu');
+    const eduWrap = document.getElementById('spEduWrap');
+    const eduData = p.education_history;
+    if (Array.isArray(eduData) && eduData.length > 0) {
+      eduEl.innerHTML = eduData.map(e => `
+        <div style="padding:0.35rem 0; border-bottom:1px solid #f3f4f6; display:flex; gap:0.5rem; align-items:baseline;">
+          <span style="font-weight:600; color:#1f2937;">${e.name}</span>
+          <span style="font-size:0.82rem; color:#6b7280;">${e.type || ''}${e.year ? ' · ' + e.year : ''}</span>
+        </div>`).join('');
+    } else if (p.type_education) {
+      eduEl.innerHTML = `<span style="color:#374151;">${p.type_education}</span>`;
+    } else {
+      eduWrap.style.display = 'none';
+    }
+
+    // --- Practice period ---
+    document.getElementById('spPractice').textContent =
+      (p.practice_start || p.practice_end)
+        ? `${formatDateEuropean(p.practice_start)} – ${formatDateEuropean(p.practice_end)}`
+        : 'Not specified';
+    document.getElementById('spOpen').innerHTML = p.is_open_to_offers
+      ? '<span style="color:#059669; font-weight:600;">✅ Open to offers</span>'
+      : '<span style="color:#6b7280;">Not currently open to offers</span>';
+
+    // --- Categories ---
+    const catsEl   = document.getElementById('spCats');
+    const catsWrap = document.getElementById('spCatsWrap');
+    if (cats.length > 0) {
+      catsEl.innerHTML = cats.map(c =>
+        `<span style="background:#eef2ff; color:#4f46e5; padding:0.25rem 0.65rem; border-radius:2rem; font-size:0.82rem; font-weight:600;">${c.job_categories?.title || ''}</span>`
+      ).join('');
+    } else {
+      catsWrap.style.display = 'none';
+    }
+
+    // --- Links ---
+    const linksEl   = document.getElementById('spLinks');
+    const linksWrap = document.getElementById('spLinksWrap');
+    const LINK_ICONS_SP = { github:'🔗', linkedin:'👤', portfolio:'🌐', other:'🔗' };
+    if (links.length > 0) {
+      linksEl.innerHTML = links.map(l =>
+        `<div style="margin-bottom:0.3rem;">${LINK_ICONS_SP[l.link_type] || '🔗'} <a href="${l.url}" target="_blank" rel="noopener" style="color:#4f46e5;">${l.label || l.link_type}</a></div>`
+      ).join('');
+    } else {
+      linksWrap.style.display = 'none';
+    }
+
+    // --- CV ---
+    const cvEl   = document.getElementById('spCv');
+    const cvWrap = document.getElementById('spCvWrap');
+    if (p.cv_url) {
+      cvEl.innerHTML = `<a href="${p.cv_url}" target="_blank" class="btn btn-small btn-primary">⬇ Download CV (${p.cv_original_name || 'Resume.pdf'})</a>`;
+    } else {
+      cvEl.textContent = 'No CV uploaded.';
+      cvWrap.style.background = '#f9fafb';
+      cvWrap.style.borderColor = '#e5e7eb';
+    }
+
+    // Show content
+    loading.style.display = 'none';
+    content.style.display = 'block';
+
+  } catch (err) {
+    console.error('openStudentProfileModal error:', err);
+    loading.style.display = 'none';
+    errorEl.style.display  = 'block';
+  }
 }
 
 async function saveCompanyApplicationStatus(newStatus) {

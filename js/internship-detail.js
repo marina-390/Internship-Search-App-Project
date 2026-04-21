@@ -541,7 +541,6 @@ function renderSidebarApplicants(apps) {
           </div>
           <div style="display: flex; gap: 8px; margin-top: 8px;">
               <button class="btn btn-small btn-view" onclick="viewStudentProfile(${app.student_id})">View</button>
-              <button class="btn btn-small btn-accept" onclick="reviewApplication(${app.application_id}, '${app.full_name}')">Review</button>
               <button class="btn btn-small btn-danger" onclick="deleteApplicationFromSidebar(${app.application_id}, '${app.full_name}')">Delete</button>
           </div>
       </div>

@@ -432,20 +432,97 @@
     });
   </script>
 
+  <!-- Student Profile Modal -->
+  <div id="studentProfileModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:11000; overflow-y:auto;">
+    <div style="background:#fff; margin:3% auto 5%; padding:2rem; width:95%; max-width:640px; border-radius:14px; box-shadow:0 10px 40px rgba(0,0,0,0.25); position:relative;">
+      <button onclick="document.getElementById('studentProfileModal').style.display='none'" style="position:absolute; top:1rem; right:1rem; background:none; border:none; font-size:1.8rem; cursor:pointer; color:#9ca3af; line-height:1;">&times;</button>
+
+      <!-- Loading -->
+      <div id="spLoading" style="text-align:center; padding:3rem 0; color:#6b7280;">
+        <div style="font-size:2.5rem; margin-bottom:0.75rem;">⏳</div>
+        <p style="margin:0;">Loading student profile...</p>
+      </div>
+
+      <!-- Error -->
+      <div id="spError" style="display:none; text-align:center; padding:2.5rem; color:#ef4444;">
+        <div style="font-size:2rem; margin-bottom:0.5rem;">⚠️</div>
+        <p style="margin:0;">Could not load student profile.</p>
+      </div>
+
+      <!-- Content -->
+      <div id="spContent" style="display:none;">
+
+        <!-- Header row: avatar + name/city/phone -->
+        <div style="display:flex; gap:1.25rem; align-items:center; margin-bottom:1.5rem; padding-bottom:1.25rem; border-bottom:2px solid #f3f4f6;">
+          <div id="spAvatar" style="width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg,#4f46e5,#10b981); display:flex; align-items:center; justify-content:center; font-size:1.8rem; font-weight:700; color:white; flex-shrink:0; overflow:hidden;"></div>
+          <div>
+            <h2 id="spFullName" style="margin:0 0 0.2rem 0; font-size:1.35rem;"></h2>
+            <p id="spCity"  style="margin:0;     color:#6b7280; font-size:0.9rem;"></p>
+            <p id="spPhone" style="margin:0.15rem 0 0; color:#6b7280; font-size:0.9rem;"></p>
+          </div>
+        </div>
+
+        <!-- About -->
+        <div id="spAboutWrap" style="margin-bottom:1.25rem;">
+          <p style="margin:0 0 0.4rem; font-weight:700; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.06em; color:#9ca3af;">About</p>
+          <p id="spAbout" style="margin:0; color:#374151; white-space:pre-wrap; line-height:1.65;"></p>
+        </div>
+
+        <!-- Education -->
+        <div id="spEduWrap" style="margin-bottom:1.25rem;">
+          <p style="margin:0 0 0.4rem; font-weight:700; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.06em; color:#9ca3af;">Education</p>
+          <div id="spEdu"></div>
+        </div>
+
+        <!-- Practice period -->
+        <div id="spPracticeWrap" style="margin-bottom:1.25rem; background:#f8fafc; padding:0.875rem 1rem; border-radius:8px; border:1px solid #e5e7eb;">
+          <p style="margin:0 0 0.4rem; font-weight:700; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.06em; color:#9ca3af;">Available Practice Period</p>
+          <p id="spPractice" style="margin:0 0 0.25rem; color:#374151;"></p>
+          <p id="spOpen"     style="margin:0; font-size:0.875rem;"></p>
+        </div>
+
+        <!-- Desired categories -->
+        <div id="spCatsWrap" style="margin-bottom:1.25rem;">
+          <p style="margin:0 0 0.5rem; font-weight:700; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.06em; color:#9ca3af;">Desired Job Categories</p>
+          <div id="spCats" style="display:flex; flex-wrap:wrap; gap:0.4rem;"></div>
+        </div>
+
+        <!-- Links -->
+        <div id="spLinksWrap" style="margin-bottom:1.25rem;">
+          <p style="margin:0 0 0.5rem; font-weight:700; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.06em; color:#9ca3af;">Links</p>
+          <div id="spLinks"></div>
+        </div>
+
+        <!-- CV -->
+        <div id="spCvWrap" style="background:#f0fdf4; padding:0.875rem 1rem; border-radius:8px; border:1px solid #bbf7d0;">
+          <p style="margin:0 0 0.5rem; font-weight:700; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.06em; color:#9ca3af;">📄 CV / Resume</p>
+          <div id="spCv"></div>
+        </div>
+
+      </div><!-- end spContent -->
+    </div>
+  </div>
+
   <!-- Company Application Review Modal -->
   <div id="companyAppModal" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:10000; overflow-y:auto;">
     <div class="modal-content" style="background:#fff; margin:4% auto; padding:2rem; width:95%; max-width:700px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.2); position:relative;">
       <button onclick="document.getElementById('companyAppModal').style.display='none'" style="position:absolute; top:1rem; right:1rem; background:none; border:none; font-size:1.8rem; cursor:pointer; color:#666;">&times;</button>
       <h2 style="margin-top:0; margin-bottom:1rem;">Review Application</h2>
       <input type="hidden" id="companyAppId">
+      <input type="hidden" id="companyAppStudentId">
 
       <div style="display:grid; gap:1rem;">
-        <div>
-          <p style="margin:0 0 0.25rem 0;"><strong>Position:</strong> <span id="companyAppPosition"></span></p>
-          <p style="margin:0 0 0.25rem 0;"><strong>Applicant:</strong> <span id="companyAppName"></span></p>
-          <p style="margin:0 0 0.25rem 0;"><strong>Email:</strong> <span id="companyAppEmail"></span></p>
-          <p style="margin:0 0 0.25rem 0;"><strong>Phone:</strong> <span id="companyAppPhone"></span></p>
-          <p style="margin:0 0 0.25rem 0;"><strong>Status:</strong> <span id="companyAppStatus"></span></p>
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.75rem;">
+          <div>
+            <p style="margin:0 0 0.25rem 0;"><strong>Position:</strong> <span id="companyAppPosition"></span></p>
+            <p style="margin:0 0 0.25rem 0;"><strong>Applicant:</strong> <span id="companyAppName"></span></p>
+            <p style="margin:0 0 0.25rem 0;"><strong>Email:</strong> <span id="companyAppEmail"></span></p>
+            <p style="margin:0 0 0.25rem 0;"><strong>Phone:</strong> <span id="companyAppPhone"></span></p>
+            <p style="margin:0 0 0.25rem 0;"><strong>Status:</strong> <span id="companyAppStatus"></span></p>
+          </div>
+          <button class="btn btn-outline btn-small" onclick="openStudentProfileModal(document.getElementById('companyAppStudentId').value)" style="white-space:nowrap; align-self:flex-start;">
+            👤 View Student Profile
+          </button>
         </div>
 
         <div style="background:#f8fafc; padding:1rem; border-radius:10px; border:1px solid #e5e7eb;">
