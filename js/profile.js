@@ -795,6 +795,16 @@ async function deletePosition(id) {
   }
 }
 
+function toggleReqText(id) {
+  const shortEl = document.getElementById('req-short-' + id);
+  const fullEl  = document.getElementById('req-full-'  + id);
+  const btn     = document.getElementById('req-btn-'   + id);
+  const isExpanded = fullEl.style.display !== 'none';
+  shortEl.style.display = isExpanded ? 'inline' : 'none';
+  fullEl.style.display  = isExpanded ? 'none'   : 'inline';
+  btn.textContent       = isExpanded ? 'Show more' : 'Show less';
+}
+
 // --- Load and Display Postings ---
 async function loadCompanyPostings() {
   const container = document.getElementById('companyPostingsList');
@@ -804,7 +814,7 @@ async function loadCompanyPostings() {
       // Fetch positions with application counts in one query
       const { data: positions, error } = await supabaseClient
           .from('positions')
-          .select('position_id, title, status, applications(count)')
+          .select('position_id, title, status, requirements, applications(count)')
           .eq('company_id', currentProfile.company_id)
           .order('created_at', { ascending: false });
 
@@ -833,6 +843,13 @@ async function loadCompanyPostings() {
                     <span class="status-badge" style="${sc}">${pos.status}</span>
                     <span style="font-size:0.78rem; color:var(--text-light);">👥 ${appCount} application${appCount !== 1 ? 's' : ''}</span>
                   </div>
+                  ${pos.requirements ? `
+                  <p id="req-${pos.position_id}" style="font-size:0.82rem;color:var(--text-light);margin:0.35rem 0 0.1rem;line-height:1.4;">
+                    <span id="req-short-${pos.position_id}">${pos.requirements.length > 120 ? pos.requirements.slice(0, 120) + '…' : pos.requirements}</span>
+                    ${pos.requirements.length > 120 ? `
+                    <span id="req-full-${pos.position_id}" style="display:none;">${pos.requirements}</span>
+                    <a href="javascript:void(0)" id="req-btn-${pos.position_id}" onclick="toggleReqText(${pos.position_id})" style="font-size:0.78rem;margin-left:0.25rem;">Show more</a>` : ''}
+                  </p>` : ''}
                   <div class="pos-actions">
                       <a href="internship-detail.html?id=${pos.position_id}" class="text-primary">View</a>
                       <a href="javascript:void(0)" onclick="openEditModal(${pos.position_id})" class="text-primary">Edit</a>

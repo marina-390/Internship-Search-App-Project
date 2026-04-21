@@ -1,3 +1,18 @@
+function buildExpandable(text, key) {
+  const LIMIT = 200;
+  if (text.length <= LIMIT) return text;
+  return `<span id="exp-short-${key}">${text.slice(0, LIMIT)}… <a href="javascript:void(0)" onclick="toggleExpand('${key}')">Show more</a></span>` +
+         `<span id="exp-full-${key}" style="display:none;">${text} <a href="javascript:void(0)" onclick="toggleExpand('${key}')">Show less</a></span>`;
+}
+
+function toggleExpand(key) {
+  const s = document.getElementById('exp-short-' + key);
+  const f = document.getElementById('exp-full-'  + key);
+  const expanded = f.style.display !== 'none';
+  s.style.display = expanded ? 'inline' : 'none';
+  f.style.display = expanded ? 'none'   : 'inline';
+}
+
 async function loadInternshipDetail(positionId) {
     try {
         const normalizedPositionId = /^\d+$/.test(String(positionId))
@@ -103,23 +118,23 @@ async function loadInternshipDetail(positionId) {
         if (responsibilitiesEl) {
             const requirementsValue = position.requirements != null ? String(position.requirements).trim() : '';
             if (requirementsValue !== '') {
-                responsibilitiesEl.textContent = requirementsValue;
+                responsibilitiesEl.innerHTML = buildExpandable(requirementsValue, 'resp');
             } else {
                 responsibilitiesEl.closest('.card-content').style.display = 'none';
             }
         }
-  
+
         const reqsElement = document.getElementById('pReqs');
-        if (reqsElement) reqsElement.textContent = position.requirements != null ? String(position.requirements) : '';
+        if (reqsElement) {
+            const reqs = position.requirements != null ? String(position.requirements).trim() : '';
+            reqsElement.innerHTML = reqs ? buildExpandable(reqs, 'reqs') : '';
+        }
 
         // 5. COMPANY CARD
         if (document.getElementById('dCompanyDesc')) document.getElementById('dCompanyDesc').textContent = company?.description || '';
         if (document.getElementById('dWebsite')) document.getElementById('dWebsite').textContent = company?.website || 'N/A';
         if (document.getElementById('dHeadquarters')) document.getElementById('dHeadquarters').textContent = company?.city || 'N/A';
         if (document.getElementById('dYTunnus')) document.getElementById('dYTunnus').textContent = company?.y_tunnus || 'N/A';
-  
-        if (document.getElementById('displayResponsibilities')) document.getElementById('displayResponsibilities').textContent = position.responsibilities || 'No responsibilities.';
-        if (document.getElementById('pReqs')) document.getElementById('pReqs').textContent = position.requirements || 'No requirements.';
 
         // --- 4. FAVORITES LOGIC ---
         // --- 4. FAVORITES LOGIC ---
