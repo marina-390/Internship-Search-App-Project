@@ -289,6 +289,21 @@
     .status-viewed { background: #dbeafe; color: #1e40af; }
     .status-accepted { background: #d1fae5; color: #065f46; }
     .status-rejected { background: #fee2e2; color: #991b1b; }
+    .status-searching { background: #fef3c7; color: #92400e; }
+    .status-found { background: #d1fae5; color: #065f46; }
+
+    .practice-request-card {
+      background: #fff;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .practice-request-card.expired {
+      opacity: 0.65;
+      background: #f9fafb;
+    }
 
     .link-item {
       display: flex;
@@ -524,23 +539,6 @@
               <div class="profile-section-title">About Me</div>
               <p id="dAbout" class="profile-field-value">-</p>
 
-              <div class="profile-section-title">Practice Period</div>
-              <div class="form-row">
-                <div class="profile-field">
-                  <div class="profile-field-label">Start</div>
-                  <div class="profile-field-value" id="dPracticeStart">-</div>
-                </div>
-                <div class="profile-field">
-                  <div class="profile-field-label">End</div>
-                  <div class="profile-field-value" id="dPracticeEnd">-</div>
-                </div>
-              </div>
-
-              <div class="profile-field">
-                <div class="profile-field-label">Open to offers</div>
-                <div class="profile-field-value" id="dOpenToOffers">-</div>
-              </div>
-
               <div class="profile-section-title">Desired Job Categories</div>
               <div class="selected-categories" id="dCategories">
                 <span class="profile-field-value empty">No categories selected</span>
@@ -596,18 +594,6 @@
                 <textarea id="eAbout" class="edit-textarea" placeholder="Tell about yourself..." rows="4"></textarea>
               </div>
 
-              <div class="profile-section-title">Practice Period</div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="ePracticeStart">Start</label>
-                  <input type="date" id="ePracticeStart" class="edit-input" />
-                </div>
-                <div class="form-group">
-                  <label for="ePracticeEnd">End</label>
-                  <input type="date" id="ePracticeEnd" class="edit-input" />
-                </div>
-              </div>
-
               <div class="toggle-switch">
                 <input type="checkbox" id="eOpenToOffers" checked />
                 <label for="eOpenToOffers">Open to offers</label>
@@ -623,6 +609,18 @@
               <div class="profile-section-title">Links</div>
               <div id="eLinksContainer"></div>
               <button type="button" class="btn btn-small btn-secondary" onclick="addLinkRow()">+ Add Link</button>
+            </div>
+
+            <!-- Internship Requests — always visible -->
+            <div class="profile-section-title" style="display:flex; justify-content:space-between; align-items:center;">
+              <span>Internship Requests</span>
+              <button class="btn btn-small btn-primary" onclick="openAddRequestModal()">+ Add</button>
+            </div>
+            <div id="dPracticeRequests">
+              <span class="profile-field-value empty">No internship requests added</span>
+            </div>
+            <div id="showAllRequestsWrap" style="display:none; margin-bottom:1rem;">
+              <button class="btn btn-small btn-secondary" id="showAllRequestsBtn" onclick="toggleShowAllRequests()">Show all requests</button>
             </div>
           </div>
         </div>
@@ -697,6 +695,67 @@
 
           </div><!-- end sidebar-col -->
         </div><!-- end profile-page-layout -->
+
+  <!-- Add Practice Request Modal -->
+  <div id="addRequestModal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); overflow-y:auto;" onclick="if(event.target===this) closeAddRequestModal()">
+    <div style="background:#fff; margin:5% auto; padding:30px; width:95%; max-width:500px; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+      <h3 style="margin-top:0; margin-bottom:1.5rem; border-bottom:2px solid #f0f0f0; padding-bottom:10px;">Add Internship Request</h3>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Period Start</label>
+          <input type="date" id="reqPeriodStart" class="edit-input" />
+        </div>
+        <div class="form-group">
+          <label>Period End</label>
+          <input type="date" id="reqPeriodEnd" class="edit-input" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Desired Positions</label>
+        <div class="category-search">
+          <input type="text" id="reqCategorySearch" placeholder="Search positions..." oninput="filterReqCategories()" onfocus="showReqCategoryDropdown()" />
+          <div class="category-dropdown" id="reqCategoryDropdown"></div>
+        </div>
+        <div class="selected-categories" id="reqSelectedCategories"></div>
+      </div>
+
+      <div class="form-group">
+        <label>Notes (optional)</label>
+        <textarea id="reqNotes" class="edit-textarea" rows="3" placeholder="Additional notes..."></textarea>
+      </div>
+
+      <div style="display:flex; gap:10px; margin-top:20px;">
+        <button onclick="savePracticeRequest()" class="btn btn-primary" style="flex:2; padding:12px;">Save</button>
+        <button onclick="closeAddRequestModal()" class="btn btn-secondary" style="flex:1; padding:12px;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mark as Found Modal -->
+  <div id="foundCompanyModal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); overflow-y:auto;" onclick="if(event.target===this) closeFoundCompanyModal()">
+    <div style="background:#fff; margin:8% auto; padding:28px; width:95%; max-width:440px; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+      <h3 style="margin-top:0; margin-bottom:0.5rem;">Mark as Found</h3>
+      <p style="margin:0 0 1.25rem; font-size:0.9rem; color:var(--text-light);">Optionally specify the company (can be left blank)</p>
+
+      <div class="form-group" style="position:relative;">
+        <label style="font-weight:600; display:block; margin-bottom:0.4rem;">Company</label>
+        <input type="text" id="foundCompanyInput" class="edit-input" style="margin-bottom:0;"
+               placeholder="Search or type company name..."
+               oninput="searchFoundCompany(this.value)"
+               onfocus="showFoundCompanyDropdown()"
+               autocomplete="off" />
+        <div id="foundCompanyDropdown" class="category-dropdown"></div>
+      </div>
+      <div id="foundCompanyChip" style="display:none; margin-top:0.5rem;"></div>
+
+      <div style="display:flex; gap:10px; margin-top:1.5rem;">
+        <button onclick="confirmMarkAsFound()" class="btn btn-primary" style="flex:2; padding:11px;">Confirm</button>
+        <button onclick="closeFoundCompanyModal()" class="btn btn-secondary" style="flex:1; padding:11px;">Cancel</button>
+      </div>
+    </div>
+  </div>
       </div><!-- end container -->
   </section>
 

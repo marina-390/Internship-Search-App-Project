@@ -243,3 +243,53 @@ WITH CHECK (
 
 CREATE POLICY "anon_applications" ON applications
 FOR ALL TO anon USING (true) WITH CHECK (true);
+
+
+-- ============================================================
+-- student_practice_requests
+-- ============================================================
+CREATE POLICY "auth_student_own_practice_requests" ON student_practice_requests
+FOR ALL TO authenticated
+USING (
+  student_id IN (
+    SELECT sp.id FROM student_profiles sp
+    JOIN "Users" u ON u.user_id = sp.user_id
+    WHERE u.user_login = auth.email() AND u.role = 1
+  )
+)
+WITH CHECK (
+  student_id IN (
+    SELECT sp.id FROM student_profiles sp
+    JOIN "Users" u ON u.user_id = sp.user_id
+    WHERE u.user_login = auth.email() AND u.role = 1
+  )
+);
+
+CREATE POLICY "anon_practice_requests" ON student_practice_requests
+FOR ALL TO anon USING (true) WITH CHECK (true);
+
+
+-- ============================================================
+-- student_request_categories
+-- ============================================================
+CREATE POLICY "auth_student_own_request_categories" ON student_request_categories
+FOR ALL TO authenticated
+USING (
+  request_id IN (
+    SELECT pr.request_id FROM student_practice_requests pr
+    JOIN student_profiles sp ON sp.id = pr.student_id
+    JOIN "Users" u ON u.user_id = sp.user_id
+    WHERE u.user_login = auth.email() AND u.role = 1
+  )
+)
+WITH CHECK (
+  request_id IN (
+    SELECT pr.request_id FROM student_practice_requests pr
+    JOIN student_profiles sp ON sp.id = pr.student_id
+    JOIN "Users" u ON u.user_id = sp.user_id
+    WHERE u.user_login = auth.email() AND u.role = 1
+  )
+);
+
+CREATE POLICY "anon_request_categories" ON student_request_categories
+FOR ALL TO anon USING (true) WITH CHECK (true);
