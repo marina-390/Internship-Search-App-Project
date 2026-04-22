@@ -185,6 +185,9 @@ displayEmail.innerHTML = company?.contact_email ? `<a href="mailto:${company.con
             });
         });
 
+// Hide Apply buttons for company users
+        hideApplyButtonForCompanies();
+
         // Show the application sidebar only if the current user is the company owner
         let isOwner = false;
         if (position.company_id) {
@@ -212,6 +215,16 @@ displayEmail.innerHTML = company?.contact_email ? `<a href="mailto:${company.con
 }
 
   // --- MODAL LOGIC ---
+
+function hideApplyButtonForCompanies() {
+  const session = getCurrentSession ? getCurrentSession() : null;
+  if (session && session.role === 2) {
+    const applyBtn = document.querySelector('.card-footer .btn-primary');
+    const saveBtn = document.querySelector('.card-footer .btn-outline');
+    if (applyBtn) applyBtn.style.display = 'none';
+    if (saveBtn) saveBtn.style.display = 'none';
+  }
+}
 
 async function openApplyModal() {
   const session = requireAuth();
