@@ -104,7 +104,7 @@
 
             <!-- Application Button -->
             <div class="card-footer" style="border-top: 1px solid var(--border-color); padding-top: 2rem; margin-top: 2rem;">
-              <button class="btn btn-primary btn-large" onclick="openApplyModal()">Apply Now</button>
+              <button id="applyBtn" class="btn btn-primary btn-large" onclick="openApplyModal()">Apply Now</button>
               <button class="btn btn-outline btn-large" onclick="alert('Saved to favorites!');">Save Position</button>
             </div>
           </div>
@@ -194,40 +194,47 @@
   
       <form id="modalApplyForm">
         <div id="dynamicFormFields">
-            <div class="form-group" style="margin-bottom: 1rem;">
-                <label>Full Name</label>
-                <input type="text" id="applyName" required placeholder="Antonio" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+
+            <p style="font-size:0.8rem; color:#6b7280; margin:0 0 1rem;">Your profile information will be shared with the employer. <a href="student-profile.html" style="color:#6366f1;">Edit in profile →</a></p>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" id="applyFirstName" readonly style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; background:#f9f9f9; color:#374151;">
+                </div>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" id="applyLastName" readonly style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; background:#f9f9f9; color:#374151;">
+                </div>
             </div>
-    
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
                 <div class="form-group">
                     <label>Email Address</label>
-                    <input type="email" id="applyEmail" required placeholder="me@gmail.com" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                    <input type="email" id="applyEmail" readonly style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; background:#f9f9f9; color:#374151;">
                 </div>
                 <div class="form-group">
                     <label>Phone Number</label>
-                    <input type="tel" id="applyPhone" required placeholder="40 814 7203" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                    <input type="tel" id="applyPhone" readonly style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; background:#f9f9f9; color:#374151;">
                 </div>
             </div>
-    
-            <div class="sidebar-card" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #eee;">
-                <h4 style="margin-top:0;">📄 CV / Resume</h4>
-                <div id="cvFileInfo">
-                    <p id="cvStatusText" style="font-size: 0.9rem; color: #666;">No CV uploaded yet.</p>
-                </div>
-                <label for="cvUpload" class="btn btn-secondary" style="width:100%; display:block; text-align:center; cursor:pointer; padding: 8px 0;">
-                    Upload CV (PDF)
+
+            <div style="background:#f8f9fa; padding:12px; border-radius:8px; margin-bottom:1rem; border:1px solid #eee;">
+                <p style="font-weight:600; margin:0 0 8px; font-size:0.9rem;">📄 CV / Resume</p>
+                <div id="cvFileInfo"><p style="font-size:0.9rem; color:#666; margin:0;">No CV uploaded yet.</p></div>
+                <label for="cvUpload" class="btn btn-secondary" style="width:100%; display:block; text-align:center; cursor:pointer; padding:8px 0; margin-top:8px;">
+                    Upload different CV (PDF)
                 </label>
                 <input type="file" id="cvUpload" accept=".pdf" style="display:none;" onchange="handleCVSelection(this)" />
             </div>
-    
-            <div class="form-group" style="margin-bottom: 1rem;">
+
+            <div class="form-group" style="margin-bottom:1rem;">
                 <label>Cover Letter / Why should we hire you?</label>
-                <textarea id="applyLetter" rows="4" placeholder="Write something to the employer..." style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-family: inherit;"></textarea>
+                <textarea id="applyLetter" rows="4" placeholder="Write something to the employer..." style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-family:inherit;"></textarea>
             </div>
         </div>
-        
-        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; padding: 12px;">Submit Application</button>
+
+        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:10px; padding:12px;">Submit Application</button>
       </form>
     </div>
   </div> 

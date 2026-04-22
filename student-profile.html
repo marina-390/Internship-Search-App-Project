@@ -609,6 +609,7 @@
               <div class="profile-section-title">Links</div>
               <div id="eLinksContainer"></div>
               <button type="button" class="btn btn-small btn-secondary" onclick="addLinkRow()">+ Add Link</button>
+
             </div>
 
             <!-- Internship Requests — always visible -->
@@ -621,6 +622,16 @@
             </div>
             <div id="showAllRequestsWrap" style="display:none; margin-bottom:1rem;">
               <button class="btn btn-small btn-secondary" id="showAllRequestsBtn" onclick="toggleShowAllRequests()">Show all requests</button>
+            </div>
+
+            <!-- Danger Zone -->
+            <div style="margin-top:3rem; padding-top:2rem; border-top:2px dashed #fca5a5;">
+              <div style="border:1px solid #fca5a5; background:#fff5f5; border-radius:8px; padding:1.25rem;">
+                <h4 style="color:#dc2626; margin-top:0;">⚠ Danger Zone</h4>
+                <p style="font-size:0.85rem; color:#6b7280; margin:0 0 0.75rem;">Permanently delete your account and all personal data (GDPR Art. 17).</p>
+                <button class="btn" style="width:100%; background:#dc2626; color:white; border:none; padding:10px; border-radius:6px; cursor:pointer; font-weight:600;"
+                  onclick="openDeleteAccountModal()">Delete My Account</button>
+              </div>
             </div>
           </div>
         </div>
@@ -691,14 +702,6 @@
                 <button onclick="document.getElementById('editAppModal').style.display='none'" class="btn btn-secondary" style="flex:1; padding: 12px;">Cancel</button>
               </div>
             </div>
-          </div>
-
-          <!-- Delete Account card -->
-          <div class="sidebar-card" style="border:1px solid #fca5a5; background:#fff5f5;">
-            <h4 style="color:#dc2626; margin-top:0;">Danger Zone</h4>
-            <p style="font-size:0.85rem; color:#6b7280; margin:0 0 0.75rem;">Permanently delete your account and all personal data (GDPR Art. 17).</p>
-            <button class="btn" style="width:100%; background:#dc2626; color:white; border:none; padding:10px; border-radius:6px; cursor:pointer; font-weight:600;"
-              onclick="openDeleteAccountModal()">Delete My Account</button>
           </div>
 
           </div><!-- end sidebar-col -->

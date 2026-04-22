@@ -156,6 +156,8 @@ displayEmail.innerHTML = company?.contact_email ? `<a href="mailto:${company.con
         window.currentPosition = position;
         window.currentCompany = company;
 
+        checkAlreadyApplied(position.position_id);
+
         // Set the heart color immediately if the helper exists
         if (typeof updateFavoriteStates === 'function') {
             updateFavoriteStates();
@@ -216,33 +218,79 @@ displayEmail.innerHTML = company?.contact_email ? `<a href="mailto:${company.con
 async function openApplyModal() {
   const session = requireAuth();
   if (!session || session.role !== 1) {
-      showToast("Student login required to apply.", 'warning');
-      return;
+    showToast("Student login required to apply.", 'warning');
+    return;
   }
 
   const { data: profile, error } = await supabaseClient
-      .from('student_profiles')
-      .select('id') 
-      .eq('user_id', session.userId)
-      .single();
+    .from('student_profiles')
+    .select('id, first_name, last_name, phone, cv_url')
+    .eq('user_id', session.userId)
+    .single();
 
   if (error || !profile) {
-      console.error("Profile check error:", error);
-      showToast("Student profile not found. Please complete your profile first.", 'warning');
-      return;
+    console.error("Profile check error:", error);
+    showToast("Student profile not found. Please complete your profile first.", 'warning');
+    return;
   }
 
-  // Store the INTEGER ID
   window.currentStudentId = profile.id;
+  window.existingCvUrl = profile.cv_url || null;
+
+  // Pre-fill read-only fields
+  const el = id => document.getElementById(id);
+  if (el('applyFirstName')) el('applyFirstName').value = profile.first_name || '';
+  if (el('applyLastName'))  el('applyLastName').value  = profile.last_name  || '';
+  if (el('applyEmail'))     el('applyEmail').value     = session.login       || '';
+  if (el('applyPhone'))     el('applyPhone').value     = profile.phone       || '';
+
+  // Show CV from profile
+  const cvInfo = document.getElementById('cvFileInfo');
+  if (profile.cv_url) {
+    const fileName = decodeURIComponent(profile.cv_url.split('/').pop().split('?')[0]);
+    cvInfo.innerHTML = `<p style="font-size:0.9rem; color:#15803d; margin:0;">✅ ${fileName}</p>`;
+  } else {
+    cvInfo.innerHTML = '<p style="font-size:0.9rem; color:#e57373; margin:0;">⚠ No CV in your profile. <a href="student-profile.html" style="color:#6366f1;">Add it →</a></p>';
+  }
 
   // Populate modal title and company
-  const modalTitle = document.getElementById('modalTitle');
+  const modalTitle   = document.getElementById('modalTitle');
   const modalCompany = document.getElementById('modalCompany');
-  if (modalTitle) modalTitle.textContent = window.currentPosition?.title || 'this position';
-  if (modalCompany) modalCompany.textContent = window.currentCompany?.company_name || 'this company';
+  if (modalTitle)   modalTitle.textContent   = window.currentPosition?.title        || 'this position';
+  if (modalCompany) modalCompany.textContent = window.currentCompany?.company_name  || 'this company';
 
-  // Show modal
   document.getElementById('applyModal').style.display = "block";
+}
+
+async function checkAlreadyApplied(positionId) {
+  const session = typeof getCurrentSession === 'function' ? getCurrentSession() : null;
+  if (!session || session.role !== 1) return;
+
+  const { data: profile } = await supabaseClient
+    .from('student_profiles')
+    .select('id')
+    .eq('user_id', session.userId)
+    .maybeSingle();
+
+  if (!profile) return;
+
+  const { data } = await supabaseClient
+    .from('applications')
+    .select('application_id')
+    .eq('student_id', profile.id)
+    .eq('position_id', positionId)
+    .maybeSingle();
+
+  const btn = document.getElementById('applyBtn');
+  if (!btn) return;
+
+  if (data) {
+    btn.textContent = '✓ Applied';
+    btn.disabled = true;
+    btn.style.background = '#6b7280';
+    btn.style.cursor = 'default';
+    btn.onclick = null;
+  }
 }
 
 async function enableCompanyEditFeatures(companyId) {
@@ -388,49 +436,55 @@ document.getElementById('modalApplyForm').addEventListener('submit', async funct
     // Custom auth already checked by requireAuth()
 
 
-    const pos = window.currentPosition;
     const submitBtn = e.target.querySelector('button[type="submit"]');
-    const cvFile = document.getElementById('cvUpload').files[0];
+    const cvFile = document.getElementById('cvUpload')?.files[0];
 
     try {
         submitBtn.disabled = true;
-        submitBtn.innerText = "Uploading...";
+        submitBtn.innerText = "Submitting...";
 
-        // 2. Upload CV (Same as before)
-        const fileName = `${Date.now()}-${cvFile.name}`;
-        const { data: uploadData, error: uploadError } = await supabaseClient.storage
-            .from('resumes')
-            .upload(fileName, cvFile);
-        if (uploadError) throw uploadError;
+        let cvUrl      = window.existingCvUrl || null;
+        let cvOrigName = cvUrl ? decodeURIComponent(cvUrl.split('/').pop().split('?')[0]) : null;
 
-        const { data: { publicUrl } } = supabaseClient.storage.from('resumes').getPublicUrl(fileName);
+        if (cvFile) {
+            submitBtn.innerText = "Uploading CV...";
+            const fileName = `${Date.now()}-${cvFile.name}`;
+            const { error: uploadError } = await supabaseClient.storage
+                .from('resumes').upload(fileName, cvFile);
+            if (uploadError) throw uploadError;
+            const { data: urlData } = supabaseClient.storage.from('resumes').getPublicUrl(fileName);
+            cvUrl      = urlData.publicUrl;
+            cvOrigName = cvFile.name;
+        }
 
-        // 3. Insert into DB (Matching your specific schema)
-       // Inside your submit listener
-const { error: dbError } = await supabaseClient
-.from('applications')
-.insert([{
-    student_id: window.currentStudentId, // The INTEGER (e.g. 5)
-    position_id: window.currentPosition.position_id,
-    full_name: document.getElementById('applyName').value,
-    email: document.getElementById('applyEmail').value,
-    phone: document.getElementById('applyPhone').value,
-    cover_letter: document.getElementById('applyLetter').value,
-    cv_url: publicUrl,
-    cv_original_name: cvFile.name
-}]);
+        if (!cvUrl) {
+            showToast("Please add a CV to your profile or upload one here.", 'warning');
+            return;
+        }
 
-if (dbError) {
-console.error("Insert Error:", dbError);
-showToast("Error: " + dbError.message, 'error');
-} else {
-showToast("Application sent!", 'success');
-}
+        const { error: dbError } = await supabaseClient
+            .from('applications')
+            .insert([{
+                student_id:       window.currentStudentId,
+                position_id:      window.currentPosition.position_id,
+                cover_letter:     document.getElementById('applyLetter').value,
+                cv_url:           cvUrl,
+                cv_original_name: cvOrigName
+            }]);
 
         if (dbError) throw dbError;
 
         showToast("Application sent!", 'success');
         closeApplyModal();
+
+        const btn = document.getElementById('applyBtn');
+        if (btn) {
+            btn.textContent = '✓ Applied';
+            btn.disabled = true;
+            btn.style.background = '#6b7280';
+            btn.style.cursor = 'default';
+            btn.onclick = null;
+        }
 
     } catch (err) {
         console.error(err);
