@@ -1087,6 +1087,21 @@ footer {
   gap: 0.75rem;
 }
 
+/* Divider between Received Applications */
+.app-divider {
+  margin: 1.5rem 0;
+  border: none;
+  border-top: 1px solid var(--border-color);
+  height: 1px;
+  opacity: 0.6;
+}
+
+.application-card:not(:last-child) {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #acaeae;
+}
+
 .application-item {
   padding: 0.75rem 0;
   border-bottom: 1px solid #eee;

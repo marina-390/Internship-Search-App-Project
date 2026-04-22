@@ -909,8 +909,8 @@ async function loadCompanyApplications() {
     }
 
     const { data: apps, error: appErr } = await supabaseClient
-      .from('applications')
-      .select('*, positions(title)')
+      .from('applications')     
+      .select('*, positions(title), student_profiles(*)')     
       .in('position_id', positionIds)
       .order('applied_at', { ascending: false });
 
