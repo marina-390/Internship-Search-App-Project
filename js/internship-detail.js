@@ -598,7 +598,6 @@ function getStatusDisplay(status) {
 
 function showFullApplication(app) {
   console.log('Full application details:', app);
-  alert('Application details: ' + JSON.stringify(app, null, 2));
 }
 
 // View student profile
@@ -628,7 +627,17 @@ async function viewStudentProfile(studentId) {
         ${student.cv_url ? `<p><a href="${student.cv_url}" target="_blank" class="btn btn-primary btn-small">Download CV</a></p>` : ''}
       </div>
     `;
-    alert(profileHTML);
+    let modal = document.getElementById('studentProfileModal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'studentProfileModal';
+      modal.style.cssText = 'display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.7); overflow-y:auto;';
+      modal.innerHTML = '<div style="background:#fff; margin:5% auto; padding:30px; border-radius:12px; width:90%; max-width:550px; position:relative; box-shadow:0 10px 25px rgba(0,0,0,0.2);"><span onclick="document.getElementById(\'studentProfileModal\').style.display=\'none\'" style="position:absolute; right:20px; top:15px; font-size:28px; cursor:pointer; color:#999;">&times;</span><div id="studentProfileModalBody"></div></div>';
+      modal.addEventListener('click', function(e) { if (e.target === modal) modal.style.display = 'none'; });
+      document.body.appendChild(modal);
+    }
+    document.getElementById('studentProfileModalBody').innerHTML = profileHTML;
+    modal.style.display = 'block';
   } catch (err) {
     console.error('Error viewing student profile:', err);
     showToast('Error loading student profile: ' + err.message, 'error');

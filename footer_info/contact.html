@@ -193,12 +193,12 @@
           message: contactData.message
         });
   
-        alert('Success! Message saved and sent to Admin.');
+        showToast('Message saved and sent to Admin!', 'success');
         event.target.reset();
-  
+
       } catch (err) {
         console.error('Submission Error:', err);
-        alert('Failed to send: ' + err.message);
+        showToast('Failed to send: ' + err.message, 'error');
       }
     }
   </script>

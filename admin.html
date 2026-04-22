@@ -385,12 +385,12 @@
             message: contactData.message
         });
 
-        alert('Success! Message saved and Admin notified.');
+        showToast('Message saved and Admin notified!', 'success');
         event.target.reset();
-        
+
     } catch (err) {
         console.error('Full Error Object:', err);
-        alert('Error: ' + (err.message || "Check console for details"));
+        showToast('Error: ' + (err.message || 'Check console for details'), 'error');
     }
 }
 
