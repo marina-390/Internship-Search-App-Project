@@ -47,15 +47,21 @@ function toggleRoleFields() {
   var roleInput     = document.querySelector('input[name="role"]:checked');
   var studentFields = document.getElementById('studentFields');
   var companyFields = document.getElementById('companyFields');
+  var socialLogin   = document.getElementById('registerSocialLogin');
+  var socialDivider = document.getElementById('registerSocialDivider');
 
   if (!roleInput || !studentFields || !companyFields) return;
 
   if (roleInput.value === 'student') {
     studentFields.style.display = 'block';
     companyFields.style.display = 'none';
+    if (socialLogin)   socialLogin.style.display = 'grid';
+    if (socialDivider) socialDivider.style.display = 'flex';
   } else {
     studentFields.style.display = 'none';
     companyFields.style.display = 'block';
+    if (socialLogin)   socialLogin.style.display = 'none';
+    if (socialDivider) socialDivider.style.display = 'none';
   }
 }
 
