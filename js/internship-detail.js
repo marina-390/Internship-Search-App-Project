@@ -560,7 +560,7 @@ function renderSidebarApplicants(apps) {
           <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
               <div>
                   <p style="margin: 0; font-weight: 600; font-size: 0.95rem;">${app.full_name}</p>
-                  <small style="color: #888; font-size: 0.85rem;">${app.email || 'N/A'}</small>
+<div style="font-weight:500; color:var(--text
                   <div style="margin-top: 4px;">
                       <small style="color: #888; font-size: 0.8rem;">Applied: ${appliedDate}</small>
                   </div>
