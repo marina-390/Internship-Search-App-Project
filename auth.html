@@ -31,7 +31,12 @@
         gap: 2rem;
         margin-top: 2rem;
       }
-    }
+
+      @media (max-width: 768px) {
+        .auth-container {
+          grid-template-columns: 1fr;
+        }
+      }
 
     .auth-form-wrapper {
       display: none;
@@ -141,14 +146,6 @@
       height: 1px;
       background-color: var(--border-color);
     }
-
-      .divider::before,
-      .divider::after {
-        content: "";
-        flex: 1;
-        height: 1px;
-        background-color: var(--border-color);
-      }
     </style>
   </head>
   <body>
