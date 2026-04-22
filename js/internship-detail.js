@@ -530,7 +530,12 @@ async function checkOwnerAndLoadApplicants(companyId, positionId) {
 
       const { data: apps, error: appsError } = await supabaseClient
           .from('applications')
-          .select('*')
+          .select(`
+            application_id, status, applied_at, cover_letter,
+            student_profiles(id, first_name, last_name,
+              Users(user_login)
+            )
+          `)
           .eq('position_id', positionId)
           .order('applied_at', { ascending: false });
 
@@ -605,28 +610,31 @@ function renderSidebarApplicants(apps) {
       return;
   }
 
-  // Creating a clean list for the sidebar
   container.innerHTML = apps.map(app => {
+    const profile       = app.student_profiles || {};
+    const fullName      = [profile.first_name, profile.last_name].filter(Boolean).join(' ') || 'Unknown';
+    const email         = profile.Users?.user_login || '';
     const statusDisplay = getStatusDisplay(app.status);
-    const appliedDate = formatDateEuropean(app.created_at);
+    const appliedDate   = formatDateEuropean(app.applied_at);
+    const interviewDate = app.interview_date
+      ? `<small style="color:#059669; display:block; margin-top:4px;">📅 ${formatDateEuropean(app.interview_date)} ${new Date(app.interview_date).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'})}</small>`
+      : '';
+    const existingDate = app.interview_date || '';
+    const interviewBtn = app.interview_date
+      ? `<button class="btn btn-small" style="font-size:0.78rem; background:#d1fae5; color:#065f46;" onclick="scheduleInterview('${fullName}', '${email}', ${app.application_id}, '${existingDate}')">✅ Scheduled</button>`
+      : `<button class="btn btn-small btn-primary" style="font-size:0.78rem;" onclick="scheduleInterview('${fullName}', '${email}', ${app.application_id}, '')">📅 Schedule Interview</button>`;
     return `
-      <div class="application-item" style="padding: 12px 0; border-bottom: 1px solid #eee;">
-          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
-              <div>
-                  <p style="margin: 0; font-weight: 600; font-size: 0.95rem;">${app.full_name}</p>
-<div style="font-weight:500; color:var(--text
-                  <div style="margin-top: 4px;">
-                      <small style="color: #888; font-size: 0.8rem;">Applied: ${appliedDate}</small>
-                  </div>
-                  <div style="margin-top: 4px;">
-                      ${statusDisplay}
-                  </div>
-              </div>
-          </div>
-          <div style="display: flex; gap: 8px; margin-top: 8px;">
-              <button class="btn btn-small btn-view" onclick="viewStudentProfile(${app.student_id})">View</button>
-              <button class="btn btn-small btn-danger" onclick="deleteApplicationFromSidebar(${app.application_id}, '${app.full_name}')">Delete</button>
-          </div>
+      <div class="application-item" style="padding:12px 0; border-bottom:1px solid #eee;">
+        <div style="margin-bottom:8px;">
+          <p style="margin:0; font-weight:600; font-size:0.95rem;">${fullName}</p>
+          <small style="color:#888; font-size:0.8rem;">Applied: ${appliedDate}</small>
+          <div style="margin-top:4px;">${statusDisplay}</div>
+          ${interviewDate}
+        </div>
+        <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
+          <button class="btn btn-small btn-view" onclick="viewStudentProfile(${profile.id})">View</button>
+          ${interviewBtn}
+        </div>
       </div>
     `;
   }).join('');
@@ -718,6 +726,106 @@ async function reviewApplication(applicationId, studentName) {
     console.error('Error reviewing application:', err);
     showToast('Error updating application: ' + err.message, 'error');
   }
+}
+
+function scheduleInterview(fullName, email, applicationId, existingDate) {
+  const positionTitle = window.currentPosition?.title || 'internship position';
+  let modal = document.getElementById('interviewDateModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'interviewDateModal';
+    modal.style.cssText = 'position:fixed;z-index:9999;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;';
+    modal.innerHTML = `
+      <div style="background:white;padding:2rem;border-radius:12px;width:90%;max-width:400px;box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+        <h3 id="interviewModalTitle" style="margin-top:0;">Schedule Interview</h3>
+        <p id="interviewModalDesc" style="color:#6b7280;margin-bottom:1rem;"></p>
+        <div class="form-group">
+          <label>Date &amp; Time</label>
+          <input type="datetime-local" id="interviewDateInput" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;">
+        </div>
+        <div style="display:flex;gap:0.5rem;margin-top:1.5rem;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="confirmInterviewScheduleDetail()">Confirm &amp; Open Calendar</button>
+          <button id="cancelInterviewBtnDetail" class="btn btn-outline" style="color:#dc2626;border-color:#dc2626;display:none;" onclick="cancelInterviewDetail()">Cancel Interview</button>
+          <button class="btn btn-outline" onclick="document.getElementById('interviewDateModal').style.display='none'">Close</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+
+  modal._data = { fullName, email, positionTitle, applicationId };
+  document.getElementById('interviewModalDesc').textContent = `${fullName} — ${positionTitle}`;
+  document.getElementById('interviewModalTitle').textContent = existingDate ? 'Reschedule Interview' : 'Schedule Interview';
+  document.getElementById('cancelInterviewBtnDetail').style.display = existingDate ? 'inline-block' : 'none';
+
+  const input = document.getElementById('interviewDateInput');
+  if (existingDate) {
+    input.value = toLocalInputValue(new Date(existingDate));
+  } else {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(10, 0, 0, 0);
+    input.value = toLocalInputValue(tomorrow);
+  }
+
+  modal.style.display = 'flex';
+}
+
+function toLocalInputValue(date) {
+  const pad = n => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+async function cancelInterviewDetail() {
+  const modal = document.getElementById('interviewDateModal');
+  const { applicationId } = modal._data;
+  modal.style.display = 'none';
+  try {
+    const { error } = await supabaseClient
+      .from('applications')
+      .update({ interview_date: null, status: 'pending' })
+      .eq('application_id', applicationId);
+    if (error) throw error;
+    showToast('Interview cancelled.', 'info');
+    if (window.currentPosition) {
+      await checkOwnerAndLoadApplicants(window.currentPosition.company_id, window.currentPosition.position_id);
+    }
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  }
+}
+
+async function confirmInterviewScheduleDetail() {
+  const modal = document.getElementById('interviewDateModal');
+  const { fullName, email, positionTitle, applicationId } = modal._data;
+  const dateValue = document.getElementById('interviewDateInput').value;
+
+  if (!dateValue) { showToast('Please select a date and time.', 'error'); return; }
+
+  modal.style.display = 'none';
+
+  const date    = new Date(dateValue);
+  const endDate = new Date(date.getTime() + 60 * 60 * 1000);
+
+  try {
+    const { error } = await supabaseClient
+      .from('applications')
+      .update({ interview_date: date.toISOString(), status: 'interview_scheduled' })
+      .eq('application_id', applicationId);
+    if (error) throw error;
+    showToast('Interview scheduled!', 'success');
+    if (window.currentPosition) {
+      await checkOwnerAndLoadApplicants(window.currentPosition.company_id, window.currentPosition.position_id);
+    }
+  } catch (err) {
+    showToast('Error saving: ' + err.message, 'error');
+  }
+  const fmt     = d => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  const title   = encodeURIComponent(`Internship Interview - ${fullName}`);
+  const details = encodeURIComponent(`Interview with ${fullName} for ${positionTitle}`);
+  const guest   = encodeURIComponent(email);
+  const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&dates=${fmt(date)}/${fmt(endDate)}&add=${guest}`;
+  window.open(url, '_blank');
 }
 
 // Delete application from sidebar
