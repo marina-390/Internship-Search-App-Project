@@ -31,119 +31,116 @@
         gap: 2rem;
         margin-top: 2rem;
       }
+    }
 
-      @media (max-width: 768px) {
-        .auth-container {
-          grid-template-columns: 1fr;
-        }
-      }
+    .auth-form-wrapper {
+      display: none;
+    }
 
-      .auth-form-wrapper {
-        display: none;
-      }
+    .auth-form-wrapper.active {
+      display: block;
+    }
 
-      .auth-form-wrapper.active {
-        display: block;
-      }
+    .form-tabs {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid var(--border-color);
+    }
 
-      .form-tabs {
-        display: flex;
-        gap: 1rem;
-        margin-bottom: 2rem;
-        border-bottom: 2px solid var(--border-color);
-      }
+    .form-tab {
+      padding: 1rem 0;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-light);
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.3s ease;
+    }
 
-      .form-tab {
-        padding: 1rem 0;
-        background: none;
-        border: none;
-        cursor: pointer;
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--text-light);
-        border-bottom: 3px solid transparent;
-        margin-bottom: -2px;
-        transition: all 0.3s ease;
-      }
+    .form-tab.active {
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
+    }
 
-      .form-tab.active {
-        color: var(--primary-color);
-        border-bottom-color: var(--primary-color);
-      }
+    .form-tab:hover {
+      color: var(--text-color);
+    }
 
-      .form-tab:hover {
-        color: var(--text-color);
-      }
+    .password-toggle {
+      position: relative;
+    }
 
-      .password-toggle {
-        position: relative;
-      }
+    .password-toggle input {
+      padding-right: 2.5rem;
+    }
 
-      .password-toggle input {
-        padding-right: 2.5rem;
-      }
+    .password-toggle button {
+      position: absolute;
+      right: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-light);
+      font-size: 1rem;
+    }
 
-      .password-toggle button {
-        position: absolute;
-        right: 0.75rem;
-        top: 50%;
-        transform: translateY(-50%);
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: var(--text-light);
-        font-size: 1rem;
-      }
+    .social-login {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.75rem;
+      margin: 1.5rem 0;
+    }
 
-      .social-login {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 0.75rem;
-        margin: 1.5rem 0;
-      }
+    .social-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.7rem 0.5rem;
+      border: 1.5px solid var(--border-color);
+      border-radius: 0.5rem;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: #333;
+    }
 
-      .social-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        padding: 0.7rem 0.5rem;
-        border: 1.5px solid var(--border-color);
-        border-radius: 0.5rem;
-        background: white;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        font-weight: 500;
-        font-size: 0.9rem;
-        color: #333;
-      }
+    .social-btn svg {
+      flex-shrink: 0;
+    }
 
-      .social-btn svg {
-        flex-shrink: 0;
-      }
+    .social-btn:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      transform: translateY(-1px);
+    }
 
-      .social-btn:hover {
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-        transform: translateY(-1px);
-      }
+    .social-btn.google:hover  { border-color: #4285F4; }
+    .social-btn.github:hover  { border-color: #333; }
+    .social-btn.linkedin:hover { border-color: #0A66C2; }
 
-      .social-btn.google:hover {
-        border-color: #4285f4;
-      }
-      .social-btn.github:hover {
-        border-color: #333;
-      }
-      .social-btn.linkedin:hover {
-        border-color: #0a66c2;
-      }
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 1.5rem 0;
+      color: var(--text-light);
+    }
 
-      .divider {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin: 1.5rem 0;
-        color: var(--text-light);
-      }
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background-color: var(--border-color);
+    }
 
       .divider::before,
       .divider::after {
@@ -534,9 +531,9 @@
                   </button>
                 </form>
 
-                <div class="divider">or</div>
+                <div class="divider" id="registerSocialDivider">or</div>
 
-                <div class="social-login">
+                <div class="social-login" id="registerSocialLogin">
                   <button
                     class="social-btn google"
                     onclick="signInWithGoogle()"
@@ -618,13 +615,14 @@
                   Click the link to activate your account. Check your spam
                   folder if you don't see it.
                 </p>
-                <button
-                  onclick="switchTab('login')"
-                  class="btn btn-primary"
-                  style="margin-top: 1.5rem"
-                >
-                  Back to Sign In
-                </button>
+                <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; align-items: center;">
+                  <button onclick="resendConfirmEmail()" class="btn btn-secondary" style="width: 100%">
+                    Resend confirmation email
+                  </button>
+                  <button onclick="switchTab('login')" class="btn btn-primary" style="width: 100%">
+                    Back to Sign In
+                  </button>
+                </div>
               </div>
             </div>
           </div>
