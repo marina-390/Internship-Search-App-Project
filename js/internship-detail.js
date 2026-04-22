@@ -101,7 +101,7 @@ async function loadInternshipDetail(positionId) {
         if (displayDesc) displayDesc.textContent = company?.description || 'No description.';
 
         const displayEmail = document.getElementById('dCompanyEmail');
-        if (displayEmail) displayEmail.textContent = company?.email || 'No email provided.';
+displayEmail.innerHTML = company?.contact_email ? `<a href="mailto:${company.contact_email}">${company.contact_email}</a>` : 'No contact email provided.';
 
         const displayWebsite = document.getElementById('dWebsite');
         if (displayWebsite) displayWebsite.textContent = company?.website || 'N/A';
@@ -234,6 +234,12 @@ async function openApplyModal() {
 
   // Store the INTEGER ID
   window.currentStudentId = profile.id;
+
+  // Populate modal title and company
+  const modalTitle = document.getElementById('modalTitle');
+  const modalCompany = document.getElementById('modalCompany');
+  if (modalTitle) modalTitle.textContent = window.currentPosition?.title || 'this position';
+  if (modalCompany) modalCompany.textContent = window.currentCompany?.company_name || 'this company';
 
   // Show modal
   document.getElementById('applyModal').style.display = "block";

@@ -463,8 +463,34 @@ async function loadCompanyProfile() {
 
     if (error) throw error;
     if (profile) {
+      // Auto-populate email if missing from Users.user_login
+if (!profile.contact_email) {
+        const { data: userData } = await supabaseClient
+          .from('Users')
+          .select('user_login')
+          .eq('user_id', session.userId)
+          .single();
+        
+        if (userData && userData.user_login) {
+          const emailValue = userData.user_login;
+          if (emailValue !== profile.contact_email) {
+            const { error: updateError } = await supabaseClient
+              .from('Companies')
+              .update({ contact_email: emailValue, updated_at: new Date().toISOString() })
+              .eq('company_id', profile.company_id);
+            
+            if (!updateError) {
+              profile.contact_email = emailValue;
+              console.log('Auto-set company email from Users.user_login:', profile.contact_email);
+            } else {
+              console.warn('Failed to auto-set email:', updateError.message);
+            }
+          }
+        }
+      }
+      
       currentProfile = profile; 
-fillCompanyDisplay(profile, session);
+      fillCompanyDisplay(profile, session);
       fillCompanyLogo(profile);
       fillCompanyCvInfo();
       await loadCompanyTeam();
@@ -525,9 +551,12 @@ async function handlePRHSearch(query) {
     }, 400);
 }
 // Helper to fill the display text
-function fillCompanyDisplay(profile) {
+function fillCompanyDisplay(profile, session) {
     if(document.getElementById('dCompanyName')) 
         document.getElementById('dCompanyName').innerText = profile.company_name || '';
+    
+    if(document.getElementById('dCompanyEmail')) 
+        document.getElementById('dCompanyEmail').innerText = profile.contact_email || session.login || 'Not set';
     
     if(document.getElementById('dCompanyDesc')) 
         document.getElementById('dCompanyDesc').innerText = profile.description || '';
@@ -553,6 +582,7 @@ async function saveCompanyProfile() {
     }
 
     const saveBtn = document.getElementById('saveCompanyBtn');
+    const emailInput = document.getElementById('eCompanyEmail');
     if (saveBtn) {
         saveBtn.disabled = true;
         saveBtn.innerText = 'Saving...';
@@ -561,6 +591,7 @@ async function saveCompanyProfile() {
     try {
         const updates = {
             company_name: document.getElementById('eCompanyName').value.trim(),
+            contact_email: emailInput ? emailInput.value.trim() : session.login,
             description: document.getElementById('eCompanyDesc').value.trim(),
             website: document.getElementById('eWebsite').value.trim(),
             city: document.getElementById('eHeadquarters').value.trim(),
@@ -575,24 +606,14 @@ async function saveCompanyProfile() {
 
         if (error) throw error;
 
-        const emailInput = document.getElementById('eCompanyEmail');
-        if (emailInput && emailInput.value.trim() && session?.user?.id) {
-            await supabaseClient
-                .from('Users')
-                .update({ email: emailInput.value.trim() })
-                .eq('id', session.user.id);
-        }
-
         document.getElementById('dCompanyName').innerText = updates.company_name;
+        document.getElementById('dCompanyEmail').innerText = updates.contact_email;
         document.getElementById('dCompanyDesc').innerText = updates.description;
-  document.getElementById('dHeadquarters').innerText = updates.city;
+        document.getElementById('dHeadquarters').innerText = updates.city;
         document.getElementById('dTeamSize').innerText = updates.y_tunnus;
         if(document.getElementById('dYTunnus'))
             document.getElementById('dYTunnus').innerText = updates.y_tunnus;
         document.getElementById('dWebsite').innerText = updates.website;
-        if (document.getElementById('dCompanyEmail')) {
-            document.getElementById('dCompanyEmail').innerText = emailInput ? emailInput.value.trim() : session.login || 'Not set';
-        }
 
         // Update local cache so toggleCompanyEdit pre-fills correctly next time
         Object.assign(currentProfile, updates);
@@ -1537,7 +1558,7 @@ function toggleCompanyEdit(isEditing) {
     if (isEditing) {
         // 1. Copy current text INTO the input boxes so you can edit them
         document.getElementById('eCompanyName').value = document.getElementById('dCompanyName').innerText;
-        document.getElementById('eCompanyEmail').value = document.getElementById('dCompanyEmail').innerText;
+        document.getElementById('eCompanyEmail').value = currentProfile?.contact_email || getCurrentSession()?.login || '';
         document.getElementById('eCompanyDesc').value = document.getElementById('dCompanyDesc').innerText;
         document.getElementById('eHeadquarters').value = document.getElementById('dHeadquarters').innerText;
         document.getElementById('eTeamSize').value = document.getElementById('dTeamSize').innerText;
