@@ -442,6 +442,8 @@ function resetCVUpload() {
 }
 
 
+(function() { if (typeof emailjs !== 'undefined') emailjs.init("sEPTKkb6HZBc_Qopf"); })();
+
 document.getElementById('modalApplyForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
@@ -486,6 +488,22 @@ document.getElementById('modalApplyForm').addEventListener('submit', async funct
             }]);
 
         if (dbError) throw dbError;
+
+        // Notify employer by email
+        const companyEmail = window.currentCompany?.contact_email;
+        if (companyEmail && typeof emailjs !== 'undefined') {
+            const studentName = [
+                document.getElementById('applyFirstName')?.value,
+                document.getElementById('applyLastName')?.value
+            ].filter(Boolean).join(' ') || 'A student';
+            emailjs.send('service_q4hp8tj', 'template_new_application', {
+                to_email:       companyEmail,
+                student_name:   studentName,
+                position_title: window.currentPosition?.title || 'your position',
+                cover_letter:   document.getElementById('applyLetter')?.value || '',
+                profile_link:   window.location.href
+            }).catch(err => console.warn('Email notification failed:', err));
+        }
 
         showToast("Application sent!", 'success');
         closeApplyModal();
