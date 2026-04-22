@@ -1,38 +1,35 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login & Register - InternHub</title>
-  <link rel="stylesheet" href="css/style.css">
-  <script>
-  function switchTab(tab) {
-    var lf   = document.getElementById('loginForm');
-    var rf   = document.getElementById('registerForm');
-    var tabs = document.querySelectorAll('.form-tab');
-    if (!lf || !rf) return;
-    if (tab === 'login') {
-      lf.classList.add('active');    rf.classList.remove('active');
-      if (tabs[0]) tabs[0].classList.add('active');
-      if (tabs[1]) tabs[1].classList.remove('active');
-    } else {
-      lf.classList.remove('active'); rf.classList.add('active');
-      if (tabs[0]) tabs[0].classList.remove('active');
-      if (tabs[1]) tabs[1].classList.add('active');
-    }
-  }
-  </script>
-  <style>
-    .auth-container {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2rem;
-      margin-top: 2rem;
-    }
-
-    @media (max-width: 768px) {
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login & Register - InternHub</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <script>
+      function switchTab(tab) {
+        var lf = document.getElementById("loginForm");
+        var rf = document.getElementById("registerForm");
+        var tabs = document.querySelectorAll(".form-tab");
+        if (!lf || !rf) return;
+        if (tab === "login") {
+          lf.classList.add("active");
+          rf.classList.remove("active");
+          if (tabs[0]) tabs[0].classList.add("active");
+          if (tabs[1]) tabs[1].classList.remove("active");
+        } else {
+          lf.classList.remove("active");
+          rf.classList.add("active");
+          if (tabs[0]) tabs[0].classList.remove("active");
+          if (tabs[1]) tabs[1].classList.add("active");
+        }
+      }
+    </script>
+    <style>
       .auth-container {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-top: 2rem;
       }
     }
 

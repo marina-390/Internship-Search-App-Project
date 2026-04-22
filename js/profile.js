@@ -100,6 +100,7 @@ async function loadStudentProfile() {
     fillCvInfo(profile);
     fillLinks();
     fillApplications(applications || []);
+    await loadPracticeRequests(profile.id);
   } catch (err) {
     console.error('Error loading profile:', err);
   }
@@ -128,7 +129,7 @@ async function savePost(postId) {
     document.getElementById(`title-${postId}`).innerText = newTitle;
     
     togglePostEdit(postId, false);
-    alert("Position updated!");
+    showToast("Position updated!", 'success');
 }
 
 // ==========================================
@@ -378,7 +379,7 @@ async function saveNewTeamMember() {
     const phone = document.getElementById('nmPhone').value.trim();
 
     if (!name || !title) {
-        alert("Name and Job Title are required.");
+        showToast("Name and Job Title are required.", 'warning');
         return;
     }
 
@@ -404,7 +405,7 @@ async function saveNewTeamMember() {
             // Update the local list
             const index = currentTeam.findIndex(m => m.id === editingMemberId);
             currentTeam[index] = data[0];
-            alert("Member updated successfully!");
+            showToast("Member updated successfully!", 'success');
         } else {
             // --- MODE: INSERT ---
             const { data, error } = await supabaseClient
@@ -415,7 +416,7 @@ async function saveNewTeamMember() {
             if (error) throw error;
 
             currentTeam.push(data[0]);
-            alert("Member added successfully!");
+            showToast("Member added successfully!", 'success');
         }
 
         // Refresh UI and close form
@@ -424,7 +425,7 @@ async function saveNewTeamMember() {
 
     } catch (err) {
         console.error("Database Error:", err.message);
-        alert("Error: " + err.message);
+        showToast("Error: " + err.message, 'error');
     }
 }
 
@@ -547,7 +548,7 @@ function fillCompanyDisplay(profile) {
 async function saveCompanyProfile() { 
     const session = getCurrentSession(); 
     if (!session) {
-        alert("You must be logged in to save.");
+        showToast("You must be logged in to save.", 'warning');
         return;
     }
 
@@ -596,11 +597,11 @@ async function saveCompanyProfile() {
         // Update local cache so toggleCompanyEdit pre-fills correctly next time
         Object.assign(currentProfile, updates);
         toggleCompanyEdit(false);
-        alert("Profile updated successfully!");
+        showToast("Profile updated successfully!", 'success');
 
     } catch (err) {
         console.error("Full Save Error:", err);
-        alert("Save failed: " + (err.message || "Unknown error"));
+        showToast("Save failed: " + (err.message || "Unknown error"), 'error');
     } finally {
         if (saveBtn) {
             saveBtn.disabled = false;
@@ -653,6 +654,7 @@ async function openEditModal(id) {
       // Fill fields
       document.getElementById('pTitle').value = data.title || "";
       document.getElementById('pDesc').value = data.description || "";
+      document.getElementById('pRespon').value = data.responsibilities || "";
       document.getElementById('pReqs').value = data.requirements || "";
       document.getElementById('pStatus').value = data.status || "active";
       document.getElementById('pStart').value = data.period_start || "";
@@ -668,7 +670,7 @@ async function openEditModal(id) {
       modal.style.display = 'block';
       document.body.style.overflow = 'hidden';
   } catch (err) {
-      alert("Error loading data: " + err.message);
+      showToast("Error loading data: " + err.message, 'error');
   }
 }
 
@@ -677,12 +679,13 @@ async function submitPosition() {
   const editId = document.getElementById('editPositionId').value;
   const submitBtn = document.getElementById('submitPostBtn');
   
-  if (!currentProfile) return alert("Profile not loaded.");
+  if (!currentProfile) { showToast("Profile not loaded.", 'warning'); return; }
 
   const postData = {
       company_id: currentProfile.company_id,
       title: document.getElementById('pTitle').value.trim(),
       description: document.getElementById('pDesc').value,
+      responsibilities: document.getElementById('pRespon').value,
       requirements: document.getElementById('pReqs').value,
       status: document.getElementById('pStatus').value,
       category_id: document.getElementById('pCategory').value ? parseInt(document.getElementById('pCategory').value) : null,
@@ -706,11 +709,11 @@ async function submitPosition() {
 
       if (error) throw error;
 
-      alert(editId ? "Updated!" : "Posted!");
+      showToast(editId ? "Updated!" : "Posted!", 'success');
       closePostModal();
       loadCompanyPostings();
   } catch (err) {
-      alert("Error: " + err.message);
+      showToast("Error: " + err.message, 'error');
   } finally {
       submitBtn.disabled = false;
       submitBtn.innerText = editId ? "Update Position" : "Post Position";
@@ -791,8 +794,18 @@ async function deletePosition(id) {
       if (error) throw error;
       loadCompanyPostings(); // Refresh the list
   } catch (err) {
-      alert(err.message);
+      showToast(err.message, 'error');
   }
+}
+
+function toggleReqText(id) {
+  const shortEl = document.getElementById('req-short-' + id);
+  const fullEl  = document.getElementById('req-full-'  + id);
+  const btn     = document.getElementById('req-btn-'   + id);
+  const isExpanded = fullEl.style.display !== 'none';
+  shortEl.style.display = isExpanded ? 'inline' : 'none';
+  fullEl.style.display  = isExpanded ? 'none'   : 'inline';
+  btn.textContent       = isExpanded ? 'Show more' : 'Show less';
 }
 
 // --- Load and Display Postings ---
@@ -804,7 +817,7 @@ async function loadCompanyPostings() {
       // Fetch positions with application counts in one query
       const { data: positions, error } = await supabaseClient
           .from('positions')
-          .select('position_id, title, status, applications(count)')
+          .select('position_id, title, status, requirements, applications(count)')
           .eq('company_id', currentProfile.company_id)
           .order('created_at', { ascending: false });
 
@@ -833,6 +846,13 @@ async function loadCompanyPostings() {
                     <span class="status-badge" style="${sc}">${pos.status}</span>
                     <span style="font-size:0.78rem; color:var(--text-light);">👥 ${appCount} application${appCount !== 1 ? 's' : ''}</span>
                   </div>
+                  ${pos.requirements ? `
+                  <p id="req-${pos.position_id}" style="font-size:0.82rem;color:var(--text-light);margin:0.35rem 0 0.1rem;line-height:1.4;">
+                    <span id="req-short-${pos.position_id}">${pos.requirements.length > 120 ? pos.requirements.slice(0, 120) + '…' : pos.requirements}</span>
+                    ${pos.requirements.length > 120 ? `
+                    <span id="req-full-${pos.position_id}" style="display:none;">${pos.requirements}</span>
+                    <a href="javascript:void(0)" id="req-btn-${pos.position_id}" onclick="toggleReqText(${pos.position_id})" style="font-size:0.78rem;margin-left:0.25rem;">Show more</a>` : ''}
+                  </p>` : ''}
                   <div class="pos-actions">
                       <a href="internship-detail.html?id=${pos.position_id}" class="text-primary">View</a>
                       <a href="javascript:void(0)" onclick="openEditModal(${pos.position_id})" class="text-primary">Edit</a>
@@ -947,7 +967,7 @@ function openCompanyAppModal(app) {
 // STUDENT PROFILE MODAL (read-only, for company reviewers)
 // ==========================================
 async function openStudentProfileModal(studentId) {
-  if (!studentId) { alert('No student ID available.'); return; }
+  if (!studentId) { showToast('No student ID available.', 'warning'); return; }
 
   const modal   = document.getElementById('studentProfileModal');
   const loading = document.getElementById('spLoading');
@@ -1093,16 +1113,16 @@ async function saveCompanyApplicationStatus(newStatus) {
 
     if (error) {
       console.error('Company application update error:', error);
-      alert('Failed to update application: ' + error.message);
+      showToast('Failed to update application: ' + error.message, 'error');
       return;
     }
 
-    alert(newStatus === 'accepted' ? 'Application accepted.' : newStatus === 'rejected' ? 'Application declined.' : 'Application updated.');
+    showToast(newStatus === 'accepted' ? 'Application accepted.' : newStatus === 'rejected' ? 'Application declined.' : 'Application updated.', newStatus === 'accepted' ? 'success' : newStatus === 'rejected' ? 'success' : 'info');
     if (modal) modal.style.display = 'none';
     await loadCompanyApplications();
   } catch (err) {
     console.error('Error saving company application status:', err);
-    alert('Error: ' + err.message);
+    showToast('Error: ' + err.message, 'error');
   }
 }
 
@@ -1146,12 +1166,12 @@ async function handleFormSubmit() {
 
       if (result.error) throw result.error;
 
-      alert(editId ? "Updated!" : "Posted!");
+      showToast(editId ? "Updated!" : "Posted!", 'success');
       closePostModal();
       loadCompanyPostings(); // Refresh the list
 
   } catch (err) {
-      alert("Error: " + err.message);
+      showToast("Error: " + err.message, 'error');
   } finally {
       submitBtn.disabled = false;
   }
@@ -1348,13 +1368,13 @@ async function updateApplication() {
 
       if (error) throw error;
 
-      alert("Update successful!");
+      showToast("Update successful!", 'success');
       isCvDeleted = false; // reset
       document.getElementById('editAppModal').style.display = 'none';
       loadStudentProfile();
 
   } catch (err) {
-      alert("Error: " + err.message);
+      showToast("Error: " + err.message, 'error');
   } finally {
       saveBtn.disabled = false;
   }
@@ -1394,10 +1414,10 @@ async function deleteApplication(applicationId) {
           container.innerHTML = '<p>No applications yet.</p>';
       }
 
-      alert("Application withdrawn successfully.");
+      showToast("Application withdrawn successfully.", 'success');
   } catch (err) {
       console.error('Delete error:', err);
-      alert("Failed to delete application: " + err.message);
+      showToast("Failed to delete application: " + err.message, 'error');
   }
 }
 
@@ -1413,7 +1433,7 @@ async function deleteApplication(applicationId) {
       if (error) throw error;
       loadStudentProfile();
   } catch (err) {
-      alert("Delete failed: " + err.message);
+      showToast("Delete failed: " + err.message, 'error');
   }
 }
 /**
@@ -1477,8 +1497,6 @@ function enterEditMode() {
   document.getElementById('ePhone').value = currentProfile.phone || '';
   document.getElementById('eCity').value = currentProfile.city || '';
   document.getElementById('eAbout').value = currentProfile.about || '';
-  document.getElementById('ePracticeStart').value = currentProfile.practice_start || '';
-  document.getElementById('ePracticeEnd').value = currentProfile.practice_end || '';
   document.getElementById('eOpenToOffers').checked = currentProfile.is_open_to_offers;
 
   const container = document.getElementById('eEducationContainer');
@@ -1567,8 +1585,6 @@ async function saveProfile() {
       education_history: educationEntries,
       type_education: educationEntries.length > 0 ? educationEntries[0].name : null,
       about: document.getElementById('eAbout').value.trim() || null,
-      practice_start: document.getElementById('ePracticeStart').value || null,
-      practice_end: document.getElementById('ePracticeEnd').value || null,
       is_open_to_offers: document.getElementById('eOpenToOffers').checked,
       updated_at: new Date().toISOString()
     };
@@ -1609,11 +1625,11 @@ async function saveProfile() {
     fillDisplayMode(currentProfile, session);
     updateEducationDisplay(educationEntries);
     cancelEditMode();
-    alert('Profile saved successfully!');
+    showToast('Profile saved successfully!', 'success');
 
   } catch (err) {
     console.error('Save error:', err);
-    alert(err.message || 'An error occurred while saving.');
+    showToast(err.message || 'An error occurred while saving.', 'error');
   } finally {
     saveBtn.disabled = false;
     saveBtn.textContent = 'Save';
@@ -1724,12 +1740,18 @@ function renderSelectedCategories() {
   }).join('');
 }
 
-// Close dropdown when clicking outside
+// Close dropdowns when clicking outside
 document.addEventListener('click', function(e) {
   const search = document.querySelector('.category-search');
   const dropdown = document.getElementById('categoryDropdown');
   if (dropdown && search && !search.contains(e.target)) {
     dropdown.classList.remove('show');
+  }
+
+  const reqSearch = document.getElementById('reqCategorySearch');
+  const reqDropdown = document.getElementById('reqCategoryDropdown');
+  if (reqDropdown && reqSearch && !reqSearch.contains(e.target) && !reqDropdown.contains(e.target)) {
+    reqDropdown.classList.remove('show');
   }
 });
 
@@ -1872,7 +1894,7 @@ async function uploadAvatar(input) {
 
   // Max 2MB
   if (file.size > 2 * 1024 * 1024) {
-    alert('Photo must be under 2 MB.');
+    showToast('Photo must be under 2 MB.', 'warning');
     return;
   }
 
@@ -1886,7 +1908,7 @@ async function uploadAvatar(input) {
       .upload(filePath, file, { upsert: true });
 
     if (uploadError) {
-      alert('Upload error: ' + uploadError.message);
+      showToast('Upload error: ' + uploadError.message, 'error');
       return;
     }
 
@@ -1907,7 +1929,7 @@ async function uploadAvatar(input) {
     fillAvatar(currentProfile);
   } catch (err) {
     console.error('Avatar upload error:', err);
-    alert('Failed to upload photo.');
+    showToast('Failed to upload photo.', 'error');
   }
 }
 
@@ -1920,13 +1942,13 @@ async function uploadLogo(input) {
   // 2. Check Session (Must be logged in)
   const session = getCurrentSession();
   if (!session) {
-    alert("Please log in to upload a logo.");
+    showToast("Please log in to upload a logo.", 'warning');
     return;
   }
 
   // 3. Size Validation (Max 2MB)
   if (file.size > 2 * 1024 * 1024) {
-    alert('Logo must be under 2 MB.');
+    showToast('Logo must be under 2 MB.', 'warning');
     return;
   }
 
@@ -1944,7 +1966,7 @@ async function uploadLogo(input) {
       });
 
     if (uploadError) {
-      alert('Upload error: ' + uploadError.message);
+      showToast('Upload error: ' + uploadError.message, 'error');
       return;
     }
 
@@ -1986,11 +2008,11 @@ async function uploadLogo(input) {
         if (placeholder) placeholder.style.display = 'none';
     }
 
-    alert('Logo updated successfully!');
+    showToast('Logo updated successfully!', 'success');
 
   } catch (err) {
     console.error('Logo upload error:', err);
-    alert('Failed to upload logo.');
+    showToast('Failed to upload logo.', 'error');
   }
 }
 // ==========================================
@@ -2036,11 +2058,11 @@ async function uploadCV(input) {
     currentProfile.cv_original_name = file.name;
 
     renderCVList(); 
-    alert('CV Uploaded successfully!');
+    showToast('CV uploaded successfully!', 'success');
 
   } catch (err) {
     console.error('Upload Error:', err);
-    alert('Note: ' + err.message);
+    showToast('Note: ' + err.message, 'info');
     renderCVList(); 
   }
 }
@@ -2064,11 +2086,11 @@ async function deleteCV() {
     currentProfile.cv_original_name = null;
     
     renderCVList();
-    alert("CV removed from profile.");
+    showToast("CV removed from profile.", 'success');
     
   } catch (err) {
     console.error("Delete error:", err);
-    alert("Failed to delete: " + err.message);
+    showToast("Failed to delete: " + err.message, 'error');
   }
 }
 
@@ -2137,8 +2159,443 @@ function renderCompanyCvList() {
 // ==========================================
 function downloadCV() {
   if (!currentProfile || !currentProfile.cv_url) {
-    alert('No CV uploaded yet.');
+    showToast('No CV uploaded yet.', 'warning');
     return;
   }
   window.open(currentProfile.cv_url, '_blank');
+}
+
+// ==========================================
+// PRACTICE REQUESTS
+// ==========================================
+
+let practiceRequests = [];
+let showAllRequests = false;
+let reqSelectedCategoryIds = [];
+
+async function loadPracticeRequests(studentId) {
+  const { data, error } = await supabaseClient
+    .from('student_practice_requests')
+    .select('*, student_request_categories(category_id, job_categories(title)), Companies:found_company_id(company_name)')
+    .eq('student_id', studentId)
+    .order('period_start', { ascending: false });
+
+  if (error) { console.error('Error loading practice requests:', error); return; }
+  practiceRequests = data || [];
+  fillPracticeRequests();
+}
+
+function fillPracticeRequests() {
+  const container = document.getElementById('dPracticeRequests');
+  const showAllWrap = document.getElementById('showAllRequestsWrap');
+  if (!container) return;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const active = practiceRequests.filter(r => new Date(r.period_end) >= today);
+  const archived = practiceRequests.filter(r => new Date(r.period_end) < today);
+  const toShow = showAllRequests ? practiceRequests : active;
+
+  if (practiceRequests.length === 0) {
+    container.innerHTML = '<span class="profile-field-value empty">No internship requests added</span>';
+    if (showAllWrap) showAllWrap.style.display = 'none';
+    return;
+  }
+
+  container.innerHTML = toShow.length > 0
+    ? toShow.map(r => renderRequestCard(r, today)).join('')
+    : '<span class="profile-field-value empty">No active requests</span>';
+
+  if (showAllWrap) {
+    if (archived.length > 0) {
+      showAllWrap.style.display = 'block';
+      const btn = document.getElementById('showAllRequestsBtn');
+      if (btn) btn.textContent = showAllRequests
+        ? 'Show active only'
+        : `Show all (${practiceRequests.length})`;
+    } else {
+      showAllWrap.style.display = 'none';
+    }
+  }
+}
+
+function renderRequestCard(r, today) {
+  const isExpired = new Date(r.period_end) < today;
+  const cats = (r.student_request_categories || [])
+    .map(sc => `<span class="category-tag" style="font-size:0.75rem; padding:0.2rem 0.5rem;">${sc.job_categories?.title || ''}</span>`)
+    .join('');
+
+  const statusLabel = r.status === 'found' ? 'Found' : 'Searching';
+  const statusClass = r.status === 'found' ? 'status-found' : 'status-searching';
+  const nextStatus = r.status === 'found' ? 'searching' : 'found';
+  const nextLabel = r.status === 'found' ? 'Back to Searching' : 'Mark as Found';
+  const companyName = r.Companies?.company_name || r.found_company_name || null;
+
+  return `
+    <div class="practice-request-card${isExpired ? ' expired' : ''}">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem; flex-wrap:wrap;">
+        <div>
+          <span style="font-weight:600;">${formatDateEuropean(r.period_start)} — ${formatDateEuropean(r.period_end)}</span>
+          ${isExpired ? '<span class="status-badge" style="background:#f3f4f6; color:#6b7280; margin-left:0.5rem;">Expired</span>' : ''}
+        </div>
+        <span class="status-badge ${statusClass}">${statusLabel}</span>
+      </div>
+      ${cats ? `<div class="selected-categories" style="margin-top:0.5rem; gap:0.35rem;">${cats}</div>` : ''}
+      ${companyName ? `<p style="margin:0.5rem 0 0; font-size:0.85rem;"><span style="color:var(--text-light);">Company:</span> <strong>${companyName}</strong></p>` : ''}
+      ${r.notes ? `<p style="margin:0.4rem 0 0; font-size:0.85rem; color:var(--text-light);">${r.notes}</p>` : ''}
+      <div style="display:flex; gap:0.5rem; margin-top:0.75rem; flex-wrap:wrap;">
+        <button style="background:#eef2ff; color:var(--primary-color); border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:0.8rem; font-weight:600;"
+          onclick="${nextStatus === 'found' ? `openFoundCompanyModal(${r.request_id})` : `togglePracticeRequestStatus(${r.request_id}, 'searching')`}">${nextLabel}</button>
+        <button style="background:#fef2f2; color:#ef4444; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:0.8rem; font-weight:600;"
+          onclick="deletePracticeRequest(${r.request_id})">Delete</button>
+      </div>
+    </div>
+  `;
+}
+
+async function togglePracticeRequestStatus(requestId, newStatus) {
+  const updates = { status: newStatus, updated_at: new Date().toISOString() };
+  if (newStatus === 'searching') {
+    updates.found_company_id = null;
+    updates.found_company_name = null;
+  }
+
+  const { error } = await supabaseClient
+    .from('student_practice_requests')
+    .update(updates)
+    .eq('request_id', requestId);
+
+  if (error) { showToast('Error updating status: ' + error.message, 'error'); return; }
+
+  await loadPracticeRequests(currentProfile.id);
+}
+
+async function deletePracticeRequest(requestId) {
+  if (!confirm('Delete this internship request?')) return;
+
+  const { error } = await supabaseClient
+    .from('student_practice_requests')
+    .delete()
+    .eq('request_id', requestId);
+
+  if (error) { showToast('Error: ' + error.message, 'error'); return; }
+
+  practiceRequests = practiceRequests.filter(r => r.request_id !== requestId);
+  fillPracticeRequests();
+}
+
+function toggleShowAllRequests() {
+  showAllRequests = !showAllRequests;
+  fillPracticeRequests();
+}
+
+// --- Add Request Modal ---
+
+function openAddRequestModal() {
+  reqSelectedCategoryIds = [];
+  document.getElementById('reqPeriodStart').value = '';
+  document.getElementById('reqPeriodEnd').value = '';
+  document.getElementById('reqNotes').value = '';
+  renderReqSelectedCategories();
+  buildReqCategoryDropdown('');
+  document.getElementById('addRequestModal').style.display = 'block';
+}
+
+function closeAddRequestModal() {
+  document.getElementById('addRequestModal').style.display = 'none';
+}
+
+async function savePracticeRequest() {
+  const periodStart = document.getElementById('reqPeriodStart').value;
+  const periodEnd = document.getElementById('reqPeriodEnd').value;
+  const notes = document.getElementById('reqNotes').value.trim();
+
+  if (!periodStart || !periodEnd) { showToast('Please set both start and end dates.', 'warning'); return; }
+  if (periodEnd < periodStart) { showToast('End date must be after start date.', 'warning'); return; }
+
+  try {
+    const { data: newReq, error } = await supabaseClient
+      .from('student_practice_requests')
+      .insert({
+        student_id: currentProfile.id,
+        period_start: periodStart,
+        period_end: periodEnd,
+        status: 'searching',
+        notes: notes || null
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    if (reqSelectedCategoryIds.length > 0) {
+      const catRows = reqSelectedCategoryIds.map(catId => ({
+        request_id: newReq.request_id,
+        category_id: catId
+      }));
+      const { error: catError } = await supabaseClient
+        .from('student_request_categories')
+        .insert(catRows);
+      if (catError) throw catError;
+    }
+
+    await loadPracticeRequests(currentProfile.id);
+    closeAddRequestModal();
+  } catch (err) {
+    console.error('Error saving request:', err);
+    showToast('Error saving request: ' + err.message, 'error');
+  }
+}
+
+// --- Category selector for request modal ---
+
+function buildReqCategoryDropdown(query) {
+  const dropdown = document.getElementById('reqCategoryDropdown');
+  if (!dropdown) return;
+
+  const q = (query || '').toLowerCase();
+  const groups = {};
+  allCategories.forEach(cat => {
+    if (q && !cat.title.toLowerCase().includes(q)) return;
+    const groupTitle = cat.job_groups?.title || 'Other';
+    if (!groups[groupTitle]) groups[groupTitle] = [];
+    groups[groupTitle].push(cat);
+  });
+
+  dropdown.innerHTML = Object.entries(groups).map(([groupTitle, cats]) => `
+    <div class="category-group-title">${groupTitle}</div>
+    ${cats.map(cat => `
+      <div class="category-option${reqSelectedCategoryIds.includes(cat.category_id) ? ' selected' : ''}"
+           onclick="toggleReqCategory(${cat.category_id})"
+           data-cat-title="${cat.title}">
+        ${cat.title}
+      </div>
+    `).join('')}
+  `).join('');
+}
+
+function showReqCategoryDropdown() {
+  buildReqCategoryDropdown(document.getElementById('reqCategorySearch').value);
+  document.getElementById('reqCategoryDropdown').classList.add('show');
+}
+
+function filterReqCategories() {
+  const query = document.getElementById('reqCategorySearch').value;
+  buildReqCategoryDropdown(query);
+  document.getElementById('reqCategoryDropdown').classList.add('show');
+}
+
+function toggleReqCategory(categoryId) {
+  if (reqSelectedCategoryIds.includes(categoryId)) {
+    reqSelectedCategoryIds = reqSelectedCategoryIds.filter(id => id !== categoryId);
+  } else {
+    reqSelectedCategoryIds.push(categoryId);
+  }
+  renderReqSelectedCategories();
+  buildReqCategoryDropdown(document.getElementById('reqCategorySearch').value);
+}
+
+function renderReqSelectedCategories() {
+  const container = document.getElementById('reqSelectedCategories');
+  if (!container) return;
+  container.innerHTML = reqSelectedCategoryIds.map(id => {
+    const cat = allCategories.find(c => c.category_id === id);
+    return cat ? `
+      <span class="category-tag">
+        ${cat.title}
+        <button onclick="toggleReqCategory(${id})" type="button">×</button>
+      </span>
+    ` : '';
+  }).join('');
+}
+
+// ==========================================
+// FOUND COMPANY MODAL
+// ==========================================
+
+let pendingFoundRequestId = null;
+let foundCompanyId = null;
+let allCompanies = [];
+
+async function openFoundCompanyModal(requestId) {
+  pendingFoundRequestId = requestId;
+  foundCompanyId = null;
+  document.getElementById('foundCompanyInput').value = '';
+  document.getElementById('foundCompanyDropdown').innerHTML = '';
+  document.getElementById('foundCompanyDropdown').classList.remove('show');
+  document.getElementById('foundCompanyChip').style.display = 'none';
+  document.getElementById('foundCompanyChip').innerHTML = '';
+
+  // Load companies once per modal open
+  if (allCompanies.length === 0) {
+    const { data } = await supabaseClient
+      .from('Companies')
+      .select('company_id, company_name')
+      .order('company_name');
+    allCompanies = data || [];
+  }
+
+  document.getElementById('foundCompanyModal').style.display = 'block';
+}
+
+function closeFoundCompanyModal() {
+  document.getElementById('foundCompanyModal').style.display = 'none';
+  pendingFoundRequestId = null;
+  foundCompanyId = null;
+}
+
+function showFoundCompanyDropdown() {
+  renderFoundCompanyDropdown(document.getElementById('foundCompanyInput').value);
+}
+
+function searchFoundCompany(query) {
+  if (foundCompanyId) {
+    foundCompanyId = null;
+    document.getElementById('foundCompanyChip').style.display = 'none';
+  }
+  renderFoundCompanyDropdown(query);
+}
+
+function renderFoundCompanyDropdown(query) {
+  const dropdown = document.getElementById('foundCompanyDropdown');
+  const q = (query || '').toLowerCase().trim();
+
+  const filtered = q
+    ? allCompanies.filter(c => c.company_name.toLowerCase().includes(q))
+    : allCompanies;
+
+  if (filtered.length === 0) {
+    dropdown.classList.remove('show');
+    return;
+  }
+
+  dropdown.innerHTML = filtered.map(c => `
+    <div class="category-option" onclick="selectFoundCompany(${c.company_id}, '${c.company_name.replace(/'/g, "\\'")}')">
+      ${c.company_name}
+    </div>
+  `).join('');
+  dropdown.classList.add('show');
+}
+
+function selectFoundCompany(companyId, companyName) {
+  foundCompanyId = companyId;
+  document.getElementById('foundCompanyInput').value = companyName;
+  document.getElementById('foundCompanyDropdown').classList.remove('show');
+
+  const chip = document.getElementById('foundCompanyChip');
+  chip.style.display = 'block';
+  chip.innerHTML = `
+    <span class="category-tag" style="font-size:0.85rem;">
+      ${companyName}
+      <button type="button" onclick="clearFoundCompany()">×</button>
+    </span>
+  `;
+}
+
+function clearFoundCompany() {
+  foundCompanyId = null;
+  document.getElementById('foundCompanyInput').value = '';
+  document.getElementById('foundCompanyChip').style.display = 'none';
+}
+
+async function confirmMarkAsFound() {
+  if (!pendingFoundRequestId) return;
+
+  const input = document.getElementById('foundCompanyInput').value.trim();
+  const updates = {
+    status: 'found',
+    updated_at: new Date().toISOString(),
+    found_company_id: foundCompanyId || null,
+    found_company_name: !foundCompanyId && input ? input : null
+  };
+
+  const { error } = await supabaseClient
+    .from('student_practice_requests')
+    .update(updates)
+    .eq('request_id', pendingFoundRequestId);
+
+  if (error) { showToast('Error: ' + error.message, 'error'); return; }
+
+  await loadPracticeRequests(currentProfile.id);
+  closeFoundCompanyModal();
+}
+
+// Close found-company dropdown when clicking outside
+document.addEventListener('click', function(e) {
+  const input = document.getElementById('foundCompanyInput');
+  const dropdown = document.getElementById('foundCompanyDropdown');
+  if (dropdown && input && !input.contains(e.target) && !dropdown.contains(e.target)) {
+    dropdown.classList.remove('show');
+  }
+});
+
+// ==========================================
+// DELETE ACCOUNT (GDPR Art. 17)
+// ==========================================
+
+function openDeleteAccountModal() {
+  document.getElementById('deleteConfirmInput').value = '';
+  document.getElementById('deleteAccountError').style.display = 'none';
+  document.getElementById('deleteAccountModal').style.display = 'block';
+}
+
+function closeDeleteAccountModal() {
+  document.getElementById('deleteAccountModal').style.display = 'none';
+}
+
+async function confirmDeleteAccount() {
+  const input = document.getElementById('deleteConfirmInput').value.trim();
+  const errorEl = document.getElementById('deleteAccountError');
+
+  if (input !== 'DELETE') {
+    errorEl.textContent = 'Please type DELETE exactly to confirm.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  errorEl.style.display = 'none';
+
+  const session = getCurrentSession();
+  if (!session || !currentProfile) return;
+
+  try {
+    // 1. Delete CV file from storage
+    if (currentProfile.cv_url) {
+      const cvPath = currentProfile.cv_url.split('/practice-files/')[1]?.split('?')[0];
+      if (cvPath) {
+        await supabaseClient.storage.from('practice-files').remove([decodeURIComponent(cvPath)]);
+      }
+    }
+
+    // 2. Delete avatar from storage
+    if (currentProfile.photo_url) {
+      const photoPath = currentProfile.photo_url.split('/foto/')[1]?.split('?')[0];
+      if (photoPath) {
+        await supabaseClient.storage.from('foto').remove([decodeURIComponent(photoPath)]);
+      }
+    }
+
+    // 3. Delete user record — cascades to student_profiles, applications,
+    //    student_categories, Student_links, student_practice_requests, etc.
+    const { error } = await supabaseClient
+      .from('Users')
+      .delete()
+      .eq('user_id', session.userId);
+
+    if (error) throw error;
+
+    // 4. Clear session and redirect
+    localStorage.removeItem('userId');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userLogin');
+    localStorage.removeItem('isLoggedIn');
+
+    window.location.href = 'index.html';
+
+  } catch (err) {
+    console.error('Delete account error:', err);
+    errorEl.textContent = 'Error: ' + err.message;
+    errorEl.style.display = 'block';
+  }
 }

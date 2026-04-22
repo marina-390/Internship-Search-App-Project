@@ -1,3 +1,18 @@
+function buildExpandable(text, key) {
+  const LIMIT = 200;
+  if (text.length <= LIMIT) return text;
+  return `<span id="exp-short-${key}">${text.slice(0, LIMIT)}… <a href="javascript:void(0)" onclick="toggleExpand('${key}')">Show more</a></span>` +
+         `<span id="exp-full-${key}" style="display:none;">${text} <a href="javascript:void(0)" onclick="toggleExpand('${key}')">Show less</a></span>`;
+}
+
+function toggleExpand(key) {
+  const s = document.getElementById('exp-short-' + key);
+  const f = document.getElementById('exp-full-'  + key);
+  const expanded = f.style.display !== 'none';
+  s.style.display = expanded ? 'inline' : 'none';
+  f.style.display = expanded ? 'none'   : 'inline';
+}
+
 async function loadInternshipDetail(positionId) {
     try {
         const normalizedPositionId = /^\d+$/.test(String(positionId))
@@ -97,29 +112,38 @@ async function loadInternshipDetail(positionId) {
         const displayY = document.getElementById('dYTunnus');
         if (displayY) displayY.textContent = company?.y_tunnus || 'N/A';
   
-        // DB has no 'responsibilities' column — 'description' = About Us, 'requirements' = Requirements
-        // displayResponsibilities shows requirements; pReqs also shows requirements (same field)
+        const descSection = document.getElementById('descriptionSection');
+        const descEl = document.getElementById('displayDescription');
+        if (descEl) {
+            const descValue = position.description != null ? String(position.description).trim() : '';
+            if (descValue !== '') {
+                descEl.innerHTML = buildExpandable(descValue, 'desc');
+            } else if (descSection) {
+                descSection.style.display = 'none';
+            }
+        }
+
         const responsibilitiesEl = document.getElementById('displayResponsibilities');
         if (responsibilitiesEl) {
-            const requirementsValue = position.requirements != null ? String(position.requirements).trim() : '';
-            if (requirementsValue !== '') {
-                responsibilitiesEl.textContent = requirementsValue;
+            const respValue = position.responsibilities != null ? String(position.responsibilities).trim() : '';
+            if (respValue !== '') {
+                responsibilitiesEl.innerHTML = buildExpandable(respValue, 'resp');
             } else {
                 responsibilitiesEl.closest('.card-content').style.display = 'none';
             }
         }
-  
+
         const reqsElement = document.getElementById('pReqs');
-        if (reqsElement) reqsElement.textContent = position.requirements != null ? String(position.requirements) : '';
+        if (reqsElement) {
+            const reqs = position.requirements != null ? String(position.requirements).trim() : '';
+            reqsElement.innerHTML = reqs ? buildExpandable(reqs, 'reqs') : '';
+        }
 
         // 5. COMPANY CARD
         if (document.getElementById('dCompanyDesc')) document.getElementById('dCompanyDesc').textContent = company?.description || '';
         if (document.getElementById('dWebsite')) document.getElementById('dWebsite').textContent = company?.website || 'N/A';
         if (document.getElementById('dHeadquarters')) document.getElementById('dHeadquarters').textContent = company?.city || 'N/A';
         if (document.getElementById('dYTunnus')) document.getElementById('dYTunnus').textContent = company?.y_tunnus || 'N/A';
-  
-        if (document.getElementById('displayResponsibilities')) document.getElementById('displayResponsibilities').textContent = position.responsibilities || 'No responsibilities.';
-        if (document.getElementById('pReqs')) document.getElementById('pReqs').textContent = position.requirements || 'No requirements.';
 
         // --- 4. FAVORITES LOGIC ---
         // --- 4. FAVORITES LOGIC ---
@@ -183,7 +207,7 @@ async function loadInternshipDetail(positionId) {
     } catch (err) {
         console.error('Error loading detail:', err);
         const message = err?.message || err?.toString() || 'Unknown error';
-        alert("Could not load details: " + message);
+        showToast("Could not load details: " + message, 'error');
     }
 }
 
@@ -192,7 +216,7 @@ async function loadInternshipDetail(positionId) {
 async function openApplyModal() {
   const session = requireAuth();
   if (!session || session.role !== 1) {
-      alert("Student login required to apply.");
+      showToast("Student login required to apply.", 'warning');
       return;
   }
 
@@ -204,7 +228,7 @@ async function openApplyModal() {
 
   if (error || !profile) {
       console.error("Profile check error:", error);
-      alert("Student profile not found. Please complete your profile first.");
+      showToast("Student profile not found. Please complete your profile first.", 'warning');
       return;
   }
 
@@ -392,19 +416,19 @@ const { error: dbError } = await supabaseClient
 
 if (dbError) {
 console.error("Insert Error:", dbError);
-alert("Error: " + dbError.message);
+showToast("Error: " + dbError.message, 'error');
 } else {
-alert("Application sent!");
+showToast("Application sent!", 'success');
 }
 
         if (dbError) throw dbError;
 
-        alert("Application sent!");
+        showToast("Application sent!", 'success');
         closeApplyModal();
 
     } catch (err) {
         console.error(err);
-        alert("Error: " + err.message);
+        showToast("Error: " + err.message, 'error');
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerText = "Submit Application";
@@ -581,7 +605,7 @@ async function viewStudentProfile(studentId) {
       .single();
 
     if (error || !student) {
-      alert('Student profile not found.');
+      showToast('Student profile not found.', 'warning');
       return;
     }
 
@@ -601,7 +625,7 @@ async function viewStudentProfile(studentId) {
     alert(profileHTML);
   } catch (err) {
     console.error('Error viewing student profile:', err);
-    alert('Error loading student profile: ' + err.message);
+    showToast('Error loading student profile: ' + err.message, 'error');
   }
 }
 
@@ -615,7 +639,7 @@ async function reviewApplication(applicationId, studentName) {
 
     if (error) throw error;
 
-    alert(`Application from ${studentName} marked as "in review".`);
+    showToast(`Application from ${studentName} marked as "in review".`, 'success');
     
     // Reload applications
     if (window.currentPosition && window.currentPosition.company_id) {
@@ -623,7 +647,7 @@ async function reviewApplication(applicationId, studentName) {
     }
   } catch (err) {
     console.error('Error reviewing application:', err);
-    alert('Error updating application: ' + err.message);
+    showToast('Error updating application: ' + err.message, 'error');
   }
 }
 
@@ -639,7 +663,7 @@ async function deleteApplicationFromSidebar(applicationId, studentName) {
 
     if (error) throw error;
 
-    alert(`Application from ${studentName} deleted.`);
+    showToast(`Application from ${studentName} deleted.`, 'success');
     
     // Reload applications
     if (window.currentPosition && window.currentPosition.company_id) {
@@ -647,6 +671,6 @@ async function deleteApplicationFromSidebar(applicationId, studentName) {
     }
   } catch (err) {
     console.error('Error deleting application:', err);
-    alert('Error deleting application: ' + err.message);
+    showToast('Error deleting application: ' + err.message, 'error');
   }
 }
