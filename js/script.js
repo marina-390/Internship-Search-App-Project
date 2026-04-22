@@ -149,8 +149,13 @@ document.addEventListener('click', function(event) {
 
 // Get profile URL based on role
 function getProfileUrl(role) {
-  if (role === 0) return 'admin.html';
-  return role === 2 ? 'company-profile.html' : 'student-profile.html';
+  // Detect if we're in footer_info subfolder
+  const pathSegments = window.location.pathname.split('/').filter(Boolean);
+  const isFooterPage = pathSegments.includes('footer_info');
+  
+  if (role === 0) return isFooterPage ? '../admin.html' : 'admin.html';
+  if (role === 2) return isFooterPage ? '../company-profile.html' : 'company-profile.html';
+  return isFooterPage ? '../student-profile.html' : 'student-profile.html';
 }
 
 // Get user data (photo/logo, name) - supports both students/companies
