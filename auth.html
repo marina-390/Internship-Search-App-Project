@@ -145,415 +145,725 @@
       background-color: var(--border-color);
     }
 
-  </style>
-</head>
-<body>
-  <nav>
-    <div class="nav-container">
-      <a href="index.html" class="logo">InternHub</a>
-      <ul class="nav-menu">
-        <li class="nav-item">
-          <a href="internships.html" class="nav-link">Internships</a>
-        </li>
-        <li class="nav-item">
-          <a href="auth.html" class="nav-link active">Login/Register</a>
-        </li>
-      </ul>
-      <div class="hamburger">
-        <span></span>
-        <span></span>
-        <span></span>
+      .divider::before,
+      .divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background-color: var(--border-color);
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="nav-container">
+        <a href="index.html" class="logo">InternHub</a>
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a href="internships.html" class="nav-link">Internships</a>
+          </li>
+          <li class="nav-item">
+            <a href="auth.html" class="nav-link active">Login/Register</a>
+          </li>
+        </ul>
+        <div class="hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
       </div>
-    </div>
-  </nav>
+    </nav>
 
-  <section class="section" style="background: linear-gradient(135deg, var(--primary-color) 0%, #667eea 100%); color: white; padding: 3rem 1rem;">
-    <div class="container text-center">
-      <h1 style="color: white; margin-bottom: 0.5rem;">Join InternHub</h1>
-      <p>Start your internship journey today</p>
-    </div>
-  </section>
+    <section
+      class="section"
+      style="
+        background: linear-gradient(
+          135deg,
+          var(--primary-color) 0%,
+          #667eea 100%
+        );
+        color: white;
+        padding: 3rem 1rem;
+      "
+    >
+      <div class="container text-center">
+        <h1 style="color: white; margin-bottom: 0.5rem">Join InternHub</h1>
+        <p>Start your internship journey today</p>
+      </div>
+    </section>
 
-  <section class="section">
-    <div class="container">
-      <div class="auth-container">
-        <div class="form-container">
-          <div class="form-tabs">
-            <button class="form-tab active" onclick="switchTab('login')">Login</button>
-            <button class="form-tab" onclick="switchTab('register')">Register</button>
-          </div>
-
-          <div id="loginForm" class="auth-form-wrapper active">
-            <h2 style="margin-bottom: 1.5rem;">Welcome Back</h2>
-            <form id="loginForm_form" action="javascript:void(0)">
-              <div class="form-group">
-                <label for="loginEmail">Email Address</label>
-                <input 
-                  type="email" 
-                  id="loginEmail" 
-                  name="email" 
-                  placeholder="you@example.com" 
-                  required
-                />
-              </div>
-
-              <div class="form-group">
-                <label for="loginPassword">Password</label>
-                <div class="password-toggle">
-                  <input 
-                    type="password" 
-                    id="loginPassword" 
-                    name="password" 
-                    placeholder="Enter your password" 
-                    required
-                  />
-                  <button 
-                    type="button" 
-                    onclick="togglePasswordVisibility('loginPassword')"
-                  >
-                    👁️
-                  </button>
-                </div>
-              </div>
-
-              <div class="checkbox-group" style="margin-bottom: 1.5rem;">
-                <input type="checkbox" id="rememberMe" name="rememberMe">
-                <label for="rememberMe" style="margin: 0; font-weight: 400;">Remember me</label>
-              </div>
-
-              <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">
-                Sign In
+    <section class="section">
+      <div class="container">
+        <div class="auth-container">
+          <div class="form-container">
+            <div class="form-tabs">
+              <button class="form-tab active" onclick="switchTab('login')">
+                Login
               </button>
-
-              <a href="#" onclick="showForgotPrompt()">Forgot Password?</a>
-            </form>
-
-            <div class="divider">or</div>
-
-            <div class="social-login">
-              <button class="social-btn google" onclick="signInWithGoogle()">
-                <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M47.5 24.6c0-1.6-.1-3.1-.4-4.6H24v8.7h13.2c-.6 3-2.4 5.5-5 7.2v6h8.1c4.7-4.4 7.2-10.8 7.2-17.3z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-8.1-6c-2.1 1.4-4.8 2.3-7.8 2.3-6 0-11.1-4-12.9-9.5H2.8v6.2C6.8 42.7 14.8 48 24 48z"/><path fill="#FBBC05" d="M11.1 29c-.5-1.4-.7-2.9-.7-4.5s.3-3.1.7-4.5v-6.2H2.8C1 17.4 0 20.6 0 24s1 6.6 2.8 9.2l8.3-4.2z"/><path fill="#EA4335" d="M24 9.5c3.4 0 6.4 1.2 8.8 3.4l6.5-6.5C35.9 2.1 30.5 0 24 0 14.8 0 6.8 5.3 2.8 13.3l8.3 4.2C12.9 13.5 18 9.5 24 9.5z"/></svg>
-                Google
-              </button>
-              <button class="social-btn github" onclick="signInWithGitHub()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="#333"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.54-1.37-1.33-1.74-1.33-1.74-1.08-.74.08-.73.08-.73 1.2.09 1.83 1.23 1.83 1.23 1.07 1.83 2.8 1.3 3.48 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
-                GitHub
-              </button>
-              <button class="social-btn linkedin" onclick="signInWithLinkedIn()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.07 2.07 0 1 1 0-4.14 2.07 2.07 0 0 1 0 4.14zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45C23.21 24 24 23.23 24 22.28V1.72C24 .77 23.21 0 22.22 0z"/></svg>
-                LinkedIn
+              <button class="form-tab" onclick="switchTab('register')">
+                Register
               </button>
             </div>
 
-            <p class="text-center text-muted" style="margin-top: 1.5rem;">
-              Don't have an account? 
-              <a href="#" onclick="switchTab('register'); return false;" class="text-primary">
-                Sign up here
-              </a>
-            </p>
-          </div>
+            <div id="loginForm" class="auth-form-wrapper active">
+              <h2 style="margin-bottom: 1.5rem">Welcome Back</h2>
+              <form id="loginForm_form" action="javascript:void(0)">
+                <div class="form-group">
+                  <label for="loginEmail">Email Address</label>
+                  <input
+                    type="email"
+                    id="loginEmail"
+                    name="email"
+                    placeholder="you@example.com"
+                    required
+                  />
+                </div>
 
-          <div id="registerForm" class="auth-form-wrapper">
-            <div id="registerFormContent">
-            <h2 style="margin-bottom: 1.5rem;">Create Your Account</h2>
-            <form id="registerForm_form" action="javascript:void(0)">
-              <div class="form-group" style="margin-bottom: 1.5rem;">
-                <label style="margin-bottom: 1rem;">I am a...</label>
-                <div style="display: flex; gap: 1rem;">
-                  <label class="checkbox-group">
-                    <input 
-                      type="radio" 
-                      name="role" 
-                      value="student" 
-                      checked
-                      onchange="toggleRoleFields()"
+                <div class="form-group">
+                  <label for="loginPassword">Password</label>
+                  <div class="password-toggle">
+                    <input
+                      type="password"
+                      id="loginPassword"
+                      name="password"
+                      placeholder="Enter your password"
+                      required
                     />
-                    <span style="margin-left: 0.5rem;">🎓 Student</span>
-                  </label>
-                  <label class="checkbox-group">
-                    <input 
-                      type="radio" 
-                      name="role" 
-                      value="company"
-                      onchange="toggleRoleFields()"
+                    <button
+                      type="button"
+                      onclick="togglePasswordVisibility('loginPassword')"
+                    >
+                      👁️
+                    </button>
+                  </div>
+                </div>
+
+                <div class="checkbox-group" style="margin-bottom: 1.5rem">
+                  <input type="checkbox" id="rememberMe" name="rememberMe" />
+                  <label for="rememberMe" style="margin: 0; font-weight: 400"
+                    >Remember me</label
+                  >
+                </div>
+
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  style="width: 100%; margin-bottom: 1rem"
+                >
+                  Sign In
+                </button>
+
+                <a href="#" onclick="showForgotPrompt()">Forgot Password?</a>
+              </form>
+
+              <div class="divider">or</div>
+
+              <div class="social-login">
+                <button class="social-btn google" onclick="signInWithGoogle()">
+                  <svg width="18" height="18" viewBox="0 0 48 48">
+                    <path
+                      fill="#4285F4"
+                      d="M47.5 24.6c0-1.6-.1-3.1-.4-4.6H24v8.7h13.2c-.6 3-2.4 5.5-5 7.2v6h8.1c4.7-4.4 7.2-10.8 7.2-17.3z"
                     />
-                    <span style="margin-left: 0.5rem;">💼 Company/Employer</span>
-                  </label>
-                </div>
+                    <path
+                      fill="#34A853"
+                      d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-8.1-6c-2.1 1.4-4.8 2.3-7.8 2.3-6 0-11.1-4-12.9-9.5H2.8v6.2C6.8 42.7 14.8 48 24 48z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M11.1 29c-.5-1.4-.7-2.9-.7-4.5s.3-3.1.7-4.5v-6.2H2.8C1 17.4 0 20.6 0 24s1 6.6 2.8 9.2l8.3-4.2z"
+                    />
+                    <path
+                      fill="#EA4335"
+                      d="M24 9.5c3.4 0 6.4 1.2 8.8 3.4l6.5-6.5C35.9 2.1 30.5 0 24 0 14.8 0 6.8 5.3 2.8 13.3l8.3 4.2C12.9 13.5 18 9.5 24 9.5z"
+                    />
+                  </svg>
+                  Google
+                </button>
+                <button class="social-btn github" onclick="signInWithGitHub()">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="#333">
+                    <path
+                      d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.54-1.37-1.33-1.74-1.33-1.74-1.08-.74.08-.73.08-.73 1.2.09 1.83 1.23 1.83 1.23 1.07 1.83 2.8 1.3 3.48 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"
+                    />
+                  </svg>
+                  GitHub
+                </button>
+                <button
+                  class="social-btn linkedin"
+                  onclick="signInWithLinkedIn()"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="#0A66C2"
+                  >
+                    <path
+                      d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.07 2.07 0 1 1 0-4.14 2.07 2.07 0 0 1 0 4.14zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45C23.21 24 24 23.23 24 22.28V1.72C24 .77 23.21 0 22.22 0z"
+                    />
+                  </svg>
+                  LinkedIn
+                </button>
               </div>
 
-              <div class="form-row">
-                <div class="form-group" style="margin-bottom: 1.5rem;">
-                  <label for="firstName">First Name</label>
-                  <input type="text" id="firstName" name="firstName" placeholder="John" required maxlength="15" />
-                </div>
+              <p class="text-center text-muted" style="margin-top: 1.5rem">
+                Don't have an account?
+                <a
+                  href="#"
+                  onclick="
+                    switchTab('register');
+                    return false;
+                  "
+                  class="text-primary"
+                >
+                  Sign up here
+                </a>
+              </p>
+            </div>
 
-                <div class="form-group" style="margin-bottom: 1.5rem;">
-                  <label for="lastName">Last Name</label>
-                  <input type="text" id="lastName" name="lastName" placeholder="Doe" required maxlength="15" />
-                </div>
-              </div>
+            <div id="registerForm" class="auth-form-wrapper">
+              <div id="registerFormContent">
+                <h2 style="margin-bottom: 1.5rem">Create Your Account</h2>
+                <form id="registerForm_form" action="javascript:void(0)">
+                  <div class="form-group" style="margin-bottom: 1.5rem">
+                    <label style="margin-bottom: 1rem">I am a...</label>
+                    <div style="display: flex; gap: 1rem">
+                      <label class="checkbox-group">
+                        <input
+                          type="radio"
+                          name="role"
+                          value="student"
+                          checked
+                          onchange="toggleRoleFields()"
+                        />
+                        <span style="margin-left: 0.5rem">🎓 Student</span>
+                      </label>
+                      <label class="checkbox-group">
+                        <input
+                          type="radio"
+                          name="role"
+                          value="company"
+                          onchange="toggleRoleFields()"
+                        />
+                        <span style="margin-left: 0.5rem"
+                          >💼 Company/Employer</span
+                        >
+                      </label>
+                    </div>
+                  </div>
 
-              <div class="form-group">
-                <label for="regEmail">Email Address</label>
-                <input 
-                  type="email" 
-                  id="regEmail" 
-                  name="email" 
-                  placeholder="you@example.com" 
-                  required
-                />
-              </div>
+                  <div class="form-row">
+                    <div class="form-group" style="margin-bottom: 1.5rem">
+                      <label for="firstName">First Name</label>
+                      <input
+                        type="text"
+                        id="firstName"
+                        name="firstName"
+                        placeholder="First name"
+                        required
+                        maxlength="15"
+                      />
+                    </div>
 
-              <div id="studentFields">
-                <div class="form-row">
-                  <div class="form-group" style="margin-bottom: 1.5rem;">
-                    <label for="eduType">Education Level</label>
-                    <select id="eduType" name="eduType">
-                      <option value="" disabled selected>Select level...</option>
-                      <option value="university">University / Applied Sciences</option>
-                      <option value="college">College / Vocational</option>
-                      <option value="school">High School / Secondary</option>
-                      <option value="other">Other</option>
-                    </select>
+                    <div class="form-group" style="margin-bottom: 1.5rem">
+                      <label for="lastName">Last Name</label>
+                      <input
+                        type="text"
+                        id="lastName"
+                        name="lastName"
+                        placeholder="Last name"
+                        required
+                        maxlength="15"
+                      />
+                    </div>
                   </div>
 
                   <div class="form-group">
-                    <label for="major">Major</label>
-                    <input 
-                      type="text" 
-                      id="major" 
-                      name="major" 
-                      placeholder="e.g., Computer Science"
+                    <label for="regEmail">Email Address</label>
+                    <input
+                      type="email"
+                      id="regEmail"
+                      name="email"
+                      placeholder="you@example.com"
+                      required
                     />
                   </div>
-                </div> </div> <div id="companyFields" style="display: none;">
-                <div class="form-group">
-                  <label for="jobTitle">Your Job Title</label>
-                  <input 
-                    type="text" 
-                    id="jobTitle" 
-                    name="jobTitle" 
-                    placeholder="e.g., HR Manager, Recruiter"
-                  />
-                </div>
-                
-                <div class="form-group">
-                  <label for="companyName">Company Name</label>
-                  <input type="text" id="companyName" name="companyName" placeholder="Your company name" />
-                </div>
-              
-                <div class="form-group">
-                  <label for="companyWebsite">Company Website</label>
-                  <input 
-                    type="text" 
-                    id="companyWebsite" 
-                    name="companyWebsite" 
-                    placeholder="https://www.yourcompany.com"
-                  />
-                </div>
-                
-                <div class="form-group">
-                  <label for="yTunnus">Y-Tunnus <small style="color: #666;">(Finnish Business ID, required)</small></label>
-                  <input 
-                    type="text"
-                    id="yTunnus"
-                    name="yTunnus"
-                    placeholder="123456-7"
-                    pattern="[0-9]{6,7}-[0-9]"
-                    maxlength="9"
-                  />
-                  <small class="text-muted">Format: 6-7 digits - 1 digit</small>
-                </div>
-              </div> <div class="form-group">
-                <label for="regPassword">Password</label>
-                <div class="password-toggle">
-                  <input 
-                    type="password" 
-                    id="regPassword" 
-                    name="password" 
-                    placeholder="At least 6 characters" 
-                    required
-                  />
-                  <button 
-                    type="button" 
-                    onclick="togglePasswordVisibility('regPassword')"
+
+                  <div id="studentFields">
+                    <div class="form-row">
+                      <div class="form-group" style="margin-bottom: 1.5rem">
+                        <label for="eduType">Education Level</label>
+                        <select id="eduType" name="eduType">
+                          <option value="" disabled selected>
+                            Select level...
+                          </option>
+                          <option value="university">
+                            University / Applied Sciences
+                          </option>
+                          <option value="college">College / Vocational</option>
+                          <option value="school">
+                            High School / Secondary
+                          </option>
+                          <option value="other">Other</option>
+                        </select>
+                      </div>
+
+                      <div class="form-group">
+                        <label for="major">Major</label>
+                        <input
+                          type="text"
+                          id="major"
+                          name="major"
+                          placeholder="e.g., Computer Science"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div id="companyFields" style="display: none">
+                    <div class="form-group">
+                      <label for="jobTitle">Your Job Title</label>
+                      <input
+                        type="text"
+                        id="jobTitle"
+                        name="jobTitle"
+                        placeholder="e.g., HR Manager, Recruiter"
+                      />
+                    </div>
+
+                    <div class="form-group">
+                      <label for="companyName">Company Name</label>
+                      <input
+                        type="text"
+                        id="companyName"
+                        name="companyName"
+                        placeholder="Your company name"
+                      />
+                    </div>
+
+                    <div class="form-group">
+                      <label for="companyWebsite">Company Website</label>
+                      <input
+                        type="text"
+                        id="companyWebsite"
+                        name="companyWebsite"
+                        placeholder="https://www.yourcompany.com"
+                      />
+                    </div>
+
+                    <div class="form-group">
+                      <label for="yTunnus"
+                        >Y-Tunnus
+                        <small style="color: #666"
+                          >(Finnish Business ID, required)</small
+                        ></label
+                      >
+                      <input
+                        type="text"
+                        id="yTunnus"
+                        name="yTunnus"
+                        placeholder="123456-7"
+                        pattern="[0-9]{6,7}-[0-9]"
+                        maxlength="9"
+                      />
+                      <small class="text-muted"
+                        >Format: 6-7 digits - 1 digit</small
+                      >
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="regPassword">Password</label>
+                    <div class="password-toggle">
+                      <input
+                        type="password"
+                        id="regPassword"
+                        name="password"
+                        placeholder="At least 8 characters"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onclick="togglePasswordVisibility('regPassword')"
+                      >
+                        👁️
+                      </button>
+                    </div>
+                    <small class="text-muted">
+                      Password: Min 8 chars, 2 numbers (0-9), and 2 special
+                      symbols (!!, @#, etc.)
+                    </small>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <div class="password-toggle">
+                      <input
+                        type="password"
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        placeholder="Confirm your password"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onclick="togglePasswordVisibility('confirmPassword')"
+                      >
+                        👁️
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="checkbox-group" style="margin-bottom: 1.5rem">
+                    <input
+                      type="checkbox"
+                      id="agreeTerms"
+                      name="agreeTerms"
+                      required
+                    />
+                    <label for="agreeTerms" style="margin: 0; font-weight: 400">
+                      I agree to the <a href="#">Terms of Service</a> and
+                      <a href="#">Privacy Policy</a>
+                    </label>
+                  </div>
+
+                  <button
+                    type="submit"
+                    class="btn btn-primary"
+                    style="width: 100%; margin-bottom: 1rem"
                   >
-                    👁️
+                    Create Account
+                  </button>
+                </form>
+
+                <div class="divider" id="registerSocialDivider">or</div>
+
+                <div class="social-login" id="registerSocialLogin">
+                  <button
+                    class="social-btn google"
+                    onclick="signInWithGoogle()"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 48 48">
+                      <path
+                        fill="#4285F4"
+                        d="M47.5 24.6c0-1.6-.1-3.1-.4-4.6H24v8.7h13.2c-.6 3-2.4 5.5-5 7.2v6h8.1c4.7-4.4 7.2-10.8 7.2-17.3z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-8.1-6c-2.1 1.4-4.8 2.3-7.8 2.3-6 0-11.1-4-12.9-9.5H2.8v6.2C6.8 42.7 14.8 48 24 48z"
+                      />
+                      <path
+                        fill="#FBBC05"
+                        d="M11.1 29c-.5-1.4-.7-2.9-.7-4.5s.3-3.1.7-4.5v-6.2H2.8C1 17.4 0 20.6 0 24s1 6.6 2.8 9.2l8.3-4.2z"
+                      />
+                      <path
+                        fill="#EA4335"
+                        d="M24 9.5c3.4 0 6.4 1.2 8.8 3.4l6.5-6.5C35.9 2.1 30.5 0 24 0 14.8 0 6.8 5.3 2.8 13.3l8.3 4.2C12.9 13.5 18 9.5 24 9.5z"
+                      />
+                    </svg>
+                    Google
+                  </button>
+                  <button
+                    class="social-btn github"
+                    onclick="signInWithGitHub()"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#333">
+                      <path
+                        d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.54-1.37-1.33-1.74-1.33-1.74-1.08-.74.08-.73.08-.73 1.2.09 1.83 1.23 1.83 1.23 1.07 1.83 2.8 1.3 3.48 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"
+                      />
+                    </svg>
+                    GitHub
+                  </button>
+                  <button
+                    class="social-btn linkedin"
+                    onclick="signInWithLinkedIn()"
+                  >
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="#0A66C2"
+                    >
+                      <path
+                        d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.07 2.07 0 1 1 0-4.14 2.07 2.07 0 0 1 0 4.14zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45C23.21 24 24 23.23 24 22.28V1.72C24 .77 23.21 0 22.22 0z"
+                      />
+                    </svg>
+                    LinkedIn
                   </button>
                 </div>
-                <small class="text-muted">
-                  Password: Min 8 chars, 2 numbers (0-9), and 2 special symbols (!!, @#, etc.)
-                </small>
-              </div>
 
-              <div class="form-group">
-                <label for="confirmPassword">Confirm Password</label>
-                <div class="password-toggle">
-                  <input 
-                    type="password" 
-                    id="confirmPassword" 
-                    name="confirmPassword" 
-                    placeholder="Confirm your password" 
-                    required
-                  />
-                  <button 
-                    type="button" 
-                    onclick="togglePasswordVisibility('confirmPassword')"
+                <p class="text-center text-muted" style="margin-top: 1.5rem">
+                  Already have an account?
+                  <a
+                    href="#"
+                    onclick="
+                      switchTab('login');
+                      return false;
+                    "
+                    class="text-primary"
                   >
-                    👁️
+                    Sign in here
+                  </a>
+                </p>
+              </div>
+              <div
+                id="emailSentMessage"
+                style="display: none; text-align: center; padding: 2rem 0"
+              >
+                <div style="font-size: 3rem; margin-bottom: 1rem">📧</div>
+                <h3 style="margin-bottom: 1rem">Check your email!</h3>
+                <p>
+                  We sent a confirmation link to
+                  <strong id="sentToEmail"></strong>
+                </p>
+                <p style="color: #666; font-size: 0.9rem; margin-top: 0.5rem">
+                  Click the link to activate your account. Check your spam
+                  folder if you don't see it.
+                </p>
+                <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; align-items: center;">
+                  <button onclick="resendConfirmEmail()" class="btn btn-secondary" style="width: 100%">
+                    Resend confirmation email
+                  </button>
+                  <button onclick="switchTab('login')" class="btn btn-primary" style="width: 100%">
+                    Back to Sign In
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
 
-              <div class="checkbox-group" style="margin-bottom: 1.5rem;">
-                <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
-                <label for="agreeTerms" style="margin: 0; font-weight: 400;">
-                  I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
-                </label>
+          <!-- Info Section -->
+          <div class="benefits-section">
+            <h2 style="margin-bottom: 2rem; color: var(--text-color)">
+              Why Join InternHub?
+            </h2>
+
+            <div class="benefits-grid" style="display: grid; gap: 1.5rem">
+              <div
+                class="benefit-card"
+                style="
+                  padding: 1.5rem;
+                  border-radius: 12px;
+                  border: 1px solid var(--border-color);
+                  background: white;
+                  transition:
+                    transform 0.2s ease,
+                    box-shadow 0.2s ease;
+                "
+              >
+                <div style="display: flex; align-items: flex-start; gap: 1rem">
+                  <span style="font-size: 1.5rem">📝</span>
+                  <div>
+                    <h4
+                      style="margin: 0 0 0.5rem 0; color: var(--primary-color)"
+                    >
+                      Save Your Progress
+                    </h4>
+                    <p
+                      style="
+                        margin: 0;
+                        font-size: 0.9rem;
+                        color: var(--text-light);
+                        line-height: 1.4;
+                      "
+                    >
+                      Save your applications and track your progress across
+                      multiple internship opportunities.
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">
-                Create Account
-              </button>
-            </form>
+              <div
+                class="benefit-card"
+                style="
+                  padding: 1.5rem;
+                  border-radius: 12px;
+                  border: 1px solid var(--border-color);
+                  background: white;
+                "
+              >
+                <div style="display: flex; align-items: flex-start; gap: 1rem">
+                  <span style="font-size: 1.5rem">❤️</span>
+                  <div>
+                    <h4
+                      style="margin: 0 0 0.5rem 0; color: var(--primary-color)"
+                    >
+                      Manage Favorites
+                    </h4>
+                    <p
+                      style="
+                        margin: 0;
+                        font-size: 0.9rem;
+                        color: var(--text-light);
+                        line-height: 1.4;
+                      "
+                    >
+                      Bookmark positions you're interested in and organize them
+                      into lists for easy access.
+                    </p>
+                  </div>
+                </div>
+              </div>
 
-            <div class="divider">or</div>
-
-            <div class="social-login">
-              <button class="social-btn google" onclick="signInWithGoogle()">
-                <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M47.5 24.6c0-1.6-.1-3.1-.4-4.6H24v8.7h13.2c-.6 3-2.4 5.5-5 7.2v6h8.1c4.7-4.4 7.2-10.8 7.2-17.3z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-8.1-6c-2.1 1.4-4.8 2.3-7.8 2.3-6 0-11.1-4-12.9-9.5H2.8v6.2C6.8 42.7 14.8 48 24 48z"/><path fill="#FBBC05" d="M11.1 29c-.5-1.4-.7-2.9-.7-4.5s.3-3.1.7-4.5v-6.2H2.8C1 17.4 0 20.6 0 24s1 6.6 2.8 9.2l8.3-4.2z"/><path fill="#EA4335" d="M24 9.5c3.4 0 6.4 1.2 8.8 3.4l6.5-6.5C35.9 2.1 30.5 0 24 0 14.8 0 6.8 5.3 2.8 13.3l8.3 4.2C12.9 13.5 18 9.5 24 9.5z"/></svg>
-                Google
-              </button>
-              <button class="social-btn github" onclick="signInWithGitHub()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="#333"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.54-1.37-1.33-1.74-1.33-1.74-1.08-.74.08-.73.08-.73 1.2.09 1.83 1.23 1.83 1.23 1.07 1.83 2.8 1.3 3.48 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
-                GitHub
-              </button>
-              <button class="social-btn linkedin" onclick="signInWithLinkedIn()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.07 2.07 0 1 1 0-4.14 2.07 2.07 0 0 1 0 4.14zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45C23.21 24 24 23.23 24 22.28V1.72C24 .77 23.21 0 22.22 0z"/></svg>
-                LinkedIn
-              </button>
-            </div>
-
-            <p class="text-center text-muted" style="margin-top: 1.5rem;">
-              Already have an account?
-              <a href="#" onclick="switchTab('login'); return false;" class="text-primary">
-                Sign in here
-              </a>
-            </p>
-            </div>
-            <div id="emailSentMessage" style="display:none; text-align:center; padding: 2rem 0;">
-              <div style="font-size: 3rem; margin-bottom: 1rem;">📧</div>
-              <h3 style="margin-bottom: 1rem;">Check your email!</h3>
-              <p>We sent a confirmation link to <strong id="sentToEmail"></strong></p>
-              <p style="color: #666; font-size: 0.9rem; margin-top: 0.5rem;">Click the link to activate your account. Check your spam folder if you don't see it.</p>
-              <button onclick="switchTab('login')" class="btn btn-primary" style="margin-top: 1.5rem;">Back to Sign In</button>
+              <div
+                class="benefit-card"
+                style="
+                  padding: 1.5rem;
+                  border-radius: 12px;
+                  border: 1px solid var(--border-color);
+                  background: white;
+                "
+              >
+                <div style="display: flex; align-items: flex-start; gap: 1rem">
+                  <span style="font-size: 1.5rem">💼</span>
+                  <div>
+                    <h4
+                      style="margin: 0 0 0.5rem 0; color: var(--primary-color)"
+                    >
+                      Build Your Profile
+                    </h4>
+                    <p
+                      style="
+                        margin: 0;
+                        font-size: 0.9rem;
+                        color: var(--text-light);
+                        line-height: 1.4;
+                      "
+                    >
+                      Create a professional profile that employers can view when
+                      reviewing your applications.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+      </div>
+    </section>
 
-        <!-- Info Section -->
-        <div class="benefits-section">
-          <h2 style="margin-bottom: 2rem; color: var(--text-color);">Why Join InternHub?</h2>
-        
-          <div class="benefits-grid" style="display: grid; gap: 1.5rem;">
-            
-            <div class="benefit-card" style="padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); background: white; transition: transform 0.2s ease, box-shadow 0.2s ease;">
-              <div style="display: flex; align-items: flex-start; gap: 1rem;">
-                <span style="font-size: 1.5rem;">📝</span>
-                <div>
-                  <h4 style="margin: 0 0 0.5rem 0; color: var(--primary-color);">Save Your Progress</h4>
-                  <p style="margin: 0; font-size: 0.9rem; color: var(--text-light); line-height: 1.4;">
-                    Save your applications and track your progress across multiple internship opportunities.
-                  </p>
-                </div>
-              </div>
-            </div>
-        
-            <div class="benefit-card" style="padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); background: white;">
-              <div style="display: flex; align-items: flex-start; gap: 1rem;">
-                <span style="font-size: 1.5rem;">❤️</span>
-                <div>
-                  <h4 style="margin: 0 0 0.5rem 0; color: var(--primary-color);">Manage Favorites</h4>
-                  <p style="margin: 0; font-size: 0.9rem; color: var(--text-light); line-height: 1.4;">
-                    Bookmark positions you're interested in and organize them into lists for easy access.
-                  </p>
-                </div>
-              </div>
-            </div>
-        
-        
-            <div class="benefit-card" style="padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); background: white;">
-              <div style="display: flex; align-items: flex-start; gap: 1rem;">
-                <span style="font-size: 1.5rem;">💼</span>
-                <div>
-                  <h4 style="margin: 0 0 0.5rem 0; color: var(--primary-color);">Build Your Profile</h4>
-                  <p style="margin: 0; font-size: 0.9rem; color: var(--text-light); line-height: 1.4;">
-                    Create a professional profile that employers can view when reviewing your applications.
-                  </p>
-            </div>
-            </div>
-          </div>
-
-              </div>
-            </div>
-        
-          </div>
+    <!-- Footer -->
+    <footer>
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>About InternHub</h4>
+          <ul>
+            <li><a href="footer_info/about-us.html">About Us</a></li>
+            <li><a href="footer_info/team.html">Our Team</a></li>
+            <li><a href="footer_info/contact.html">Contact</a></li>
+          </ul>
         </div>
-  </section>
 
-  <!-- Footer -->
-  <footer>
-    <div class="footer-content">
-      <div class="footer-section">
-        <h4>About InternHub</h4>
-        <ul>
-          <li><a href="footer_info/about-us.html">About Us</a></li>
-          <li><a href="footer_info/team.html">Our Team</a></li>
-          <li><a href="footer_info/contact.html">Contact</a></li>
-        </ul>
+        <div class="footer-section">
+          <h4>For Students</h4>
+          <ul>
+            <li>
+              <a href="footer_info/career-resources.html">Career Resources</a>
+            </li>
+            <li>
+              <a href="footer_info/resume-builder.html">Resume Builder</a>
+            </li>
+            <li>
+              <a href="footer_info/interview-tips.html">Interview Tips</a>
+            </li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h4>For Employers</h4>
+          <ul>
+            <li><a href="footer_info/company.html">Post Job</a></li>
+            <li>
+              <a href="footer_info/browse-candidates.html">Browse Candidates</a>
+            </li>
+            <li><a href="footer_info/support.html">Support</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h4>Legal</h4>
+          <ul>
+            <li>
+              <a href="footer_info/privacy-policy.html">Privacy Policy</a>
+            </li>
+            <li>
+              <a href="footer_info/terms-of-service.html">Terms of Service</a>
+            </li>
+            <li><a href="footer_info/cookie-policy.html">Cookie Policy</a></li>
+          </ul>
+        </div>
       </div>
 
-      <div class="footer-section">
-        <h4>For Students</h4>
-        <ul>
-          <li><a href="footer_info/career-resources.html">Career Resources</a></li>
-          <li><a href="footer_info/resume-builder.html">Resume Builder</a></li>
-          <li><a href="footer_info/interview-tips.html">Interview Tips</a></li>
-        </ul>
+      <div class="footer-bottom">
+        <p>
+          &copy; 2026 InternHub. All rights reserved. | Helping students find
+          their next opportunity
+        </p>
       </div>
+    </footer>
 
-      <div class="footer-section">
-        <h4>For Employers</h4>
-        <ul>
-          <li><a href="footer_info/company.html">Post Job</a></li>
-          <li><a href="footer_info/browse-candidates.html">Browse Candidates</a></li>
-          <li><a href="footer_info/support.html">Support</a></li>
-        </ul>
-      </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/profile.js"></script>
+    <script src="js/script.js"></script>
 
-      <div class="footer-section">
-        <h4>Legal</h4>
-        <ul>
-          <li><a href="footer_info/privacy-policy.html">Privacy Policy</a></li>
-          <li><a href="footer_info/terms-of-service.html">Terms of Service</a></li>
-          <li><a href="footer_info/cookie-policy.html">Cookie Policy</a></li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="footer-bottom">
-      <p>&copy; 2026 InternHub. All rights reserved. | Helping students find their next opportunity</p>
-    </div>
-  </footer>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
-  <script src="js/supabase.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/profile.js"></script>
-  <script src="js/script.js"></script>
-  
     <script src="js/auth-page.js"></script>
-</body>
+
+    <!-- Forgot Password Modal -->
+    <div
+      id="forgotModal"
+      style="
+        display: none;
+        position: fixed;
+        z-index: 3000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+      "
+      onclick="if (event.target === this) closeForgotModal();"
+    >
+      <div
+        style="
+          background: #fff;
+          margin: 10% auto;
+          padding: 28px;
+          width: 95%;
+          max-width: 400px;
+          border-radius: 12px;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        "
+      >
+        <h3 style="margin-top: 0; margin-bottom: 0.5rem">Reset Password</h3>
+        <p style="margin: 0 0 1.25rem; font-size: 0.9rem; color: #6b7280">
+          Enter your email address and we'll send you a reset link.
+        </p>
+        <input
+          type="email"
+          id="forgotEmailInput"
+          class="form-control"
+          placeholder="your@email.com"
+          style="margin-bottom: 1rem"
+        />
+        <div style="display: flex; gap: 10px">
+          <button
+            onclick="submitForgotPassword()"
+            class="btn btn-primary"
+            style="flex: 2; padding: 11px"
+          >
+            Send Reset Link
+          </button>
+          <button
+            onclick="closeForgotModal()"
+            class="btn btn-secondary"
+            style="flex: 1; padding: 11px"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>

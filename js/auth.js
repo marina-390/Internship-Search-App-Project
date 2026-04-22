@@ -76,17 +76,23 @@ function switchTab(tab) {
    never both at the same time.
    ---------------------------------------------------------- */
 function toggleRoleFields() {
-  const roleInput     = document.querySelector('input[name="role"]:checked');
-  const studentFields = document.getElementById('studentFields');
+  const roleInput       = document.querySelector('input[name="role"]:checked');
+  const studentFields   = document.getElementById('studentFields');
+  const socialLogin     = document.getElementById('registerSocialLogin');
+  const socialDivider   = document.getElementById('registerSocialDivider');
 
   if (!roleInput || !studentFields || !companyFields) return;
 
   if (roleInput.value === 'student') {
     studentFields.style.display = 'block';
     companyFields.style.display = 'none';
+    if (socialLogin)   socialLogin.style.display = 'grid';
+    if (socialDivider) socialDivider.style.display = 'flex';
   } else {
     studentFields.style.display = 'none';
     companyFields.style.display = 'block';
+    if (socialLogin)   socialLogin.style.display = 'none';
+    if (socialDivider) socialDivider.style.display = 'none';
   }
 }
 

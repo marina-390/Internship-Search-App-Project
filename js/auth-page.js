@@ -270,6 +270,20 @@ async function handleRegister(event) {
   }
 }
 
+async function resendConfirmEmail() {
+  var email = document.getElementById('sentToEmail').textContent;
+  if (!email) return;
+
+  var redirectTo = new URL('verify-email.html', window.location.href).href;
+  var { error } = await supabaseClient.auth.resend({ type: 'signup', email: email, options: { emailRedirectTo: redirectTo } });
+
+  if (error) {
+    showToast('Failed to resend: ' + error.message, 'error');
+  } else {
+    showToast('Confirmation email sent!', 'success');
+  }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   var loginFormEl    = document.getElementById('loginForm_form');
   var registerFormEl = document.getElementById('registerForm_form');
