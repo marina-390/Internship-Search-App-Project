@@ -106,7 +106,7 @@
             <!-- Application Button -->
             <div class="card-footer" style="border-top: 1px solid var(--border-color); padding-top: 2rem; margin-top: 2rem;">
               <button id="applyBtn" class="btn btn-primary btn-large" onclick="openApplyModal()">Apply Now</button>
-              <button class="btn btn-outline btn-large" onclick="alert('Saved to favorites!');">Save Position</button>
+              <button class="btn btn-outline btn-large" onclick="showToast('Saved to favorites!', 'success')">Save Position</button>
             </div>
           </div>
 
@@ -162,17 +162,22 @@
 </div>
         </div>
           
-          <!-- Sidebar for Company Owners -->
-          <div class="sidebar">
-            <div id="applicantsSection" class="sidebar-card" style="display: none;">
-              <h4>📋 Received Applications <span id="applicantsCount" style="font-size: 0.9rem; color: #666;">(0)</span></h4>
-              <div id="companyApplicationsContainer">
-                <p>No applications yet.</p>
-              </div>
-              
-            </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Applicants Section — full width, visible only to company owners -->
+  <section class="section" style="padding-top:0;">
+    <div class="container">
+      <div id="applicantsSection" style="display: none;">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">📋 Received Applications <span id="applicantsCount" style="font-size: 0.9rem; color: #666; font-weight:400;">(0)</span></h3>
           </div>
-          
+          <div class="card-content" id="companyApplicationsContainer">
+            <p>No applications yet.</p>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -291,6 +296,7 @@
   <script src="js/auth.js"></script>
   <script src="js/profile.js"></script>
   <script src="js/script.js"></script>
+  <script src="js/cookie-consent.js"></script>
   <script src="js/internship-detail.js"></script>
   <script>
     // Page init - load from URL param
@@ -316,7 +322,7 @@
           e.preventDefault();
           const formData = new FormData(this);
           if (window.currentPosition) {
-            alert(`Applied to ${window.currentPosition.title}!`);
+            showToast(`Applied to ${window.currentPosition.title}!`, 'success');
             this.reset();
           }
         });
