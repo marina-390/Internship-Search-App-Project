@@ -14,7 +14,7 @@
   ].join(';');
 
   banner.innerHTML = `
-    <p style="margin:0; font-size:0.9rem; flex:1; min-width:200px;">
+    <p style="margin:0; font-size:0.9rem; flex:1; min-width:200px; color:#818cf8;">
       🍪 We use essential cookies to keep you logged in and make the site work.
       <a href="${policyLink}" style="color:#818cf8; text-decoration:underline;">Cookie Policy</a>
     </p>

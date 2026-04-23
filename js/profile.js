@@ -861,7 +861,7 @@ async function loadCompanyPostings() {
           return `
           <div class="position-card" id="posting-${pos.position_id}">
               <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                <div>
+                <div style="flex:1;">
                   <h4>${pos.title}</h4>
                   <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.25rem;">
                     <span class="status-badge" style="${sc}">${pos.status}</span>
@@ -879,6 +879,14 @@ async function loadCompanyPostings() {
                       <a href="javascript:void(0)" onclick="openEditModal(${pos.position_id})" class="text-primary">Edit</a>
                       <a href="javascript:void(0)" onclick="deletePosition(${pos.position_id})" style="color:#dc3545;">Delete</a>
                   </div>
+                  ${appCount > 0 ? `
+                  <div style="margin-top:0.75rem; border-top:1px solid #f0f0f0; padding-top:0.5rem;">
+                    <button id="pos-apps-btn-${pos.position_id}" onclick="togglePositionApplicants(${pos.position_id}, ${appCount})"
+                      style="background:none; border:none; cursor:pointer; color:#6366f1; font-size:0.85rem; font-weight:600; padding:0; display:flex; align-items:center; gap:0.3rem;">
+                      <span id="pos-apps-arrow-${pos.position_id}">▼</span> Applications (${appCount})
+                    </button>
+                    <div id="pos-apps-${pos.position_id}" style="display:none; margin-top:0.75rem;"></div>
+                  </div>` : ''}
                 </div>
               </div>
           </div>`;
@@ -887,6 +895,76 @@ async function loadCompanyPostings() {
   } catch (err) {
       console.error("Error loading postings:", err);
       container.innerHTML = '<p style="color:red; font-size:0.85rem;">Error loading postings.</p>';
+  }
+}
+
+async function togglePositionApplicants(positionId, appCount) {
+  const container = document.getElementById(`pos-apps-${positionId}`);
+  const arrow     = document.getElementById(`pos-apps-arrow-${positionId}`);
+  if (!container) return;
+
+  const isOpen = container.dataset.open === 'true';
+  if (isOpen) {
+    container.style.display = 'none';
+    container.dataset.open = 'false';
+    arrow.textContent = '▼';
+    return;
+  }
+
+  container.style.display = 'block';
+  container.dataset.open = 'true';
+  arrow.textContent = '▲';
+
+  if (container.dataset.loaded) return;
+
+  container.innerHTML = '<p style="color:#888; font-size:0.85rem; padding:0.5rem 0;">Loading...</p>';
+
+  try {
+    const { data: apps, error } = await supabaseClient
+      .from('applications')
+      .select('*, interview_date, positions(title), student_profiles(*, Users(user_login))')
+      .eq('position_id', positionId)
+      .order('applied_at', { ascending: false });
+
+    if (error) throw error;
+
+    if (!apps || apps.length === 0) {
+      container.innerHTML = '<p style="color:#888; font-size:0.85rem;">No applications yet.</p>';
+      container.dataset.loaded = 'true';
+      return;
+    }
+
+    container.innerHTML = apps.map(app => {
+      const status       = app.status || 'pending';
+      const studentName  = app.student_profiles ? `${app.student_profiles.first_name || ''} ${app.student_profiles.last_name || ''}`.trim() || 'Applicant' : 'Applicant';
+      const studentEmail = app.student_profiles?.contact_email || app.student_profiles?.Users?.user_login || '';
+      const appliedDate  = formatDateEuropean(app.applied_at);
+      const existingDate = app.interview_date || '';
+      const interviewDate = app.interview_date
+        ? `<p style="margin:0.3rem 0 0; font-size:0.82rem; color:#059669;">📅 ${formatDateEuropean(app.interview_date)} ${new Date(app.interview_date).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'})}</p>`
+        : '';
+      const interviewBtn = app.interview_date
+        ? `<button class="btn btn-small" style="font-size:0.78rem; background:#d1fae5; color:#065f46;" onclick="scheduleInterviewProfile('${studentName}', '${studentEmail}', '${app.positions?.title || ''}', ${app.application_id}, '${existingDate}')">✅ Scheduled</button>`
+        : `<button class="btn btn-small btn-primary" style="font-size:0.78rem;" onclick="scheduleInterviewProfile('${studentName}', '${studentEmail}', '${app.positions?.title || ''}', ${app.application_id}, '')">📅 Schedule Interview</button>`;
+      return `
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap; padding:0.75rem 0; border-top:1px solid #f3f4f6;">
+          <div style="flex:1; min-width:0;">
+            <p style="margin:0; font-weight:600; color:#374151;">${studentName}</p>
+            <p style="margin:0.15rem 0 0; font-size:0.85rem; color:#6b7280;">${studentEmail}</p>
+            <p style="margin:0.25rem 0 0; font-size:0.82rem; color:#9ca3af;">Applied: ${appliedDate}</p>
+            <p style="margin:0.25rem 0 0; font-size:0.82rem;">Status: <span class="status-badge status-${status}">${status.replace('_', ' ')}</span></p>
+            ${interviewDate}
+          </div>
+          <div style="display:flex; gap:0.4rem; flex-shrink:0; flex-wrap:wrap;">
+            <button class="btn btn-small btn-view" onclick="openCompanyAppModal(${JSON.stringify(app).replace(/"/g, '&quot;')})">View</button>
+            ${interviewBtn}
+          </div>
+        </div>`;
+    }).join('');
+
+    container.dataset.loaded = 'true';
+  } catch (err) {
+    container.innerHTML = `<p style="color:red; font-size:0.85rem;">Error: ${err.message}</p>`;
   }
 }
 
@@ -1515,40 +1593,6 @@ function viewApplication(positionId) {
   window.location.href = `internship-detail.html?id=${positionId}`;
 }
 
-/**
-* Deletes an application from the database
-*/
-async function deleteApplication(applicationId) {
-  if (!confirm("Are you sure you want to withdraw this application? This cannot be undone.")) return;
-
-  try {
-      const { error } = await supabaseClient
-          .from('applications')
-          .delete()
-          .eq('id', applicationId);
-
-      if (error) throw error;
-
-      // Remove from UI
-      const element = document.getElementById(`app-${applicationId}`);
-      if (element) {
-          element.style.opacity = '0';
-          setTimeout(() => element.remove(), 300);
-      }
-
-      // If no items left, show empty message
-      const container = document.getElementById('applicationsContainer');
-      if (container.children.length === 0) {
-          container.innerHTML = '<p>No applications yet.</p>';
-      }
-
-      showToast("Application withdrawn successfully.", 'success');
-  } catch (err) {
-      console.error('Delete error:', err);
-      showToast("Failed to delete application: " + err.message, 'error');
-  }
-}
-
 async function deleteApplication(applicationId) {
   if (!confirm("Withdraw this application?")) return;
 
@@ -1556,9 +1600,10 @@ async function deleteApplication(applicationId) {
       const { error } = await supabaseClient
           .from('applications')
           .delete()
-          .eq('application_id', applicationId); // Changed from 'id' to 'application_id'
+          .eq('application_id', applicationId);
 
       if (error) throw error;
+      showToast("Application withdrawn.", 'success');
       loadStudentProfile();
   } catch (err) {
       showToast("Delete failed: " + err.message, 'error');

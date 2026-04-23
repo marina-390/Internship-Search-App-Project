@@ -1133,9 +1133,11 @@ footer {
   font-weight: 600;
   white-space: nowrap;
 }
-.status-pending  { background:#fef3c7; color:#92400e; }
-.status-viewed   { background:#dbeafe; color:#1e40af; }
-.status-accepted { background:#d1fae5; color:#065f46; }
+.status-pending             { background:#fef3c7; color:#92400e; }
+.status-viewed              { background:#dbeafe; color:#1e40af; }
+.status-accepted            { background:#d1fae5; color:#065f46; }
+.status-rejected            { background:#fee2e2; color:#991b1b; }
+.status-interview_scheduled { background:#d1fae5; color:#065f46; }
 .status-rejected { background:#fee2e2; color:#991b1b; }
 .status-active   { background:#d1fae5; color:#065f46; }
 .status-draft    { background:#f3f4f6; color:#374151; }

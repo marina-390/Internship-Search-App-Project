@@ -101,7 +101,17 @@ async function loadInternshipDetail(positionId) {
         if (displayDesc) displayDesc.textContent = company?.description || 'No description.';
 
         const displayEmail = document.getElementById('dCompanyEmail');
-displayEmail.innerHTML = company?.contact_email ? `<a href="mailto:${company.contact_email}">${company.contact_email}</a>` : 'No contact email provided.';
+        if (displayEmail) {
+          displayEmail.innerHTML = '';
+          if (company?.contact_email) {
+            const a = document.createElement('a');
+            a.href = `mailto:${company.contact_email}`;
+            a.textContent = company.contact_email;
+            displayEmail.appendChild(a);
+          } else {
+            displayEmail.textContent = 'No contact email provided.';
+          }
+        }
 
         const displayWebsite = document.getElementById('dWebsite');
         if (displayWebsite) displayWebsite.textContent = company?.website || 'N/A';
@@ -562,7 +572,7 @@ async function checkOwnerAndLoadApplicants(companyId, positionId) {
       const { data: apps, error: appsError } = await supabaseClient
           .from('applications')
           .select(`
-            application_id, status, applied_at, cover_letter,
+            application_id, status, applied_at, cover_letter, interview_date,
             student_profiles(id, first_name, last_name,
               Users(user_login)
             )
@@ -642,28 +652,31 @@ function renderSidebarApplicants(apps) {
   }
 
   container.innerHTML = apps.map(app => {
-    const profile       = app.student_profiles || {};
-    const fullName      = [profile.first_name, profile.last_name].filter(Boolean).join(' ') || 'Unknown';
-    const email         = profile.Users?.user_login || '';
-    const statusDisplay = getStatusDisplay(app.status);
-    const appliedDate   = formatDateEuropean(app.applied_at);
-    const interviewDate = app.interview_date
-      ? `<small style="color:#059669; display:block; margin-top:4px;">📅 ${formatDateEuropean(app.interview_date)} ${new Date(app.interview_date).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'})}</small>`
-      : '';
+    const profile      = app.student_profiles || {};
+    const fullName     = [profile.first_name, profile.last_name].filter(Boolean).join(' ') || 'Unknown';
+    const email        = profile.Users?.user_login || '';
+    const status       = app.status || 'pending';
+    const statusLabel  = { pending: 'pending', viewed: 'in review', 'in review': 'in review', interview_scheduled: 'interview scheduled', accepted: 'accepted', rejected: 'rejected' }[status] || status;
+    const appliedDate  = formatDateEuropean(app.applied_at);
     const existingDate = app.interview_date || '';
+    const interviewDate = app.interview_date
+      ? `<p style="margin:0.4rem 0 0; font-size:0.85rem; color:#059669;">📅 Interview: ${formatDateEuropean(app.interview_date)} ${new Date(app.interview_date).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'})}</p>`
+      : '';
     const interviewBtn = app.interview_date
       ? `<button class="btn btn-small" style="font-size:0.78rem; background:#d1fae5; color:#065f46;" onclick="scheduleInterview('${fullName}', '${email}', ${app.application_id}, '${existingDate}')">✅ Scheduled</button>`
       : `<button class="btn btn-small btn-primary" style="font-size:0.78rem;" onclick="scheduleInterview('${fullName}', '${email}', ${app.application_id}, '')">📅 Schedule Interview</button>`;
     return `
-      <div class="application-item" style="padding:12px 0; border-bottom:1px solid #eee;">
-        <div style="margin-bottom:8px;">
-          <p style="margin:0; font-weight:600; font-size:0.95rem;">${fullName}</p>
-          <small style="color:#888; font-size:0.8rem;">Applied: ${appliedDate}</small>
-          <div style="margin-top:4px;">${statusDisplay}</div>
+      <div class="application-card" style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap; padding:1rem 0; border-bottom:1px solid #eee;">
+        <div style="min-width:0; flex:1;">
+          <h5 style="margin:0 0 0.25rem; font-size:1rem;">${window.currentPosition?.title || ''}</h5>
+          <p style="margin:0; color:#374151; font-weight:600;">${fullName}</p>
+          <p style="margin:0.25rem 0 0; font-size:0.9rem; color:#6b7280;">${email}</p>
+          <p style="margin:0.5rem 0 0; font-size:0.85rem; color:#6b7280;">Applied: ${appliedDate}</p>
+          <p style="margin:0.4rem 0 0; font-size:0.85rem;">Status: <span class="status-badge status-${status}">${statusLabel}</span></p>
           ${interviewDate}
         </div>
-        <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
-          <button class="btn btn-small btn-view" onclick="viewStudentProfile(${profile.id})">View</button>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; flex-shrink:0;">
+          <button class="btn btn-view" onclick="viewStudentProfile(${profile.id})">View</button>
           ${interviewBtn}
         </div>
       </div>
@@ -675,18 +688,26 @@ function getStatusDisplay(status) {
   let bgColor = '#fef3c7';
   let textColor = '#92400e';
   let statusText = 'pending';
-  
+
   if (status === 'viewed' || status === 'in review') {
     bgColor = '#dbeafe';
     textColor = '#1e40af';
     statusText = 'in review';
-  } else if (status === 'accepted' || status === 'rejected' || status === 'ready') {
+  } else if (status === 'interview_scheduled') {
+    bgColor = '#d1fae5';
+    textColor = '#065f46';
+    statusText = 'interview scheduled';
+  } else if (status === 'accepted' || status === 'ready') {
     bgColor = '#dcfce7';
     textColor = '#166534';
-    statusText = 'ready';
+    statusText = 'accepted';
+  } else if (status === 'rejected') {
+    bgColor = '#fee2e2';
+    textColor = '#991b1b';
+    statusText = 'rejected';
   }
-  
-  return `<span style="display: inline-block; background: ${bgColor}; color: ${textColor}; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Status: ${statusText}</span>`;
+
+  return `<span style="display: inline-block; background: ${bgColor}; color: ${textColor}; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">${statusText}</span>`;
 }
 
 function showFullApplication(app) {
