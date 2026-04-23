@@ -6,52 +6,506 @@
   <link rel="icon" type="image/png" href="icon.png">
   <title>InternHub - Find Your Dream Internship</title>
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(160deg, #3b30c8 0%, #5b4fff 50%, #7c6fff 100%);
+      color: white;
+      padding: 0;
+      min-height: 540px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 60% at 15% 20%, rgba(255,255,255,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 45% 50% at 85% 80%, rgba(91,79,255,0.35) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 1;
+    }
+    .hero-content {
+      max-width: 680px;
+      padding: 5.5rem 2rem 9rem;
+      position: relative;
+      z-index: 3;
+      animation: heroFadeUp 0.7s ease both;
+    }
+    .hero h1 {
+      color: white;
+      font-size: clamp(2.4rem, 5vw, 3.8rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 1.1rem;
+      text-shadow: 0 2px 20px rgba(0,0,0,0.3), 0 1px 6px rgba(0,0,0,0.2);
+    }
+    .hero p {
+      color: rgba(255,255,255,0.92);
+      font-size: 1.15rem;
+      font-weight: 400;
+      margin-bottom: 2.5rem;
+      line-height: 1.65;
+      text-shadow: 0 1px 8px rgba(0,0,0,0.25);
+    }
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .hero-buttons .btn-primary {
+      background: white;
+      color: #4f46e5;
+      border-radius: 100px;
+      padding: 0.9rem 2.2rem;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.2), 0 1px 6px rgba(0,0,0,0.12);
+      transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+    .hero-buttons .btn-primary:hover {
+      background: #f0eeff;
+      color: #4338ca;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 32px rgba(0,0,0,0.22);
+    }
+    .hero-buttons .btn-secondary {
+      background: rgba(255,255,255,0.15);
+      color: white;
+      border-radius: 100px;
+      padding: 0.9rem 2.2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border: 2px solid rgba(255,255,255,0.55);
+      backdrop-filter: blur(8px);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      transition: background 0.2s, transform 0.2s, border-color 0.2s;
+    }
+    .hero-buttons .btn-secondary:hover {
+      background: rgba(255,255,255,0.28);
+      border-color: rgba(255,255,255,0.85);
+      color: white;
+      transform: translateY(-3px);
+    }
+
+    /* Three SVG wave layers */
+    .hero-waves {
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      line-height: 0;
+      pointer-events: none;
+      z-index: 2;
+      will-change: transform;
+    }
+    .hero-waves svg { display: block; width: 100%; }
+    .wave-layer-1 { animation: waveAnim1 8s ease-in-out infinite alternate; }
+    .wave-layer-2 { animation: waveAnim2 11s ease-in-out infinite alternate; }
+    .wave-layer-3 { animation: waveAnim3 14s ease-in-out infinite alternate; }
+
+    @keyframes waveAnim1 {
+      0%   { transform: translateX(0) scaleY(1); }
+      100% { transform: translateX(-3%) scaleY(1.1); }
+    }
+    @keyframes waveAnim2 {
+      0%   { transform: translateX(0) scaleY(1); }
+      100% { transform: translateX(4%) scaleY(0.92); }
+    }
+    @keyframes waveAnim3 {
+      0%   { transform: translateX(0) scaleY(1); }
+      100% { transform: translateX(-5%) scaleY(1.14); }
+    }
+
+    /* ── LOGO MARQUEE ── */
+    .logo-strip {
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 1.6rem 0 1.4rem;
+      overflow: hidden;
+    }
+    .logo-strip-label {
+      text-align: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      margin-bottom: 1.2rem;
+    }
+    .logo-track-wrap {
+      overflow: hidden;
+      mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+      -webkit-mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+    }
+    .logo-track {
+      display: flex;
+      align-items: center;
+      gap: 4rem;
+      width: max-content;
+      animation: logoScroll 24s linear infinite;
+    }
+    .logo-track:hover { animation-play-state: paused; }
+    @keyframes logoScroll {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .logo-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      height: 44px;
+      filter: grayscale(1) opacity(0.5);
+      transition: filter 0.3s;
+      cursor: default;
+    }
+    .logo-item:hover { filter: grayscale(0) opacity(1); }
+    .logo-item img {
+      height: 36px;
+      width: auto;
+      max-width: 130px;
+      object-fit: contain;
+    }
+
+    /* ── JOURNEY CAROUSEL ── */
+    .journey-carousel {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+    .carousel-track {
+      position: relative;
+      width: 100%;
+      height: 520px;
+    }
+    .carousel-slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.9s ease;
+      pointer-events: none;
+    }
+    .carousel-slide.active { opacity: 1; pointer-events: auto; }
+    .carousel-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      filter: brightness(0.58);
+    }
+    .carousel-caption {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 2.5rem 3rem 3rem;
+      background: linear-gradient(to top, rgba(0,0,0,0.78) 0%, transparent 100%);
+      color: white;
+    }
+    .carousel-step {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 0.4rem;
+    }
+    .carousel-caption h3 {
+      font-size: clamp(1.8rem, 3vw, 2.75rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: white;
+      text-shadow: 0 2px 16px rgba(0,0,0,0.45);
+      margin: 0 0 0.4rem;
+    }
+    .carousel-caption p {
+      font-size: 1rem;
+      color: rgba(255,255,255,0.82);
+      font-weight: 400;
+      margin: 0;
+      max-width: 460px;
+      text-shadow: 0 1px 8px rgba(0,0,0,0.35);
+    }
+    .carousel-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(6px);
+      border: 1.5px solid rgba(255,255,255,0.3);
+      color: white;
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.2s;
+      z-index: 10;
+    }
+    .carousel-arrow:hover {
+      background: rgba(79,70,229,0.6);
+      border-color: transparent;
+      transform: translateY(-50%) scale(1.08);
+    }
+    .carousel-prev { left: 1.5rem; }
+    .carousel-next { right: 1.5rem; }
+    .carousel-dots {
+      position: absolute;
+      bottom: 1.25rem; right: 3rem;
+      display: flex; gap: 0.5rem;
+      z-index: 10;
+    }
+    .carousel-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255,255,255,0.35);
+      cursor: pointer; padding: 0;
+      transition: background 0.3s, transform 0.3s;
+    }
+    .carousel-dot.active { background: white; transform: scale(1.3); }
+
+    /* ── CTA ── */
+    #cta-section {
+      background: #f3f4f6;
+      padding: 5rem 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+    #cta-section::before {
+      content: '';
+      position: absolute;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(91,79,255,0.08) 0%, transparent 70%);
+      top: -150px; right: -100px;
+      pointer-events: none;
+    }
+    .cta-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+    .cta-left-label {
+      font-size: 0.72rem; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: #4f46e5; margin-bottom: 1rem;
+    }
+    .cta-headline {
+      font-size: clamp(1.8rem, 2.5vw, 2.5rem);
+      font-weight: 800; letter-spacing: -0.04em;
+      color: #1f2937; line-height: 1.1; margin-bottom: 1rem;
+    }
+    .cta-sub {
+      color: #6b7280;
+      font-size: 0.95rem; line-height: 1.7;
+      font-weight: 300; margin: 0;
+    }
+    .cta-cards { display: flex; flex-direction: column; gap: 0.85rem; }
+    .cta-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #2d3748;
+      border: 1px solid #3d4453;
+      border-radius: 14px;
+      padding: 1.1rem 1.25rem;
+      text-decoration: none;
+      transition: background 0.2s, border-color 0.2s, transform 0.2s;
+      color: white;
+    }
+    .cta-option:hover {
+      background: #374151;
+      border-color: #4f46e5;
+      transform: translateX(5px);
+      color: white;
+    }
+    .cta-option-inner { display: flex; align-items: center; gap: 0.9rem; }
+    .cta-option-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.15rem; flex-shrink: 0;
+    }
+    .cta-option-title { font-weight: 600; font-size: 0.95rem; color: white; margin-bottom: 0.1rem; }
+    .cta-option-desc  { font-size: 0.78rem; color: rgba(255,255,255,0.6); }
+    .cta-option-arrow { color: rgba(255,255,255,0.4); font-size: 1rem; transition: transform 0.2s, color 0.2s; }
+    .cta-option:hover .cta-option-arrow { transform: translateX(4px); color: #4f46e5; }
+
+    @keyframes heroFadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) { .cta-inner { grid-template-columns: 1fr; gap: 2.5rem; } }
+    @media (max-width: 768px) {
+      .carousel-track { height: 300px; }
+      .hero-buttons { flex-direction: column; align-items: stretch; }
+      .hero-buttons .btn { width: 100%; text-align: center; }
+    }
+    @media (max-width: 600px) {
+      .carousel-caption { padding: 1.5rem 1.25rem 2rem; }
+      .carousel-caption h3 { font-size: 1.6rem; }
+      .carousel-arrow { width: 36px; height: 36px; font-size: 0.9rem; }
+      .carousel-prev { left: 0.75rem; } .carousel-next { right: 0.75rem; }
+      .carousel-dots { right: 1.25rem; }
+      #cta-section { padding: 3.5rem 1rem; }
+    }
+  </style>
 </head>
 <body>
-  <!-- Navigation Bar -->
+
+  <!-- Navigation -->
   <nav>
     <div class="nav-container">
       <a href="index.html" class="logo">InternHub</a>
       <ul class="nav-menu">
-        <li class="nav-item">
-          <a href="internships.html" class="nav-link">Internships</a>
-        </li>
-        <li class="nav-item">
-          <a href="auth.html" class="nav-link">Login/Register</a>
-        </li>
+        <li class="nav-item"><a href="internships.html" class="nav-link">Internships</a></li>
+        <li class="nav-item"><a href="auth.html" class="nav-link">Login/Register</a></li>
       </ul>
-      <div class="hamburger">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
+      <div class="hamburger"><span></span><span></span><span></span></div>
     </div>
   </nav>
 
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="hero-content">
+  <!-- Hero -->
+  <section class="hero" id="heroSection">
+    <div class="hero-content" id="heroContent">
       <h1>Find Your Perfect Internship</h1>
       <p>Discover exciting internship opportunities with leading companies and launch your career</p>
       <div class="hero-buttons">
         <a href="internships.html" class="btn btn-primary btn-large">Browse Internships</a>
-        <a href="javascript:void(0)" onclick="checkCompanyAuth()" class="btn btn-secondary btn-large">
-          Post Internship
-        </a>
+        <a href="javascript:void(0)" onclick="checkCompanyAuth()" class="btn btn-secondary btn-large">Post Internship</a>
       </div>
+    </div>
+
+    <!-- Wave SVG layers -->
+    <div class="hero-waves" id="heroWaves">
+      <svg viewBox="0 0 1440 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="height:100px;">
+        <!-- back wave -->
+        <path class="wave-layer-3"
+          d="M0,50 C240,100 480,0 720,50 C960,100 1200,0 1440,50 L1440,100 L0,100 Z"
+          fill="rgba(255,255,255,0.16)"/>
+        <!-- mid wave -->
+        <path class="wave-layer-2"
+          d="M0,60 C180,15 420,85 660,45 C900,5 1140,75 1440,35 L1440,100 L0,100 Z"
+          fill="rgba(255,255,255,0.26)"/>
+        <!-- front wave (solid white) -->
+        <path class="wave-layer-1"
+          d="M0,65 C360,25 720,85 1080,45 C1260,25 1360,65 1440,55 L1440,100 L0,100 Z"
+          fill="white"/>
+      </svg>
     </div>
   </section>
 
-  <!-- Call to Action Section (Hidden for logged-in users) -->
-  <section id="cta-section" class="section">
-    <div class="container text-center">
-      <h2 class="mb-4">Ready to Start Your Journey?</h2>
-      <p class="mb-4">Register or Login to find your perfect internship opportunity</p>
-      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-        <div class="hero-btns">
-            <a href="auth.html?mode=login" class="btn btn-primary">Log In</a>
-            <a href="auth.html?mode=register" class="btn btn-outline">Create Account</a>
+  <!-- Logo marquee strip -->
+  <div class="logo-strip">
+    <p class="logo-strip-label">Trusted by interns at the world's best companies</p>
+    <div class="logo-track-wrap">
+      <div class="logo-track">
+        <div class="logo-item"><img src="pics/google.png"    alt="Google" /></div>
+        <div class="logo-item"><img src="pics/amazon.png"    alt="Amazon" /></div>
+        <div class="logo-item"><img src="pics/meta.jpg"      alt="Meta" /></div>
+        <div class="logo-item"><img src="pics/microsoft.png" alt="Microsoft" /></div>
+        <div class="logo-item"><img src="pics/netflix.jpg"   alt="Netflix" /></div>
+        <!-- duplicate for seamless loop -->
+        <div class="logo-item"><img src="pics/google.png"    alt="Google" /></div>
+        <div class="logo-item"><img src="pics/amazon.png"    alt="Amazon" /></div>
+        <div class="logo-item"><img src="pics/meta.jpg"      alt="Meta" /></div>
+        <div class="logo-item"><img src="pics/microsoft.png" alt="Microsoft" /></div>
+        <div class="logo-item"><img src="pics/netflix.jpg"   alt="Netflix" /></div>
+        <!-- duplicate for seamless loop -->
+        <div class="logo-item"><img src="pics/google.png"    alt="Google" /></div>
+        <div class="logo-item"><img src="pics/amazon.png"    alt="Amazon" /></div>
+        <div class="logo-item"><img src="pics/meta.jpg"      alt="Meta" /></div>
+        <div class="logo-item"><img src="pics/microsoft.png" alt="Microsoft" /></div>
+        <div class="logo-item"><img src="pics/netflix.jpg"   alt="Netflix" /></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Journey Carousel -->
+  <div class="journey-carousel">
+    <div class="carousel-track" id="carouselTrack">
+      <div class="carousel-slide active">
+        <img src="pics/apply.jpg" alt="Apply" />
+        <div class="carousel-caption">
+          <span class="carousel-step">Step 01</span>
+          <h3>Apply</h3>
+          <p>Browse hundreds of positions and submit your application in minutes</p>
         </div>
+      </div>
+      <div class="carousel-slide">
+        <img src="pics/interview.jpg" alt="Interview" />
+        <div class="carousel-caption">
+          <span class="carousel-step">Step 02</span>
+          <h3>Interview</h3>
+          <p>Connect with top companies and showcase your skills</p>
+        </div>
+      </div>
+      <div class="carousel-slide">
+        <img src="pics/hired.jpg" alt="Get Hired" />
+        <div class="carousel-caption">
+          <span class="carousel-step">Step 03</span>
+          <h3>Get Hired</h3>
+          <p>Land your dream internship and launch your career</p>
+        </div>
+      </div>
+    </div>
+    <div class="carousel-dots">
+      <button class="carousel-dot active" onclick="goToSlide(0)"></button>
+      <button class="carousel-dot"        onclick="goToSlide(1)"></button>
+      <button class="carousel-dot"        onclick="goToSlide(2)"></button>
+    </div>
+    <button class="carousel-arrow carousel-prev" onclick="prevSlide()">&#8592;</button>
+    <button class="carousel-arrow carousel-next" onclick="nextSlide()">&#8594;</button>
+  </div>
+
+  <!-- CTA -->
+  <section id="cta-section">
+    <div class="cta-inner">
+      <div>
+        <p class="cta-left-label">Get started today</p>
+        <h2 class="cta-headline">Ready to launch your career?</h2>
+        <p class="cta-sub">Join thousands of students already finding great internships through InternHub. It only takes two minutes to create your profile.</p>
+      </div>
+      <div class="cta-cards">
+        <a href="auth.html?mode=register" class="cta-option">
+          <div class="cta-option-inner">
+            <div class="cta-option-icon">🎓</div>
+            <div><div class="cta-option-title">I'm a Student</div><div class="cta-option-desc">Find internships that match your skills</div></div>
+          </div><span class="cta-option-arrow">→</span>
+        </a>
+        <a href="auth.html?mode=register" class="cta-option">
+          <div class="cta-option-inner">
+            <div class="cta-option-icon">🏢</div>
+            <div><div class="cta-option-title">I'm an Employer</div><div class="cta-option-desc">Post positions and find great interns</div></div>
+          </div><span class="cta-option-arrow">→</span>
+        </a>
+        <a href="auth.html?mode=login" class="cta-option">
+          <div class="cta-option-inner">
+            <div class="cta-option-icon">🔑</div>
+            <div><div class="cta-option-title">Sign In</div><div class="cta-option-desc">Continue where you left off</div></div>
+          </div><span class="cta-option-arrow">→</span>
+        </a>
       </div>
     </div>
   </section>
@@ -67,7 +521,6 @@
           <li><a href="footer_info/contact.html">Contact</a></li>
         </ul>
       </div>
-
       <div class="footer-section">
         <h4>For Students</h4>
         <ul>
@@ -76,7 +529,6 @@
           <li><a href="footer_info/interview-tips.html">Interview Tips</a></li>
         </ul>
       </div>
-
       <div class="footer-section">
         <h4>For Employers</h4>
         <ul>
@@ -85,7 +537,6 @@
           <li><a href="footer_info/support.html">Support</a></li>
         </ul>
       </div>
-
       <div class="footer-section">
         <h4>Legal</h4>
         <ul>
@@ -95,20 +546,11 @@
         </ul>
       </div>
     </div>
-
     <div class="footer-bottom">
       <p>&copy; 2026 InternHub. All rights reserved. | Helping students find their next opportunity</p>
     </div>
   </footer>
 
-  <script>
-    // Hide CTA login/register section if already logged in
-    document.addEventListener('DOMContentLoaded', function () {
-      const loggedIn = localStorage.getItem('isLoggedIn') === 'true' && localStorage.getItem('userId');
-      const cta = document.getElementById('ctaSection');
-      if (loggedIn && cta) cta.style.display = 'none';
-    });
-  </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js"></script>
   <script src="js/auth.js"></script>

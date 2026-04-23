@@ -639,3 +639,68 @@ document.addEventListener('DOMContentLoaded', function() {
     attachFilterListeners();
   }
 });
+
+    /* ── Hide CTA when logged in ── */
+    document.addEventListener('DOMContentLoaded', function () {
+      const loggedIn = localStorage.getItem('isLoggedIn') === 'true' && localStorage.getItem('userId');
+      if (loggedIn) {
+        const cta = document.getElementById('cta-section');
+        if (cta) cta.style.display = 'none';
+      }
+    });
+
+    /* ── Hero parallax on scroll ── */
+    const heroEl      = document.getElementById('heroSection');
+    const heroWaves   = document.getElementById('heroWaves');
+    const heroContent = document.getElementById('heroContent');
+    let ticking = false;
+
+    window.addEventListener('scroll', function () {
+      if (!ticking) {
+        requestAnimationFrame(function () {
+          const sy = window.scrollY;
+          // Waves lift up faster than scroll — gives floating depth
+          if (heroWaves)   heroWaves.style.transform   = `translateY(${sy * 0.4}px)`;
+          // Content rises slightly — classic parallax
+          if (heroContent) heroContent.style.transform = `translateY(${sy * 0.18}px)`;
+          // Shift background gradient position for depth on hero bg
+          if (heroEl)      heroEl.style.backgroundPositionY = `${sy * 0.35}px`;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }, { passive: true });
+
+    /* ── Carousel ── */
+    let currentSlide = 0;
+    const totalSlides = 3;
+    let autoplayTimer;
+
+    function goToSlide(index) {
+      const slides = document.querySelectorAll('.carousel-slide');
+      const dots   = document.querySelectorAll('.carousel-dot');
+      slides[currentSlide].classList.remove('active');
+      dots[currentSlide].classList.remove('active');
+      currentSlide = (index + totalSlides) % totalSlides;
+      slides[currentSlide].classList.add('active');
+      dots[currentSlide].classList.add('active');
+    }
+    function nextSlide() { goToSlide(currentSlide + 1); resetAutoplay(); }
+    function prevSlide() { goToSlide(currentSlide - 1); resetAutoplay(); }
+    function resetAutoplay() {
+      clearInterval(autoplayTimer);
+      autoplayTimer = setInterval(() => goToSlide(currentSlide + 1), 4000);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      resetAutoplay();
+      const track = document.getElementById('carouselTrack');
+      if (track) {
+        let startX = 0;
+        track.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+        track.addEventListener('touchend',   e => {
+          const diff = startX - e.changedTouches[0].clientX;
+          if (Math.abs(diff) > 40) diff > 0 ? nextSlide() : prevSlide();
+        }, { passive: true });
+      }
+    });
