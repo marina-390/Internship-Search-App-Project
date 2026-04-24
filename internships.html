@@ -14,10 +14,20 @@
       <a href="index.html" class="logo">InternHub</a>
       <ul class="nav-menu">
         <li class="nav-item">
-          <a href="internships.html" class="nav-link active">Internships</a>
+          <a href="internships.html" class="nav-link active" data-i18n="nav.internships">Internships</a>
         </li>
         <li class="nav-item">
-          <a href="auth.html" class="nav-link">Login/Register</a>
+          <div class="lang-switcher">
+            <button class="lang-toggle" onclick="toggleLangDropdown(event)">🌐 <span class="lang-current">EN</span> <span class="lang-caret">▾</span></button>
+            <ul class="lang-dropdown">
+              <li><button class="lang-btn" data-lang="en" onclick="setLanguage('en')">🇬🇧 English</button></li>
+              <li><button class="lang-btn" data-lang="fi" onclick="setLanguage('fi')">🇫🇮 Suomi</button></li>
+              <li><button class="lang-btn" data-lang="sv" onclick="setLanguage('sv')">🇸🇪 Svenska</button></li>
+            </ul>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a href="auth.html" class="nav-link" data-i18n="nav.loginRegister">Login/Register</a>
         </li>
       </ul>
       <div class="hamburger">
@@ -33,25 +43,25 @@
       <!-- Row 1: main search fields — all same height -->
       <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 1rem; margin-bottom: 0.875rem; align-items: end;">
         <div>
-          <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-light); display:block; margin-bottom:0.35rem; text-transform:uppercase; letter-spacing:0.04em;">Position / Company</label>
-          <input type="text" id="searchInput" placeholder="e.g. Developer, Google..." style="width:100%; height:42px; margin:0;" />
+          <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-light); display:block; margin-bottom:0.35rem; text-transform:uppercase; letter-spacing:0.04em;" data-i18n="internships.positionLabel">Position / Company</label>
+          <input type="text" id="searchInput" placeholder="e.g. Developer, Google..." data-i18n-placeholder="internships.positionPlaceholder" style="width:100%; height:42px; margin:0;" />
         </div>
         <div>
-          <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-light); display:block; margin-bottom:0.35rem; text-transform:uppercase; letter-spacing:0.04em;">Location</label>
-          <input type="text" id="filterLocation" placeholder="Helsinki, Remote..." style="width:100%; height:42px; margin:0;" />
+          <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-light); display:block; margin-bottom:0.35rem; text-transform:uppercase; letter-spacing:0.04em;" data-i18n="internships.locationLabel">Location</label>
+          <input type="text" id="filterLocation" placeholder="Helsinki, Remote..." data-i18n-placeholder="internships.locationPlaceholder" style="width:100%; height:42px; margin:0;" />
         </div>
         <div>
-          <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-light); display:block; margin-bottom:0.35rem; text-transform:uppercase; letter-spacing:0.04em;">Category</label>
+          <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-light); display:block; margin-bottom:0.35rem; text-transform:uppercase; letter-spacing:0.04em;" data-i18n="internships.categoryLabel">Category</label>
           <select id="filterCategory" style="width:100%; height:42px; margin:0;">
-            <option value="">All Categories</option>
+            <option value="" data-i18n="internships.categoryDefault">All Categories</option>
           </select>
         </div>
         <div>
-          <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-light); display:block; margin-bottom:0.35rem; text-transform:uppercase; letter-spacing:0.04em;">Start After</label>
+          <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-light); display:block; margin-bottom:0.35rem; text-transform:uppercase; letter-spacing:0.04em;" data-i18n="internships.startLabel">Start After</label>
           <input type="date" id="filterDateStart" style="width:100%; height:42px; margin:0;" />
         </div>
         <div>
-          <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-light); display:block; margin-bottom:0.35rem; text-transform:uppercase; letter-spacing:0.04em;">End Before</label>
+          <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-light); display:block; margin-bottom:0.35rem; text-transform:uppercase; letter-spacing:0.04em;" data-i18n="internships.endLabel">End Before</label>
           <input type="date" id="filterDateEnd" style="width:100%; height:42px; margin:0;" />
         </div>
       </div>
@@ -59,9 +69,9 @@
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.875rem; color:var(--text-color); cursor:pointer;">
           <input type="checkbox" id="favoritesOnly" name="favoritesOnly" onchange="filterJobs()" style="width:auto; margin:0;">
-          My Favourites
+          <span data-i18n="internships.favorites">My Favourites</span>
         </label>
-        <button class="btn btn-primary" id="filterBtn" style="height:42px; padding: 0 2rem;">Apply Filters</button>
+        <button class="btn btn-primary" id="filterBtn" style="height:42px; padding: 0 2rem;" data-i18n="internships.btnFilter">Apply Filters</button>
       </div>
     </div>
   </section>
@@ -75,8 +85,8 @@
 
       <!-- No Results Message -->
       <div id="noResults" class="text-center" style="padding: 4rem 2rem; display: none;">
-        <h3>No internships found</h3>
-        <p class="text-muted">Try adjusting your search filters</p>
+        <h3 data-i18n="internships.noResultsTitle">No internships found</h3>
+        <p class="text-muted" data-i18n="internships.noResultsDesc">Try adjusting your search filters</p>
       </div>
     </div>
   </section>
@@ -84,50 +94,51 @@
   <footer>
     <div class="footer-content">
       <div class="footer-section">
-        <h4>About InternHub</h4>
+        <h4 data-i18n="footer.aboutHeading">About InternHub</h4>
         <ul>
-          <li><a href="footer_info/about-us.html">About Us</a></li>
-          <li><a href="footer_info/team.html">Our Team</a></li>
-          <li><a href="footer_info/contact.html">Contact</a></li>
+          <li><a href="footer_info/about-us.html" data-i18n="footer.aboutUs">About Us</a></li>
+          <li><a href="footer_info/team.html" data-i18n="footer.team">Our Team</a></li>
+          <li><a href="footer_info/contact.html" data-i18n="footer.contact">Contact</a></li>
         </ul>
       </div>
 
       <div class="footer-section">
-        <h4>For Students</h4>
+        <h4 data-i18n="footer.studentsHeading">For Students</h4>
         <ul>
-          <li><a href="footer_info/career-resources.html">Career Resources</a></li>
-          <li><a href="footer_info/resume-builder.html">Resume Builder</a></li>
-          <li><a href="footer_info/interview-tips.html">Interview Tips</a></li>
+          <li><a href="footer_info/career-resources.html" data-i18n="footer.careerResources">Career Resources</a></li>
+          <li><a href="footer_info/resume-builder.html" data-i18n="footer.resumeBuilder">Resume Builder</a></li>
+          <li><a href="footer_info/interview-tips.html" data-i18n="footer.interviewTips">Interview Tips</a></li>
         </ul>
       </div>
 
       <div class="footer-section">
-        <h4>For Employers</h4>
+        <h4 data-i18n="footer.employersHeading">For Employers</h4>
         <ul>
-          <li><a href="footer_info/company.html">Post Job</a></li>
-          <li><a href="footer_info/browse-candidates.html">Browse Candidates</a></li>
-          <li><a href="footer_info/support.html">Support</a></li>
+          <li><a href="footer_info/company.html" data-i18n="footer.postJob">Post Job</a></li>
+          <li><a href="footer_info/browse-candidates.html" data-i18n="footer.browseCandidates">Browse Candidates</a></li>
+          <li><a href="footer_info/support.html" data-i18n="footer.support">Support</a></li>
         </ul>
       </div>
 
       <div class="footer-section">
-        <h4>Legal</h4>
+        <h4 data-i18n="footer.legalHeading">Legal</h4>
         <ul>
-          <li><a href="footer_info/privacy-policy.html">Privacy Policy</a></li>
-          <li><a href="footer_info/terms-of-service.html">Terms of Service</a></li>
-          <li><a href="footer_info/cookie-policy.html">Cookie Policy</a></li>
+          <li><a href="footer_info/privacy-policy.html" data-i18n="footer.privacyPolicy">Privacy Policy</a></li>
+          <li><a href="footer_info/terms-of-service.html" data-i18n="footer.termsOfService">Terms of Service</a></li>
+          <li><a href="footer_info/cookie-policy.html" data-i18n="footer.cookiePolicy">Cookie Policy</a></li>
         </ul>
       </div>
     </div>
 
     <div class="footer-bottom">
-      <p>&copy; 2026 InternHub. All rights reserved. | Helping students find their next opportunity</p>
+      <p data-i18n="footer.copyright">&copy; 2026 InternHub. All rights reserved. | Helping students find their next opportunity</p>
     </div>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/i18n.js"></script>
   <script src="js/script.js"></script>
   <script src="js/favorites.js"></script>
   <script src="js/cookie-consent.js"></script>

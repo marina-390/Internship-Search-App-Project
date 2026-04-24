@@ -96,8 +96,9 @@ function initUserMenu() {
       const isCompany = session.role === 2;
       const fallbackIcon = isCompany ? '🏢' : avatarInitials;
       const isAdmin = session.role === 0;
-      const adminLink = isAdmin ? `<li><a href="admin.html">🛡 Admin Panel</a></li>` : '';
-      const profileLabel = isAdmin ? 'My Account' : 'Profile';
+      const tFn = (typeof t === 'function') ? t : (k) => k;
+      const adminLink = isAdmin ? `<li><a href="admin.html">🛡 ${tFn('nav.adminPanel')}</a></li>` : '';
+      const profileLabel = isAdmin ? 'My Account' : tFn('nav.profile');
 
       const userLi = document.createElement('li');
       userLi.className = 'nav-item user-menu';
@@ -111,7 +112,7 @@ function initUserMenu() {
         <ul class="user-dropdown" id="userDropdown">
           ${adminLink}
           <li><a href="${getProfileUrl(session.role)}">${profileLabel}</a></li>
-          <li><a href="#" onclick="logout(event)">Logout</a></li>
+          <li><a href="#" onclick="logout(event)">${tFn('nav.logout')}</a></li>
         </ul>
       `;
       navMenu.appendChild(userLi);
@@ -119,9 +120,10 @@ function initUserMenu() {
       // Even if getUserData fails, show a minimal nav with initials
       console.warn('getUserData error, using fallback nav:', err);
       navMenu.querySelectorAll('.user-menu').forEach(m => m.remove());
+      const tFn2 = (typeof t === 'function') ? t : (k) => k;
       const isAdmin = session.role === 0;
-      const adminLink = isAdmin ? `<li><a href="admin.html">🛡 Admin Panel</a></li>` : '';
-      const profileLabel = isAdmin ? 'My Account' : 'Profile';
+      const adminLink = isAdmin ? `<li><a href="admin.html">🛡 ${tFn2('nav.adminPanel')}</a></li>` : '';
+      const profileLabel = isAdmin ? 'My Account' : tFn2('nav.profile');
       const userLi = document.createElement('li');
       userLi.className = 'nav-item user-menu';
       userLi.innerHTML = `
@@ -131,7 +133,7 @@ function initUserMenu() {
         <ul class="user-dropdown" id="userDropdown">
           ${adminLink}
           <li><a href="${getProfileUrl(session.role)}">${profileLabel}</a></li>
-          <li><a href="#" onclick="logout(event)">Logout</a></li>
+          <li><a href="#" onclick="logout(event)">${tFn2('nav.logout')}</a></li>
         </ul>
       `;
       navMenu.appendChild(userLi);

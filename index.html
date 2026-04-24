@@ -379,8 +379,18 @@
     <div class="nav-container">
       <a href="index.html" class="logo">InternHub</a>
       <ul class="nav-menu">
-        <li class="nav-item"><a href="internships.html" class="nav-link">Internships</a></li>
-        <li class="nav-item"><a href="auth.html" class="nav-link">Login/Register</a></li>
+        <li class="nav-item"><a href="internships.html" class="nav-link" data-i18n="nav.internships">Internships</a></li>
+        <li class="nav-item">
+          <div class="lang-switcher">
+            <button class="lang-toggle" onclick="toggleLangDropdown(event)">🌐 <span class="lang-current">EN</span> <span class="lang-caret">▾</span></button>
+            <ul class="lang-dropdown">
+              <li><button class="lang-btn" data-lang="en" onclick="setLanguage('en')">🇬🇧 English</button></li>
+              <li><button class="lang-btn" data-lang="fi" onclick="setLanguage('fi')">🇫🇮 Suomi</button></li>
+              <li><button class="lang-btn" data-lang="sv" onclick="setLanguage('sv')">🇸🇪 Svenska</button></li>
+            </ul>
+          </div>
+        </li>
+        <li class="nav-item"><a href="auth.html" class="nav-link" data-i18n="nav.loginRegister">Login/Register</a></li>
       </ul>
       <div class="hamburger"><span></span><span></span><span></span></div>
     </div>
@@ -389,11 +399,11 @@
   <!-- Hero -->
   <section class="hero" id="heroSection">
     <div class="hero-content" id="heroContent">
-      <h1>Find Your Perfect Internship</h1>
-      <p>Discover exciting internship opportunities with leading companies and launch your career</p>
+      <h1 data-i18n="hero.title">Find Your Perfect Internship</h1>
+      <p data-i18n="hero.subtitle">Discover exciting internship opportunities with leading companies and launch your career</p>
       <div class="hero-buttons">
-        <a href="internships.html" class="btn btn-primary btn-large">Browse Internships</a>
-        <a href="javascript:void(0)" onclick="checkCompanyAuth()" class="btn btn-secondary btn-large">Post Internship</a>
+        <a href="internships.html" class="btn btn-primary btn-large" data-i18n="hero.btnBrowse">Browse Internships</a>
+        <a href="javascript:void(0)" onclick="checkCompanyAuth()" class="btn btn-secondary btn-large" data-i18n="hero.btnPost">Post Internship</a>
       </div>
     </div>
 
@@ -418,7 +428,7 @@
 
   <!-- Logo marquee strip -->
   <div class="logo-strip">
-    <p class="logo-strip-label">Trusted by interns from the leadings educational institutions</p>
+    <p class="logo-strip-label" data-i18n="logoStrip.label">Trusted by interns from the leading educational institutions</p>
     <div class="logo-track-wrap">
       <div class="logo-track">
         <div class="logo-item"><img src="pics/aalto.jpg"    alt="Aalto" /></div>
@@ -455,25 +465,25 @@
       <div class="carousel-slide active">
         <img src="pics/apply.jpg" alt="Apply" />
         <div class="carousel-caption">
-          <span class="carousel-step">Step 01</span>
-          <h3>Apply</h3>
-          <p>Browse hundreds of positions and submit your application in minutes</p>
+          <span class="carousel-step" data-i18n="carousel.step1">Step 01</span>
+          <h3 data-i18n="carousel.step1Title">Apply</h3>
+          <p data-i18n="carousel.step1Desc">Browse hundreds of positions and submit your application in minutes</p>
         </div>
       </div>
       <div class="carousel-slide">
         <img src="pics/interview.jpg" alt="Interview" />
         <div class="carousel-caption">
-          <span class="carousel-step">Step 02</span>
-          <h3>Interview</h3>
-          <p>Connect with top companies and showcase your skills</p>
+          <span class="carousel-step" data-i18n="carousel.step2">Step 02</span>
+          <h3 data-i18n="carousel.step2Title">Interview</h3>
+          <p data-i18n="carousel.step2Desc">Connect with top companies and showcase your skills</p>
         </div>
       </div>
       <div class="carousel-slide">
         <img src="pics/hired.jpg" alt="Get Hired" />
         <div class="carousel-caption">
-          <span class="carousel-step">Step 03</span>
-          <h3>Get Hired</h3>
-          <p>Land your dream internship and launch your career</p>
+          <span class="carousel-step" data-i18n="carousel.step3">Step 03</span>
+          <h3 data-i18n="carousel.step3Title">Get Hired</h3>
+          <p data-i18n="carousel.step3Desc">Land your dream internship and launch your career</p>
         </div>
       </div>
     </div>
@@ -490,27 +500,27 @@
   <section id="cta-section">
     <div class="cta-inner">
       <div>
-        <p class="cta-left-label">Get started today</p>
-        <h2 class="cta-headline">Ready to launch your career?</h2>
-        <p class="cta-sub">Join thousands of students already finding great internships through InternHub. It only takes two minutes to create your profile.</p>
+        <p class="cta-left-label" data-i18n="cta.label">Get started today</p>
+        <h2 class="cta-headline" data-i18n="cta.headline">Ready to launch your career?</h2>
+        <p class="cta-sub" data-i18n="cta.description">Join thousands of students already finding great internships through InternHub. It only takes two minutes to create your profile.</p>
       </div>
       <div class="cta-cards">
         <a href="auth.html?mode=register" class="cta-option">
           <div class="cta-option-inner">
             <div class="cta-option-icon">🎓</div>
-            <div><div class="cta-option-title">I'm a Student</div><div class="cta-option-desc">Find internships that match your skills</div></div>
+            <div><div class="cta-option-title" data-i18n="cta.studentTitle">I'm a Student</div><div class="cta-option-desc" data-i18n="cta.studentDesc">Find internships that match your skills</div></div>
           </div><span class="cta-option-arrow">→</span>
         </a>
         <a href="auth.html?mode=register" class="cta-option">
           <div class="cta-option-inner">
             <div class="cta-option-icon">🏢</div>
-            <div><div class="cta-option-title">I'm an Employer</div><div class="cta-option-desc">Post positions and find great interns</div></div>
+            <div><div class="cta-option-title" data-i18n="cta.employerTitle">I'm an Employer</div><div class="cta-option-desc" data-i18n="cta.employerDesc">Post positions and find great interns</div></div>
           </div><span class="cta-option-arrow">→</span>
         </a>
         <a href="auth.html?mode=login" class="cta-option">
           <div class="cta-option-inner">
             <div class="cta-option-icon">🔑</div>
-            <div><div class="cta-option-title">Sign In</div><div class="cta-option-desc">Continue where you left off</div></div>
+            <div><div class="cta-option-title" data-i18n="cta.signinTitle">Sign In</div><div class="cta-option-desc" data-i18n="cta.signinDesc">Continue where you left off</div></div>
           </div><span class="cta-option-arrow">→</span>
         </a>
       </div>
@@ -521,46 +531,47 @@
   <footer>
     <div class="footer-content">
       <div class="footer-section">
-        <h4>About InternHub</h4>
+        <h4 data-i18n="footer.aboutHeading">About InternHub</h4>
         <ul>
-          <li><a href="footer_info/about-us.html">About Us</a></li>
-          <li><a href="footer_info/team.html">Our Team</a></li>
-          <li><a href="footer_info/contact.html">Contact</a></li>
+          <li><a href="footer_info/about-us.html" data-i18n="footer.aboutUs">About Us</a></li>
+          <li><a href="footer_info/team.html" data-i18n="footer.team">Our Team</a></li>
+          <li><a href="footer_info/contact.html" data-i18n="footer.contact">Contact</a></li>
         </ul>
       </div>
       <div class="footer-section">
-        <h4>For Students</h4>
+        <h4 data-i18n="footer.studentsHeading">For Students</h4>
         <ul>
-          <li><a href="footer_info/career-resources.html">Career Resources</a></li>
-          <li><a href="footer_info/resume-builder.html">Resume Builder</a></li>
-          <li><a href="footer_info/interview-tips.html">Interview Tips</a></li>
+          <li><a href="footer_info/career-resources.html" data-i18n="footer.careerResources">Career Resources</a></li>
+          <li><a href="footer_info/resume-builder.html" data-i18n="footer.resumeBuilder">Resume Builder</a></li>
+          <li><a href="footer_info/interview-tips.html" data-i18n="footer.interviewTips">Interview Tips</a></li>
         </ul>
       </div>
       <div class="footer-section">
-        <h4>For Employers</h4>
+        <h4 data-i18n="footer.employersHeading">For Employers</h4>
         <ul>
-          <li><a href="footer_info/company.html">Post Job</a></li>
-          <li><a href="footer_info/browse-candidates.html">Browse Candidates</a></li>
-          <li><a href="footer_info/support.html">Support</a></li>
+          <li><a href="footer_info/company.html" data-i18n="footer.postJob">Post Job</a></li>
+          <li><a href="footer_info/browse-candidates.html" data-i18n="footer.browseCandidates">Browse Candidates</a></li>
+          <li><a href="footer_info/support.html" data-i18n="footer.support">Support</a></li>
         </ul>
       </div>
       <div class="footer-section">
-        <h4>Legal</h4>
+        <h4 data-i18n="footer.legalHeading">Legal</h4>
         <ul>
-          <li><a href="footer_info/privacy-policy.html">Privacy Policy</a></li>
-          <li><a href="footer_info/terms-of-service.html">Terms of Service</a></li>
-          <li><a href="footer_info/cookie-policy.html">Cookie Policy</a></li>
+          <li><a href="footer_info/privacy-policy.html" data-i18n="footer.privacyPolicy">Privacy Policy</a></li>
+          <li><a href="footer_info/terms-of-service.html" data-i18n="footer.termsOfService">Terms of Service</a></li>
+          <li><a href="footer_info/cookie-policy.html" data-i18n="footer.cookiePolicy">Cookie Policy</a></li>
         </ul>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>&copy; 2026 InternHub. All rights reserved. | Helping students find their next opportunity</p>
+      <p data-i18n="footer.copyright">&copy; 2026 InternHub. All rights reserved. | Helping students find their next opportunity</p>
     </div>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/i18n.js"></script>
   <script src="js/script.js"></script>
   <script src="js/cookie-consent.js"></script>
 </body>

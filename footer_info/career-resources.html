@@ -13,10 +13,20 @@
       <a href="../index.html" class="logo">InternHub</a>
       <ul class="nav-menu">
         <li class="nav-item">
-          <a href="../internships.html" class="nav-link">Internships</a>
+          <a href="../internships.html" class="nav-link" data-i18n="nav.internships">Internships</a>
         </li>
         <li class="nav-item">
-          <a href="../auth.html" class="nav-link active">Login/Register</a>
+          <div class="lang-switcher">
+            <button class="lang-toggle" onclick="toggleLangDropdown(event)">🌐 <span class="lang-current">EN</span> <span class="lang-caret">▾</span></button>
+            <ul class="lang-dropdown">
+              <li><button class="lang-btn" data-lang="en" onclick="setLanguage('en')">🇬🇧 English</button></li>
+              <li><button class="lang-btn" data-lang="fi" onclick="setLanguage('fi')">🇫🇮 Suomi</button></li>
+              <li><button class="lang-btn" data-lang="sv" onclick="setLanguage('sv')">🇸🇪 Svenska</button></li>
+            </ul>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a href="../auth.html" class="nav-link active" data-i18n="nav.loginRegister">Login/Register</a>
         </li>
       </ul>
       <div class="hamburger">
@@ -154,6 +164,7 @@
 <script src="../js/supabase.js"></script>
 
 <script src="../js/auth.js"></script>
+<script src="../js/i18n.js"></script>
 <script src="../js/script.js"></script>
   <script src="../js/cookie-consent.js"></script>
 
