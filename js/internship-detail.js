@@ -184,19 +184,6 @@ async function loadInternshipDetail(positionId) {
             });
         }
 
-        // Re-attach favorite button listeners safely
-        document.querySelectorAll('.favorite-btn').forEach(btn => {
-            const clonedBtn = btn.cloneNode(true);
-            btn.parentNode.replaceChild(clonedBtn, btn);
-            clonedBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const jobId = position.position_id;
-                if (jobId && typeof toggleFavorite === 'function') {
-                    toggleFavorite(jobId.toString(), this);
-                }
-            });
-        });
-
 // Hide Apply buttons for company users
         hideApplyButtonForCompanies();
 
@@ -525,6 +512,10 @@ document.getElementById('modalApplyForm').addEventListener('submit', async funct
             btn.style.background = '#6b7280';
             btn.style.cursor = 'default';
             btn.onclick = null;
+        }
+
+        if (typeof removeFavoriteByInternshipId === 'function') {
+          await removeFavoriteByInternshipId(window.currentPosition.position_id?.toString());
         }
 
     } catch (err) {

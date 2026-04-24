@@ -444,6 +444,36 @@
     font-size: 0.8rem;
     cursor: pointer;
 }
+.fav-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border-color);
+  gap: 0.5rem;
+}
+.fav-item:last-child { border-bottom: none; }
+.fav-item-info a {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--primary-color);
+  text-decoration: none;
+}
+.fav-item-info a:hover { text-decoration: underline; }
+.fav-item-info span {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-light);
+}
+.fav-remove-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  padding: 2px;
+}
   </style>
 </head>
 <body>
@@ -705,6 +735,14 @@
             </div>
           </div>
 
+          <!-- Favorites card -->
+<div class="sidebar-card">
+  <h4>❤️ Saved Internships</h4>
+  <div id="favoritesContainer">
+    <p style="color:var(--text-light); font-size:0.9rem;">No saved internships yet.</p>
+  </div>
+</div>
+
           </div><!-- end sidebar-col -->
         </div><!-- end profile-page-layout -->
 
@@ -844,6 +882,7 @@
   <script src="js/profile.js"></script>
   <script src="js/script.js"></script>
   <script src="js/cookie-consent.js"></script>
+  <script src="js/favorites.js"></script>
 
 </body>
 </html>
