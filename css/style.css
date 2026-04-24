@@ -584,6 +584,12 @@ label {
   color: var(--dark-color);
 }
 
+.req-star {
+  color: #ef4444;
+  margin-left: 2px;
+  font-weight: 700;
+}
+
 input[type="text"],
 input[type="email"],
 input[type="password"],

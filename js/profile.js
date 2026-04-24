@@ -2788,7 +2788,8 @@ async function confirmDeleteAccount() {
     if (error) throw error;
 
     // 5. Delete from Supabase Auth by email
-    await supabaseClient.rpc('delete_auth_user_by_email', { p_email: session.login }).catch(() => {});
+    const { error: rpcError } = await supabaseClient.rpc('delete_auth_user_by_email', { p_email: session.login });
+    if (rpcError) console.error('[DeleteAccount] RPC error:', rpcError.message);
 
     // 6. Clear session and redirect
     localStorage.removeItem('userId');

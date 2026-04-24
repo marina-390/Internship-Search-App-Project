@@ -2,6 +2,22 @@
    INTERNSHIP SEARCH APP - NAVIGATION & UI
    ========================================== */
 
+function markRequiredFields(root = document) {
+  root.querySelectorAll('input[required], select[required], textarea[required]').forEach(input => {
+    const label = input.id
+      ? root.querySelector(`label[for="${input.id}"]`)
+      : input.closest('.form-group, .form-field, div')?.querySelector('label');
+    if (label && !label.querySelector('.req-star')) {
+      const star = document.createElement('span');
+      star.className = 'req-star';
+      star.textContent = ' *';
+      label.appendChild(star);
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => markRequiredFields());
+
 function showToast(message, type = 'info') {
   let container = document.getElementById('toast-container');
   if (!container) {
