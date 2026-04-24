@@ -433,7 +433,7 @@ async function saveNewTeamMember() {
  * Deletes member from DB and UI
  */
 async function deleteTeamMember(id) {
-    if (!confirm("Are you sure you want to remove this member?")) return;
+    if (!await showConfirm("Are you sure you want to remove this member?", "Remove")) return;
 
     try {
         const { error } = await supabaseClient
@@ -804,7 +804,7 @@ async function loadCategoriesIntoSelect() {
 }
 
 async function deletePosition(id) {
-  if (!confirm("Are you sure you want to delete this posting?")) return;
+  if (!await showConfirm("Are you sure you want to delete this posting?", "Delete")) return;
 
   try {
       const { error } = await supabaseClient
@@ -1458,7 +1458,7 @@ function fillApplications(applications) {
       const appData = JSON.stringify(app).replace(/"/g, '&quot;');
 
       return `
-          <div class="application-card" id="app-${app.id}">
+          <div class="application-card" id="app-${app.application_id}">
               <div class="app-info">
                   <h5>${jobTitle}</h5>
                   <p>Status: <span class="status-badge status-${(app.status || 'pending').toLowerCase()}">${app.status || 'Pending'}</span></p>
@@ -1468,7 +1468,7 @@ function fillApplications(applications) {
                   
                   <button class="btn-view" style="background:#f3f4f6; color:#374151;" onclick="openEditAppModal(${appData})">Edit</button>
                   
-                  <button class="btn-delete" onclick="deleteApplication(${app.id})">Delete</button>
+                  <button class="btn-delete" onclick="deleteApplication(${app.application_id})">Delete</button>
               </div>
           </div>
       `;
@@ -1516,8 +1516,8 @@ function renderCvEditSection(fileName, fileUrl) {
 // Variable to track if the user deleted their CV during this edit session
 let isCvDeleted = false;
 
-function removeCvFromEdit() {
-    if(confirm("Remove this CV? You will need to upload a new one before saving.")) {
+async function removeCvFromEdit() {
+    if(await showConfirm("Remove this CV? You will need to upload a new one before saving.", "Remove")) {
         isCvDeleted = true;
         // Reset the file input value
         document.getElementById('editCvUpload').value = "";
@@ -1594,7 +1594,7 @@ function viewApplication(positionId) {
 }
 
 async function deleteApplication(applicationId) {
-  if (!confirm("Withdraw this application?")) return;
+  if (!await showConfirm("Withdraw this application?", "Withdraw")) return;
 
   try {
       const { error } = await supabaseClient
@@ -2242,7 +2242,7 @@ async function uploadCV(input) {
 
 // 3. THE DELETE FUNCTION
 async function deleteCV() {
-  if (!confirm("Are you sure you want to remove this CV?")) return;
+  if (!await showConfirm("Are you sure you want to remove this CV?", "Remove")) return;
 
   try {
     const { error } = await supabaseClient
@@ -2445,7 +2445,7 @@ async function togglePracticeRequestStatus(requestId, newStatus) {
 }
 
 async function deletePracticeRequest(requestId) {
-  if (!confirm('Delete this internship request?')) return;
+  if (!await showConfirm('Delete this internship request?', 'Delete')) return;
 
   const { error } = await supabaseClient
     .from('student_practice_requests')
@@ -2730,7 +2730,23 @@ async function confirmDeleteAccount() {
   errorEl.style.display = 'none';
 
   const session = getCurrentSession();
-  if (!session || !currentProfile) return;
+  if (!session) {
+    errorEl.textContent = 'Session not found. Please log in again.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  if (!currentProfile) {
+    const { data: profile } = await supabaseClient
+      .from('student_profiles')
+      .select('*')
+      .eq('user_id', session.userId)
+      .single();
+    if (profile) currentProfile = profile;
+  }
+
+  const deleteBtn = document.getElementById('confirmDeleteBtn');
+  if (deleteBtn) { deleteBtn.disabled = true; deleteBtn.textContent = 'Deleting...'; }
 
   try {
     // 1. Delete CV file from storage
@@ -2749,7 +2765,20 @@ async function confirmDeleteAccount() {
       }
     }
 
-    // 3. Delete user record — cascades to student_profiles, applications,
+    // 3. Delete CV files from resumes bucket (uploaded with applications)
+    const { data: apps } = await supabaseClient
+      .from('applications')
+      .select('cv_url')
+      .eq('student_id', currentProfile.id);
+    if (apps?.length) {
+      const paths = apps
+        .map(a => a.cv_url?.split('/resumes/')[1]?.split('?')[0])
+        .filter(Boolean)
+        .map(p => decodeURIComponent(p));
+      if (paths.length) await supabaseClient.storage.from('resumes').remove(paths);
+    }
+
+    // 4. Delete user record — cascades to student_profiles, applications,
     //    student_categories, Student_links, student_practice_requests, etc.
     const { error } = await supabaseClient
       .from('Users')
@@ -2758,7 +2787,10 @@ async function confirmDeleteAccount() {
 
     if (error) throw error;
 
-    // 4. Clear session and redirect
+    // 5. Delete from Supabase Auth by email
+    await supabaseClient.rpc('delete_auth_user_by_email', { p_email: session.login }).catch(() => {});
+
+    // 6. Clear session and redirect
     localStorage.removeItem('userId');
     localStorage.removeItem('userRole');
     localStorage.removeItem('userLogin');
@@ -2770,5 +2802,6 @@ async function confirmDeleteAccount() {
     console.error('Delete account error:', err);
     errorEl.textContent = 'Error: ' + err.message;
     errorEl.style.display = 'block';
+    if (deleteBtn) { deleteBtn.disabled = false; deleteBtn.textContent = 'Delete permanently'; }
   }
 }

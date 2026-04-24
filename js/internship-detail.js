@@ -452,7 +452,7 @@ function resetCVUpload() {
 }
 
 
-(function() { if (typeof emailjs !== 'undefined') emailjs.init("sEPTKkb6HZBc_Qopf"); })();
+(function() { if (typeof emailjs !== 'undefined') emailjs.init("JI1iX7kMcKuHQBrGW"); })();
 
 document.getElementById('modalApplyForm').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -501,18 +501,26 @@ document.getElementById('modalApplyForm').addEventListener('submit', async funct
 
         // Notify employer by email
         const companyEmail = window.currentCompany?.contact_email;
+        console.log('[Email] company contact_email:', companyEmail);
+        console.log('[Email] emailjs loaded:', typeof emailjs !== 'undefined');
         if (companyEmail && typeof emailjs !== 'undefined') {
             const studentName = [
                 document.getElementById('applyFirstName')?.value,
                 document.getElementById('applyLastName')?.value
             ].filter(Boolean).join(' ') || 'A student';
-            emailjs.send('service_q4hp8tj', 'template_new_application', {
+            const emailParams = {
                 to_email:       companyEmail,
                 student_name:   studentName,
                 position_title: window.currentPosition?.title || 'your position',
-                cover_letter:   document.getElementById('applyLetter')?.value || '',
+                cover_letter:   document.getElementById('applyLetter')?.value?.trim() || 'Not provided',
                 profile_link:   window.location.href
-            }).catch(err => console.warn('Email notification failed:', err));
+            };
+            console.log('[Email] sending with params:', emailParams);
+            emailjs.send('service_gix61gn', 'template_new_application', emailParams)
+                .then(() => console.log('[Email] sent successfully'))
+                .catch(err => console.error('[Email] send failed:', err));
+        } else if (!companyEmail) {
+            console.warn('[Email] skipped — company has no contact_email in database');
         }
 
         showToast("Application sent!", 'success');
@@ -882,7 +890,7 @@ async function confirmInterviewScheduleDetail() {
 
 // Delete application from sidebar
 async function deleteApplicationFromSidebar(applicationId, studentName) {
-  if (!confirm(`Delete application from ${studentName}?`)) return;
+  if (!await showConfirm(`Delete application from ${studentName}?`, 'Delete')) return;
 
   try {
     const { error } = await supabaseClient
