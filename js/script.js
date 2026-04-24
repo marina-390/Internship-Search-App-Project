@@ -277,12 +277,12 @@ function formatDateEuropean(dateString) {
 // Search/Filter functionality - now handled by attachFilterListeners on internships page
 
 function filterJobs() {
-  const searchText = document.getElementById('searchInput').value.toLowerCase();
-  const locationText = document.getElementById('filterLocation').value.toLowerCase();
-  const categoryId = document.getElementById('filterCategory').value;
+  const searchText = document.getElementById('searchInput')?.value?.toLowerCase() || '';
+  const locationText = document.getElementById('filterLocation')?.value?.toLowerCase() || '';
+  const categoryId = document.getElementById('filterCategory')?.value || '';
   const favoritesFilter = document.getElementById('favoritesFilter')?.value || 'all';
-  const dateStartLimit = document.getElementById('filterDateStart').value;
-  const dateEndLimit = document.getElementById('filterDateEnd').value;
+  const dateStartLimit = document.getElementById('filterDateStart')?.value || '';
+  const dateEndLimit = document.getElementById('filterDateEnd')?.value || '';
 
   const jobCards = document.querySelectorAll('.job-card');
   let visibleCount = 0;
@@ -490,6 +490,10 @@ async function loadInternships() {
 
     // Re-attach event listeners for job cards
     attachJobCardListeners();
+    updateFavoriteStates();
+    if (typeof highlightSavedFavorites === 'function') {
+      highlightSavedFavorites();
+    }
 
   } catch (err) {
     console.error('Error loading internships:', err);
@@ -501,33 +505,28 @@ async function loadInternships() {
 // ATTACH JOB CARD LISTENERS
 // ==========================================
 function attachJobCardListeners() {
-  // Job Card Navigation
+  // Job Card Navigation + Favorites
   const jobCards = document.querySelectorAll('.job-card');
   jobCards.forEach(card => {
     card.addEventListener('click', function(e) {
       // Don't navigate if clicking favorite button
       if (e.target.classList.contains('favorite-btn')) return;
-      
+
       const jobId = this.getAttribute('data-job-id');
       if (jobId) {
         window.location.href = `internship-detail.html?id=${jobId}`;
       }
     });
+
+    const favBtn = card.querySelector('.favorite-btn');
+    if (favBtn) {
+      favBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const jobId = card.getAttribute('data-job-id');
+        toggleFavoriteBtn(jobId, this);
+      });
+    }
   });
-
-// --- IMPROVED FAVORITE SYSTEM ---
-
-function getFavorites() {
-  const raw = localStorage.getItem('favorites');
-  if (!raw) return [];
-  try {
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.map(item => item?.toString?.() ?? '') : [];
-  } catch (err) {
-    console.warn('Clearing invalid favorites data from localStorage:', err);
-    localStorage.removeItem('favorites');
-    return [];
-  }
 }
 
 function saveFavorites(favorites) {
@@ -537,62 +536,118 @@ function saveFavorites(favorites) {
   localStorage.setItem('favorites', JSON.stringify(favorites));
 }
 
-function toggleFavorite(jobId, btn) {
+// ── FAVORITES (localStorage only — syncs with Supabase via favorites.js) ──
+function getFavorites() {
+  const raw = localStorage.getItem('favorites');
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.map(item => item?.toString?.() ?? '') : [];
+  } catch (err) {
+    localStorage.removeItem('favorites');
+    return [];
+  }
+}
+
+function updateFavoriteStates() {
+  const favorites = getFavorites();
+  document.querySelectorAll('.favorite-btn').forEach(btn => {
+    const jobContainer = btn.closest('[data-job-id]');
+    const jobId = jobContainer
+      ? jobContainer.getAttribute('data-job-id')
+      : window.currentPosition?.position_id;
+    if (jobId) {
+      btn.innerHTML = favorites.includes(jobId.toString()) ? '❤️' : '🤍';
+    }
+  });
+}
+
+function toggleFavoriteBtn(jobId, btn) {
   if (!jobId) return;
   const favorites = getFavorites();
   const jobIdStr = jobId.toString();
   const index = favorites.indexOf(jobIdStr);
-  
   if (index > -1) {
-      favorites.splice(index, 1);
-      btn.innerHTML = '🤍';
+    favorites.splice(index, 1);
+    btn.innerHTML = '🤍';
   } else {
-      favorites.push(jobIdStr);
-      btn.innerHTML = '❤️';
+    favorites.push(jobIdStr);
+    btn.innerHTML = '❤️';
   }
-  
-  saveFavorites(favorites);
-  
-  // If we are on the search page, refresh the list
-  if (typeof filterJobs === 'function') {
-      filterJobs();
+  localStorage.setItem('favorites', JSON.stringify(favorites));
+
+  // Also sync to Supabase if favorites.js is loaded
+  if (typeof syncFavoriteToSupabase === 'function') {
+    syncFavoriteToSupabase(jobIdStr, btn.innerHTML === '❤️');
   }
+
+  // Notify any favorites UI listeners in this tab
+  if (typeof window.dispatchEvent === 'function') {
+    window.dispatchEvent(new CustomEvent('favoritesUpdated', {
+      detail: { internshipId: jobIdStr, isFavorite: btn.innerHTML === '❤️' }
+    }));
+  }
+
+  if (typeof filterJobs === 'function' && document.getElementById('searchInput')) filterJobs();
 }
 
-function updateFavoriteStates() {  
-  const favorites = getFavorites();  
-  
-  document.querySelectorAll('.favorite-btn').forEach(btn => {    
-      // 1. Try to get ID from a parent container (like the job-card or favBtnContainer)
-      const jobContainer = btn.closest('[data-job-id]'); 
-      // 2. Or check if we are on the detail page and it's stored in the window
-      const jobId = jobContainer ? jobContainer.getAttribute('data-job-id') : window.currentPosition?.position_id;    
-
-      if (jobId && favorites.includes(jobId.toString())) {      
-          btn.innerHTML = '❤️';    
-      } else {
-          btn.innerHTML = '🤍';
-      }
+// Wire up favorite buttons on job cards
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.job-card .favorite-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const jobId = this.closest('.job-card').getAttribute('data-job-id');
+      toggleFavoriteBtn(jobId, this);
+    });
   });
-}
+  updateFavoriteStates();
+});
+
+
 
 // Make sure these are globally accessible
 window.getFavorites = getFavorites;
 window.toggleFavorite = toggleFavorite;
 window.updateFavoriteStates = updateFavoriteStates;
 
-// Real Favorites Toggle
-  const favoriteButtons = document.querySelectorAll('.job-card .favorite-btn');
-  favoriteButtons.forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      const jobId = this.closest('.job-card').getAttribute('data-job-id');
-      toggleFavorite(jobId, this);
-    });
-  });
-
-  updateFavoriteStates();
+async function toggleFavorite(internshipId, btn) {
+  if (!internshipId || !btn) return false;
+  toggleFavoriteBtn(internshipId, btn);
+  return getFavorites().includes(internshipId.toString());
 }
+
+// Real Favorites Toggle
+const favoriteButtons = document.querySelectorAll('.job-card .favorite-btn');
+favoriteButtons.forEach(btn => {
+  btn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    const jobId = this.closest('.job-card').getAttribute('data-job-id');
+    toggleFavorite(jobId, this);
+  });
+});
+
+updateFavoriteStates();
+
+async function handleFavClick(btn, id, title, company, location) {
+  const internshipId = window.currentPosition?.position_id?.toString() || id;
+  if (!internshipId) return;
+  const added = await toggleFavorite(internshipId, btn);
+  btn.textContent = added ? '❤️' : '🤍';
+}
+
+// On page load — highlight already-saved ones
+async function highlightSavedFavorites() {
+  if (typeof supabase === 'undefined') return;
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  const { data } = await supabase.from('favorites').select('internship_id').eq('user_id', user.id);
+  if (!data) return;
+  const savedIds = new Set(data.map(f => f.internship_id));
+  document.querySelectorAll('.favorite-btn[data-job-id]').forEach(btn => {
+    if (savedIds.has(btn.dataset.jobId)) btn.textContent = '❤️';
+  });
+}
+document.addEventListener('DOMContentLoaded', highlightSavedFavorites);
 
 // ==========================================
 // ATTACH FILTER LISTENERS
@@ -679,10 +734,11 @@ document.addEventListener('DOMContentLoaded', function() {
     function goToSlide(index) {
       const slides = document.querySelectorAll('.carousel-slide');
       const dots   = document.querySelectorAll('.carousel-dot');
-      if (!slides.length) return;
+      if (!slides.length || !dots.length || !slides[currentSlide] || !dots[currentSlide]) return;
       slides[currentSlide].classList.remove('active');
       dots[currentSlide].classList.remove('active');
       currentSlide = (index + totalSlides) % totalSlides;
+      if (!slides[currentSlide] || !dots[currentSlide]) return;
       slides[currentSlide].classList.add('active');
       dots[currentSlide].classList.add('active');
     }
@@ -690,21 +746,21 @@ document.addEventListener('DOMContentLoaded', function() {
     function prevSlide() { goToSlide(currentSlide - 1); resetAutoplay(); }
     function resetAutoplay() {
       clearInterval(autoplayTimer);
+      const slides = document.querySelectorAll('.carousel-slide');
+      if (!slides.length) return;
       autoplayTimer = setInterval(() => goToSlide(currentSlide + 1), 4000);
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-      resetAutoplay();
       const track = document.getElementById('carouselTrack');
-      if (track) {
-        let startX = 0;
-        track.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
-        track.addEventListener('touchend',   e => {
-          const diff = startX - e.changedTouches[0].clientX;
-          if (Math.abs(diff) > 40) diff > 0 ? nextSlide() : prevSlide();
-        }, { passive: true });
-
-      }
+      if (!track) return;
+      resetAutoplay();
+      let startX = 0;
+      track.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+      track.addEventListener('touchend',   e => {
+        const diff = startX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 40) diff > 0 ? nextSlide() : prevSlide();
+      }, { passive: true });
     });
 
 function showConfirm(message, confirmText = 'Confirm', cancelText = 'Cancel') {
