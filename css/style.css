@@ -64,7 +64,7 @@
 }
 
 :root {
-  --primary-color: #4f46e5;
+  --primary-color: #5a669d;
   --secondary-color: #10b981;
   --dark-color: #1f2937;
   --light-color: #f9fafb;
@@ -89,7 +89,7 @@ body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: var(--text-color);
   line-height: 1.6;
-  background-color: #ffffff;
+  background-color: var(--light-color);
 }
 
 /* ==========================================
@@ -156,7 +156,7 @@ a:hover {
 }
 
 .btn-primary:hover {
-  background-color: #4338ca;
+  background-color: #5a669d;
   transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
 }
@@ -200,7 +200,7 @@ a:hover {
 }
 
 .btn-view:hover {
-  background-color: #4338ca;
+  background-color: #5a669d;
   transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
 }
