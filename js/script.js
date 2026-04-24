@@ -2,6 +2,22 @@
    INTERNSHIP SEARCH APP - NAVIGATION & UI
    ========================================== */
 
+function markRequiredFields(root = document) {
+  root.querySelectorAll('input[required], select[required], textarea[required]').forEach(input => {
+    const label = input.id
+      ? root.querySelector(`label[for="${input.id}"]`)
+      : input.closest('.form-group, .form-field, div')?.querySelector('label');
+    if (label && !label.querySelector('.req-star')) {
+      const star = document.createElement('span');
+      star.className = 'req-star';
+      star.textContent = ' *';
+      label.appendChild(star);
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => markRequiredFields());
+
 function showToast(message, type = 'info') {
   let container = document.getElementById('toast-container');
   if (!container) {
@@ -788,3 +804,25 @@ document.addEventListener('DOMContentLoaded', function() {
         if (Math.abs(diff) > 40) diff > 0 ? nextSlide() : prevSlide();
       }, { passive: true });
     });
+
+function showConfirm(message, confirmText = 'Confirm', cancelText = 'Cancel') {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+
+    overlay.innerHTML = `
+      <div style="background:#fff;border-radius:12px;padding:2rem;max-width:400px;width:90%;box-shadow:0 10px 30px rgba(0,0,0,0.2);">
+        <p style="margin:0 0 1.5rem;font-size:1rem;color:#374151;line-height:1.5;">${message}</p>
+        <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+          <button id="confirmCancel" class="btn btn-secondary" style="padding:0.6rem 1.2rem;">${cancelText}</button>
+          <button id="confirmOk" class="btn btn-danger" style="padding:0.6rem 1.2rem;">${confirmText}</button>
+        </div>
+      </div>`;
+
+    document.body.appendChild(overlay);
+
+    overlay.querySelector('#confirmOk').onclick = () => { document.body.removeChild(overlay); resolve(true); };
+    overlay.querySelector('#confirmCancel').onclick = () => { document.body.removeChild(overlay); resolve(false); };
+    overlay.onclick = e => { if (e.target === overlay) { document.body.removeChild(overlay); resolve(false); } };
+  });
+}
