@@ -435,7 +435,7 @@ async function loadInternships() {
     if (companyIds.length > 0) {
       const { data: companies, error: companyError } = await supabaseClient
         .from('Companies')
-        .select('company_id, company_name, city')
+        .select('company_id, company_name, city, logo_url')
         .in('company_id', companyIds);
 
       if (companyError) {
@@ -471,10 +471,12 @@ async function loadInternships() {
 
     // Generate job cards with data-created-at
     jobsList.innerHTML = positions.map((pos, index) => {
-      const company = companyMap[pos.company_id] || {};
+    const company = companyMap[pos.company_id] || {};
       const companyName = company.company_name || 'Unknown Company';
+      const companyLogo = company.logo_url || null;
       const location = company.city || 'Remote';
       const category = categoryMap[pos.category_id] || 'General';
+      const companyInitial = companyName.charAt(0).toUpperCase();
 
       // Format period for display
       let periodText = 'Flexible';
@@ -494,12 +496,18 @@ async function loadInternships() {
              data-end="${pos.period_end || ''}"
              data-created-at="${pos.created_at}">
              
-          <div class="job-meta" style="display: flex; justify-content: space-between; align-items: start;">
-            <div>
+          <div class="job-card-header">
+            <div class="company-logo-wrap">
+              ${companyLogo
+                ? `<img src="${companyLogo}" alt="${companyName}" class="company-logo-small" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">`
+                : ''}
+              <div class="company-logo-placeholder" style="display: ${companyLogo ? 'none' : 'flex'};">${companyInitial}</div>
+            </div>
+            <div class="job-card-title-wrap">
               <h3 class="job-title">${pos.title}</h3>
               <p class="job-company">${companyName}</p>
             </div>
-            <button class="favorite-btn" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">🤍</button>
+            <button class="favorite-btn" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; margin-left: auto;">🤍</button>
           </div>
           
           <div class="job-meta">
