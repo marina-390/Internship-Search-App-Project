@@ -325,6 +325,24 @@ function filterJobs() {
 }
 
 // ==========================================
+// SORT JOBS
+// ==========================================
+function sortJobs() {
+  const sortOrder = document.getElementById('sortOrder')?.value || 'newest';
+  const jobsList = document.getElementById('jobsList');
+  if (!jobsList) return;
+
+  const cards = Array.from(jobsList.querySelectorAll('.job-card'));
+  cards.sort((a, b) => {
+    const dateA = new Date(a.getAttribute('data-created-at') || 0);
+    const dateB = new Date(b.getAttribute('data-created-at') || 0);
+    return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+  });
+
+  cards.forEach(card => jobsList.appendChild(card));
+}
+
+// ==========================================
 // LOAD CATEGORIES FOR FILTER
 // ==========================================
 async function loadCategoriesForFilter() {
@@ -477,6 +495,8 @@ async function loadInternships() {
           <p class="job-description">
             ${pos.description ? pos.description.substring(0, 150) + (pos.description.length > 150 ? '...' : '') : 'No description available.'}
           </p>
+
+              <span class="badge date-published" title="Published on ${formatDateEuropean(pos.created_at)}">Published: ${formatDateEuropean(pos.created_at)}</span>
 
           <div class="job-footer">
             <span style="font-size:0.8rem; color:var(--text-light);">
@@ -656,6 +676,7 @@ function attachFilterListeners() {
   const searchInput = document.getElementById('searchInput');
   const filterBtn = document.getElementById('filterBtn');
   const filterCategory = document.getElementById('filterCategory');
+  const sortOrder = document.getElementById('sortOrder');
 
   if (searchInput) {
     searchInput.addEventListener('keyup', filterJobs);
@@ -665,6 +686,11 @@ function attachFilterListeners() {
   }
   if (filterCategory) {
     filterCategory.addEventListener('change', filterJobs);
+  }
+  if (sortOrder) {
+    sortOrder.addEventListener('change', function() {
+      sortJobs();
+    });
   }
 }
 

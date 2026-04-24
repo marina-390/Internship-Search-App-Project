@@ -552,6 +552,12 @@ nav {
   color: var(--secondary-color);
 }
 
+.date-published {
+   background-color: var(--light-color);
+  color: #000000aa;
+  font-size: 0.8rem;
+}
+
 .job-description {
   color: var(--text-light);
   margin-bottom: 1rem;
