@@ -2284,21 +2284,23 @@ function renderCVList() {
   }
 
   container.innerHTML = `
-    <div style="display: flex; align-items: center; justify-content: space-between; background: #f8f9fa; padding: 12px; border-radius: 8px; border: 1px solid #dee2e6;">
-      <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
-        <span>📄</span>
-        <span style="font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">
-          ${currentProfile.cv_original_name || 'Resume.pdf'}
-        </span>
+    <div style="background: white; padding: 14px; border-radius: 10px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+        <span style="font-size: 1.4rem;">📄</span>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 0.95rem; font-weight: 600; color: #1f2937; word-break: break-all; line-height: 1.3;">
+            ${currentProfile.cv_original_name || 'Resume.pdf'}
+          </div>
+        </div>
       </div>
-      <div style="display: flex; gap: 6px;">
-        <a href="${currentProfile.cv_url}" target="_blank" 
-           style="background: #007bff; color: white; padding: 4px 10px; border-radius: 4px; text-decoration: none; font-size: 0.8rem;">
+      <div style="display: flex; gap: 8px;">
+        <button onclick="downloadCVFile('${currentProfile.cv_url}', '${currentProfile.cv_original_name || 'cv.pdf'}')"
+           style="flex: 1; background: #007bff; color: white; border: none; padding: 7px 12px; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 500;">
            Download
-        </a>
+        </button>
         <button onclick="deleteCV()" 
-           style="background: #dc3545; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
-           ✕
+           style="background: #fee2e2; color: #dc2626; border: none; padding: 7px 12px; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 500;">
+           Delete
         </button>
       </div>
     </div>
@@ -2314,15 +2316,18 @@ function renderCompanyCvList() {
   }
 
   container.innerHTML = `
-    <div style="display: flex; align-items: center; justify-content: space-between; background: #f8f9fa; padding: 12px; border-radius: 8px; border: 1px solid #dee2e6;">
-      <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
-        <span>📄</span>
-        <span style="font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">
-          ${currentProfile.company_cv_original_name || 'CompanyProfile.pdf'}
-        </span>
+    <div style="background: white; padding: 14px; border-radius: 10px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+        <span style="font-size: 1.4rem;">📄</span>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 2px;">File name</div>
+          <div style="font-size: 0.95rem; font-weight: 600; color: #1f2937; word-break: break-all; line-height: 1.3;">
+            ${currentProfile.company_cv_original_name || 'CompanyProfile.pdf'}
+          </div>
+        </div>
       </div>
-      <div style="display: flex; gap: 6px;">
-        <a href="${currentProfile.company_cv_url}" target="_blank" style="background: #007bff; color: white; padding: 4px 10px; border-radius: 4px; text-decoration: none; font-size: 0.8rem;">Download</a>
+      <div style="display: flex; gap: 8px;">
+        <button onclick="downloadCVFile('${currentProfile.company_cv_url}', '${currentProfile.company_cv_original_name || 'CompanyProfile.pdf'}')" style="flex: 1; background: #007bff; color: white; border: none; padding: 7px 12px; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 500;">⬇ Download</button>
       </div>
     </div>`;
 }
@@ -2330,12 +2335,40 @@ function renderCompanyCvList() {
 // ==========================================
 // DOWNLOAD CV
 // ==========================================
+function downloadCVFile(url, filename) {
+  if (!url) {
+    showToast('No CV uploaded yet.', 'warning');
+    return;
+  }
+  fetch(url)
+    .then(response => response.blob())
+    .then(blob => {
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename || 'cv.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(blobUrl);
+    })
+    .catch(() => {
+      // Fallback for networks that block fetch
+      const a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+}
+
 function downloadCV() {
   if (!currentProfile || !currentProfile.cv_url) {
     showToast('No CV uploaded yet.', 'warning');
     return;
   }
-  window.open(currentProfile.cv_url, '_blank');
+  downloadCVFile(currentProfile.cv_url, currentProfile.cv_original_name || 'cv.pdf');
 }
 
 // ==========================================

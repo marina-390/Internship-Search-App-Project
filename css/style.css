@@ -1055,6 +1055,13 @@ footer {
 .sidebar {
   flex: 0 0 240px;
   width: 240px;
+  position: sticky;
+  top: 80px;
+  align-self: flex-start;
+}
+
+#cvFileInfo {
+  min-height: 48px;
 }
 
 /* Force grid-2 to always show 2 columns */
