@@ -97,6 +97,365 @@
       transform: translateY(-3px);
     }
 
+    /* ==========================================
+       SHARE EXPERIENCE SECTION
+       ========================================== */
+    #share-experience-section {
+      background: rgba(255,255,255,0.96);
+      color: #15212a;
+      padding: 4rem 1rem 5rem;
+    }
+    #share-experience-section .share-experience-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+    }
+    #share-experience-section .section-header {
+      max-width: 760px;
+      margin: 0 auto 2.5rem;
+      text-align: center;
+    }
+    #share-experience-section .section-subtitle {
+      display: inline-block;
+      margin-bottom: 0.85rem;
+      font-size: 0.8rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #3a5169;
+      font-weight: 700;
+    }
+    #share-experience-section h2 {
+      font-size: clamp(2rem, 3.5vw, 3.2rem);
+      line-height: 1.05;
+      margin: 0 0 0.85rem;
+      color: #111827;
+    }
+    #share-experience-section p {
+      color: #47515d;
+      font-size: 1.02rem;
+      line-height: 1.8;
+    }
+    .share-grid {
+      display: grid;
+      grid-template-columns: 1fr 300px 1fr;
+      gap: 1.5rem;
+      align-items: center;
+      padding: 0 1rem;
+    }
+    /* Each panel = card + arrow side by side */
+    .testimonial-panel {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      min-height: 0;
+    }
+    /* Left panel: [←] [card] */
+    .panel-left  { flex-direction: row; }
+    /* Right panel: [card] [→] */
+    .panel-right { flex-direction: row; }
+
+    .testimonial-nav {
+      flex-shrink: 0;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: none;
+      background: #5a669d;
+      color: white;
+      font-size: 1.05rem;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(90,102,157,0.28);
+      transition: transform 0.18s, background 0.18s, box-shadow 0.18s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* No absolute positioning */
+    }
+    .testimonial-nav:hover {
+      background: #4a5788;
+      transform: scale(1.1);
+      box-shadow: 0 10px 24px rgba(90,102,157,0.38);
+    }
+    .testimonial-card {
+      flex: 1;
+      background: white;
+      border-radius: 20px;
+      padding: 1.25rem 1.4rem;
+      border: 1px solid rgba(90, 102, 157, 0.1);
+      box-shadow: 0 4px 20px rgba(90, 102, 157, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      /* No fixed height — content drives it */
+      transition: box-shadow 0.2s;
+    }
+    .testimonial-card:hover {
+      box-shadow: 0 8px 28px rgba(90, 102, 157, 0.13);
+    }
+    .testimonial-avatar {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .avatar-circle {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-weight: 700;
+      font-size: 1rem;
+      box-shadow: 0 8px 16px rgba(79, 70, 229, 0.12);
+    }
+    .testimonial-header h3 {
+      margin: 0;
+      font-size: 1rem;
+      color: #111827;
+    }
+    .testimonial-header p {
+      margin: 0.2rem 0 0;
+      color: #6b7280;
+      font-size: 0.85rem;
+    }
+    .testimonial-copy {
+      display: grid;
+      gap: 0.7rem;
+      color: #374151;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+    .testimonial-copy strong {
+      display: block;
+      color: #1f2937;
+      margin-bottom: 0.15rem;
+      font-weight: 700;
+    }
+    
+    .journey-card {
+      background: linear-gradient(135deg, #f0f4ff 0%, #f5f7ff 100%);
+      border-radius: 20px;
+      padding: 1.75rem;
+      box-shadow: 0 12px 30px rgba(90, 102, 157, 0.1);
+      border: 1px solid rgba(90, 102, 157, 0.14);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .journey-card-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      width: 100%;
+      align-items: center;
+      text-align: center;
+    }
+    .journey-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.45rem 0.85rem;
+      border-radius: 999px;
+      background: rgba(90, 102, 157, 0.12);
+      color: #5a669d;
+      font-size: 0.72rem;
+      font-weight: 700;
+      width: fit-content;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .journey-heading {
+      font-size: clamp(1.4rem, 2.2vw, 1.9rem);
+      margin: 0;
+      color: #1f2937;
+      line-height: 1.08;
+      font-weight: 800;
+    }
+    .journey-copy {
+      color: #4b5563;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    .journey-cta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      background: white;
+      padding: 1.4rem 1.25rem;
+      border-radius: 16px;
+      border: 1px solid rgba(90, 102, 157, 0.1);
+      align-items: center;
+      width: 100%;
+    }
+    .journey-cta--centered { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+    .journey-action-btn {
+      border: none;
+      cursor: pointer;
+      padding: 0.7rem 1.5rem;
+      border-radius: 999px;
+      background: #5a669d;
+      color: white;
+      font-size: 0.9rem;
+      font-weight: 700;
+      box-shadow: 0 6px 16px rgba(90, 102, 157, 0.28);
+      transition: transform 0.18s, background 0.18s, box-shadow 0.18s;
+      white-space: nowrap;
+      font-family: inherit;
+    }
+    .journey-action-btn:hover {
+      transform: translateY(-2px);
+      background: #4a5788;
+      box-shadow: 0 10px 22px rgba(90, 102, 157, 0.36);
+    }
+    .journey-cta p {
+      margin: 0;
+      color: #5b6880;
+      font-size: 0.85rem;
+      line-height: 1.65;
+    }
+    .share-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(17, 34, 53, 0.6);
+      display: flex;
+      align-items: flex-start;       /* panel sits at top so it can grow down */
+      justify-content: center;
+      padding: 2rem 1rem 3rem;       /* generous bottom padding so user can scroll */
+      overflow-y: auto;              /* THIS is the scrollable container */
+      z-index: 9999;
+      -webkit-overflow-scrolling: touch;
+    }
+    .share-modal-panel {
+      width: min(520px, 100%);
+      background: white;
+      border-radius: 28px;
+      padding: 1.75rem 1.75rem 1.5rem;
+      box-shadow: 0 30px 90px rgba(17, 35, 54, 0.18);
+      position: relative;
+      /* No max-height, no overflow-y — let it grow naturally */
+      flex-shrink: 0;                /* prevent flexbox from squishing it */
+    }
+    .share-modal-close {
+      position: absolute;
+      right: 1.1rem;
+      top: 1.1rem;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: #f1f5f9;
+      color: #64748b;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, color 0.15s;
+      line-height: 1;
+    }
+    .share-modal-close:hover { background: #e2e8f0; color: #1e293b; }
+    .share-modal-header h3 {
+      margin: 0.35rem 0 0.85rem;
+      font-size: 1.9rem;
+      color: #111827;
+    }
+    .share-modal-header p {
+      margin: 0;
+      color: #526077;
+      line-height: 1.8;
+    }
+    .share-modal-form {
+      display: grid;
+      gap: 0.9rem;
+      margin-top: 1.25rem;
+    }
+    .share-modal-form label {
+      display: grid;
+      gap: 0.55rem;
+      color: #32415a;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .share-modal-form input,
+    .share-modal-form textarea {
+      width: 100%;
+      border-radius: 16px;
+      border: 1px solid rgba(17, 35, 54, 0.12);
+      padding: 1rem 1rem;
+      font-size: 1rem;
+      color: #0f172a;
+      background: #f9fbfd;
+      outline: none;
+    }
+    .share-modal-form textarea { resize: vertical; min-height: 110px; }
+    .share-modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 0.75rem;
+    }
+    .share-modal-actions .btn-cancel {
+      min-width: 110px;
+      padding: 0.65rem 1.4rem;
+      border-radius: 999px;
+      border: 1.5px solid #d1d5db;
+      background: white;
+      color: #374151;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      font-family: inherit;
+    }
+    .share-modal-actions .btn-cancel:hover { background: #f9fafb; border-color: #9ca3af; }
+    .share-modal-actions .btn-publish {
+      min-width: 140px;
+      padding: 0.65rem 1.6rem;
+      border-radius: 999px;
+      border: none;
+      background: #5a669d;
+      color: white;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(90,102,157,0.3);
+      transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+      font-family: inherit;
+    }
+    .share-modal-actions .btn-publish:hover {
+      background: #4a5788;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(90,102,157,0.38);
+    }
+
+    @media (max-width: 980px) {
+      .share-grid {
+        grid-template-columns: 1fr;
+        max-width: 440px;
+        margin: 0 auto;
+      }
+      /* On mobile, show only one card at a time — hide left card and left arrow */
+      .panel-left { display: none; }
+      /* Mobile: arrow goes below card */
+      .panel-right {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .panel-right .testimonial-nav {
+        align-self: flex-end;
+        margin-top: 0.5rem;
+      }
+    }
+    @media (max-width: 620px) {
+      #share-experience-section { padding: 3rem 1rem 4rem; }
+      .share-grid { gap: 1.25rem; }
+      .testimonial-nav { width: 36px; height: 36px; font-size: 0.9rem; }
+      .testimonial-card { padding: 1rem; }
+      .journey-card { padding: 1.25rem; }
+      .journey-action-btn { padding: 0.6rem 1rem; font-size: 0.85rem; }
+    }
+
     /* Three SVG wave layers */
     .hero-waves {
       position: absolute;
@@ -348,7 +707,7 @@
     .cta-option-title { font-weight: 600; font-size: 0.95rem; color: white; margin-bottom: 0.1rem; }
     .cta-option-desc  { font-size: 0.78rem; color: rgba(255,255,255,0.6); }
     .cta-option-arrow { color: rgba(255,255,255,0.4); font-size: 1rem; transition: transform 0.2s, color 0.2s; }
-    .cta-option:hover .cta-option-arrow { transform: translateX(4px); color: #4f46e5; }
+    .cta-option:hover .cta-option-arrow { transform: translateX(4px); color: #5a669d; }
 
     @keyframes heroFadeUp {
       from { opacity: 0; transform: translateY(24px); }
@@ -496,36 +855,193 @@
     <button class="carousel-arrow carousel-next" onclick="nextSlide()">&#8594;</button>
   </div>
 
-  <!-- CTA -->
-  <section id="cta-section">
-    <div class="cta-inner">
-      <div>
-        <p class="cta-left-label" data-i18n="cta.label">Get started today</p>
-        <h2 class="cta-headline" data-i18n="cta.headline">Ready to launch your career?</h2>
-        <p class="cta-sub" data-i18n="cta.description">Join thousands of students already finding great internships through InternHub. It only takes two minutes to create your profile.</p>
+  <!-- Share Experience -->
+  <section id="share-experience-section">
+    <div class="share-experience-inner">
+      <div class="section-header">
+        <p class="section-subtitle">Pay It Forward</p>
+        <h2>Share Your Experience</h2>
+        <p>Join thousands of successful interns in helping the next generation. Your advice can launch a career.</p>
       </div>
-      <div class="cta-cards">
-        <a href="auth.html?mode=register" class="cta-option">
-          <div class="cta-option-inner">
-            <div class="cta-option-icon">🎓</div>
-            <div><div class="cta-option-title" data-i18n="cta.studentTitle">I'm a Student</div><div class="cta-option-desc" data-i18n="cta.studentDesc">Find internships that match your skills</div></div>
-          </div><span class="cta-option-arrow">→</span>
-        </a>
-        <a href="auth.html?mode=register" class="cta-option">
-          <div class="cta-option-inner">
-            <div class="cta-option-icon">🏢</div>
-            <div><div class="cta-option-title" data-i18n="cta.employerTitle">I'm an Employer</div><div class="cta-option-desc" data-i18n="cta.employerDesc">Post positions and find great interns</div></div>
-          </div><span class="cta-option-arrow">→</span>
-        </a>
-        <a href="auth.html?mode=login" class="cta-option">
-          <div class="cta-option-inner">
-            <div class="cta-option-icon">🔑</div>
-            <div><div class="cta-option-title" data-i18n="cta.signinTitle">Sign In</div><div class="cta-option-desc" data-i18n="cta.signinDesc">Continue where you left off</div></div>
-          </div><span class="cta-option-arrow">→</span>
-        </a>
+      <div class="share-grid">
+        <!-- Left panel: [←] [card] -->
+        <div class="testimonial-panel panel-left">
+          <button type="button" class="testimonial-nav testimonial-prev" onclick="prevShareTestimonial()" aria-label="Previous testimonial">←</button>
+          <article class="testimonial-card" id="testimonialLeft"></article>
+        </div>
+
+        <!-- Center — fixed, never navigates -->
+        <article class="journey-card">
+          <div class="journey-card-inner">
+            <span class="journey-label">Share Your Journey</span>
+            <h3 class="journey-heading">Write your story</h3>
+            <div class="journey-cta journey-cta--centered">
+              <button type="button" class="journey-action-btn" onclick="openExperienceModal()">Write your story</button>
+              <p>Share a concise reflection that helps other interns navigate their next opportunity.</p>
+            </div>
+          </div>
+        </article>
+
+        <!-- Right panel: [card] [→] — arrow AFTER card in DOM = appears on the right -->
+        <div class="testimonial-panel panel-right">
+          <article class="testimonial-card" id="testimonialRight"></article>
+          <button type="button" class="testimonial-nav testimonial-next" onclick="nextShareTestimonial()" aria-label="Next testimonial">→</button>
+        </div>
       </div>
     </div>
   </section>
+
+  <div id="shareModal" class="share-modal" style="display:none;">
+    <div class="share-modal-panel">
+      <button type="button" class="share-modal-close" onclick="closeExperienceModal()" aria-label="Close form">×</button>
+      <div class="share-modal-header">
+        <p class="section-subtitle">Share Your Story</p>
+        <h3>Publish your experience</h3>
+        <p>Write a short reflection and help future interns learn from your journey.</p>
+      </div>
+      <form id="shareForm" class="share-modal-form" onsubmit="submitExperienceForm(event)">
+        <label>
+          Your name
+          <input type="text" name="name" placeholder="Alex Chen" />
+        </label>
+        <label>
+          Your role
+          <input type="text" name="role" placeholder="Engineering Intern @ Microsoft" />
+        </label>
+        <label>
+          What surprised you most?
+          <textarea name="surprise" rows="4" placeholder="The team was so supportive..." required></textarea>
+        </label>
+        <label>
+          Top interview tip
+          <textarea name="tip" rows="3" placeholder="Prepare strong examples..." required></textarea>
+        </label>
+        <div class="share-modal-actions">
+          <button type="button" class="btn-cancel" onclick="closeExperienceModal()">Cancel</button>
+          <button type="submit" class="btn-publish">Publish story</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const shareTestimonials = [
+      {
+        initials: 'AC',
+        name: 'Alex Chen',
+        role: 'Engineering Intern @ Microsoft',
+        prompt1: 'What surprised me most?',
+        answer1: 'The collaborative culture. Even senior leaders had time for questions.',
+        prompt2: 'Top interview tip:',
+        answer2: 'Focus on understanding the why behind problems, not just coding solutions.',
+        avatarColor: '#5a669d'
+      },
+      {
+        initials: 'PP',
+        name: 'Priya Patel',
+        role: 'Marketing Intern @ Meta',
+        prompt1: 'What surprised me most?',
+        answer1: 'How much mentorship was available once I raised my hand.',
+        prompt2: 'Top interview tip:',
+        answer2: 'Bring a concise story for every skill you mention.',
+        avatarColor: '#5a669d'
+      },
+      {
+        initials: 'MO',
+        name: 'Mia Ortiz',
+        role: 'UX Intern @ Stripe',
+        prompt1: 'What surprised me most?',
+        answer1: 'The speed at which ideas moved from concept to user testing.',
+        prompt2: 'Top interview tip:',
+        answer2: 'Practice your portfolio story so it feels natural.',
+        avatarColor: '#5a669d'
+      }
+    ];
+    let shareIndex = 0;
+
+    function createTestimonialHtml(data) {
+      return `
+        <div class="testimonial-avatar">
+          <span class="avatar-circle" style="background: ${data.avatarColor};">${data.initials}</span>
+          <div class="testimonial-header"><h3>${data.name}</h3><p>${data.role}</p></div>
+        </div>
+        <div class="testimonial-copy">
+          <div><strong>${data.prompt1}</strong>${data.answer1}</div>
+          <div><strong>${data.prompt2}</strong>${data.answer2}</div>
+        </div>
+      `;
+    }
+
+    function updateShareCards() {
+      const left = document.getElementById('testimonialLeft');
+      const right = document.getElementById('testimonialRight');
+      if (!left || !right) return;
+      left.innerHTML = createTestimonialHtml(shareTestimonials[shareIndex]);
+      right.innerHTML = createTestimonialHtml(shareTestimonials[(shareIndex + 1) % shareTestimonials.length]);
+    }
+
+    function prevShareTestimonial() {
+      shareIndex = (shareIndex - 1 + shareTestimonials.length) % shareTestimonials.length;
+      updateShareCards();
+    }
+
+    function nextShareTestimonial() {
+      shareIndex = (shareIndex + 1) % shareTestimonials.length;
+      updateShareCards();
+    }
+
+    function openExperienceModal() {
+      const session = typeof getCurrentSession === 'function' ? getCurrentSession() : null;
+      if (!session || session.role !== 1) {
+        window.location.href = 'auth.html?mode=login';
+        return;
+      }
+      const modal = document.getElementById('shareModal');
+      if (modal) {
+        modal.style.display = 'flex';
+      }
+    }
+
+    function closeExperienceModal() {
+      const modal = document.getElementById('shareModal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+      const form = document.getElementById('shareForm');
+      if (form) {
+        form.reset();
+      }
+    }
+
+    function submitExperienceForm(event) {
+      event.preventDefault();
+      const form = event.target;
+      const name = form.name.value.trim() || 'Shared Intern';
+      const role = form.role.value.trim() || 'Intern';
+      const answer1 = form.surprise.value.trim() || 'I learned a lot by asking questions and staying curious.';
+      const answer2 = form.tip.value.trim() || 'Keep your examples focused and practice your story ahead of time.';
+      const initials = name.split(' ').filter(Boolean).map(part => part[0]).slice(0, 2).join('').toUpperCase() || 'SI';
+      const themeColors = [
+        '#5a669d',
+      ];
+      const avatarColor = themeColors[shareTestimonials.length % themeColors.length];
+      shareTestimonials.push({
+        initials,
+        name,
+        role,
+        prompt1: 'What surprised me most?',
+        answer1,
+        prompt2: 'Top interview tip:',
+        answer2,
+        avatarColor
+      });
+      shareIndex = shareTestimonials.length - 1;
+      updateShareCards();
+      closeExperienceModal();
+    }
+
+    document.addEventListener('DOMContentLoaded', updateShareCards);
+  </script>
 
   <!-- Footer -->
   <footer>
