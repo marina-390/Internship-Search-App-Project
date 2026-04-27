@@ -2,6 +2,12 @@ const shareTestimonials = [];
 let shareIndex = 0;
 const PREVIEW_LENGTH = 100;
 
+function formatStudentName(firstName, lastName) {
+  if (!firstName && !lastName) return 'Anonymous';
+  if (!lastName) return firstName;
+  return `${firstName} ${lastName[0].toUpperCase()}.`;
+}
+
 function escHtml(str) {
   return String(str)
     .replace(/&/g, '&amp;')
@@ -99,10 +105,10 @@ async function loadExperiencesFromDB() {
       const sp = app.student_profiles;
       const pos = app.positions;
       if (!sp || !pos) return;
-      const name = [sp.first_name, sp.last_name].filter(Boolean).join(' ') || 'Anonymous';
+      const name = formatStudentName(sp.first_name, sp.last_name);
       const companyName = pos.Companies ? pos.Companies.company_name : '';
       const role = companyName ? `${pos.title} @ ${companyName}` : pos.title;
-      const initials = name.split(' ').filter(Boolean).map(p => p[0]).slice(0, 2).join('').toUpperCase() || 'IN';
+      const initials = [sp.first_name, sp.last_name].filter(Boolean).map(p => p[0]).slice(0, 2).join('').toUpperCase() || 'IN';
       shareTestimonials.push({
         initials, name, role,
         prompt1: 'What surprised me most?',
@@ -224,10 +230,10 @@ async function submitExperienceForm(event) {
   const app = data.applications;
   const sp = app.student_profiles;
   const pos = app.positions;
-  const name = [sp.first_name, sp.last_name].filter(Boolean).join(' ') || 'Anonymous';
+  const name = formatStudentName(sp.first_name, sp.last_name);
   const companyName = pos.Companies ? pos.Companies.company_name : '';
   const role = companyName ? `${pos.title} @ ${companyName}` : pos.title;
-  const initials = name.split(' ').filter(Boolean).map(p => p[0]).slice(0, 2).join('').toUpperCase() || 'IN';
+  const initials = [sp.first_name, sp.last_name].filter(Boolean).map(p => p[0]).slice(0, 2).join('').toUpperCase() || 'IN';
   shareTestimonials.push({
     initials, name, role,
     prompt1: 'What surprised me most?',
