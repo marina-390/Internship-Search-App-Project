@@ -898,27 +898,8 @@ async function loadCompanyPostings() {
   }
 }
 
-async function togglePositionApplicants(positionId, appCount) {
-  const container = document.getElementById(`pos-apps-${positionId}`);
-  const arrow     = document.getElementById(`pos-apps-arrow-${positionId}`);
-  if (!container) return;
-
-  const isOpen = container.dataset.open === 'true';
-  if (isOpen) {
-    container.style.display = 'none';
-    container.dataset.open = 'false';
-    arrow.textContent = '▼';
-    return;
-  }
-
-  container.style.display = 'block';
-  container.dataset.open = 'true';
-  arrow.textContent = '▲';
-
-  if (container.dataset.loaded) return;
-
+async function fetchPositionApplicants(positionId, container) {
   container.innerHTML = '<p style="color:#888; font-size:0.85rem; padding:0.5rem 0;">Loading...</p>';
-
   try {
     const { data: apps, error } = await supabaseClient
       .from('applications')
@@ -966,6 +947,28 @@ async function togglePositionApplicants(positionId, appCount) {
   } catch (err) {
     container.innerHTML = `<p style="color:red; font-size:0.85rem;">Error: ${err.message}</p>`;
   }
+}
+
+async function togglePositionApplicants(positionId, appCount) {
+  const container = document.getElementById(`pos-apps-${positionId}`);
+  const arrow     = document.getElementById(`pos-apps-arrow-${positionId}`);
+  if (!container) return;
+
+  const isOpen = container.dataset.open === 'true';
+  if (isOpen) {
+    container.style.display = 'none';
+    container.dataset.open = 'false';
+    arrow.textContent = '▼';
+    return;
+  }
+
+  container.style.display = 'block';
+  container.dataset.open = 'true';
+  arrow.textContent = '▲';
+
+  if (container.dataset.loaded) return;
+
+  await fetchPositionApplicants(positionId, container);
 }
 
 async function loadCompanyApplications() {
@@ -1325,6 +1328,17 @@ async function saveCompanyApplicationStatus(newStatus) {
 
     showToast(newStatus === 'accepted' ? 'Application accepted.' : newStatus === 'rejected' ? 'Application declined.' : 'Application updated.', newStatus === 'accepted' ? 'success' : newStatus === 'rejected' ? 'success' : 'info');
     if (modal) modal.style.display = 'none';
+
+    // Refresh open position-specific accordion panels
+    const openPanels = document.querySelectorAll('[id^="pos-apps-"][data-open="true"]');
+    openPanels.forEach(panel => {
+      const positionId = panel.id.replace('pos-apps-', '');
+      delete panel.dataset.loaded;
+      fetchPositionApplicants(positionId, panel);
+    });
+    // Clear cache on closed panels so they re-fetch on next open
+    document.querySelectorAll('[id^="pos-apps-"]').forEach(el => delete el.dataset.loaded);
+
     await loadCompanyApplications();
   } catch (err) {
     console.error('Error saving company application status:', err);
