@@ -2294,12 +2294,12 @@ function renderCVList() {
         </div>
       </div>
       <div style="display: flex; gap: 8px;">
-        <button onclick="downloadCVFile('${currentProfile.cv_url}', '${currentProfile.cv_original_name || 'cv.pdf'}')"
-           style="flex: 1; background: #007bff; color: white; border: none; padding: 7px 12px; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 500;">
+        <button class="btn-view" onclick="downloadCVFile('${currentProfile.cv_url}', '${currentProfile.cv_original_name || 'cv.pdf'}')"
+           style="flex: 1; border: none; padding: 7px 12px; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 500;">
            Download
         </button>
-        <button onclick="deleteCV()" 
-           style="background: #fee2e2; color: #dc2626; border: none; padding: 7px 12px; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 500;">
+        <button class="btn-delete" onclick="deleteCV()" 
+           style=" border: none; padding: 7px 12px; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 500;">
            Delete
         </button>
       </div>
@@ -2327,7 +2327,7 @@ function renderCompanyCvList() {
         </div>
       </div>
       <div style="display: flex; gap: 8px;">
-        <button onclick="downloadCVFile('${currentProfile.company_cv_url}', '${currentProfile.company_cv_original_name || 'CompanyProfile.pdf'}')" style="flex: 1; background: #007bff; color: white; border: none; padding: 7px 12px; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 500;">⬇ Download</button>
+        <button onclick="downloadCVFile('${currentProfile.company_cv_url}', '${currentProfile.company_cv_original_name || 'CompanyProfile.pdf'}')" style="flex: 1; background:#f3f4f6; color:#374151; border: none; padding: 7px 12px; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 500;">Download</button>
       </div>
     </div>`;
 }
