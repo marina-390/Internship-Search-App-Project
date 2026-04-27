@@ -302,6 +302,11 @@
       white-space: nowrap;
       font-family: inherit;
     }
+    .journey-action-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
     .journey-action-btn:hover {
       transform: translateY(-2px);
       background: #4a5788;
@@ -375,6 +380,23 @@
       color: #32415a;
       font-weight: 600;
       font-size: 0.95rem;
+    }
+    .share-name-display {
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: #1e293b;
+      padding: 0.5rem 0 0.1rem;
+    }
+    .share-modal-form select {
+      width: 100%;
+      border-radius: 16px;
+      border: 1px solid rgba(17, 35, 54, 0.12);
+      padding: 0.85rem 1rem;
+      font-size: 1rem;
+      color: #0f172a;
+      background: #f9fbfd;
+      outline: none;
+      cursor: pointer;
     }
     .share-modal-form input,
     .share-modal-form textarea {
@@ -876,7 +898,7 @@
             <span class="journey-label">Share Your Journey</span>
             <h3 class="journey-heading">Write your story</h3>
             <div class="journey-cta journey-cta--centered">
-              <button type="button" class="journey-action-btn" onclick="openExperienceModal()">Write your story</button>
+              <button type="button" id="writeStoryBtn" class="journey-action-btn" onclick="openExperienceModal()">Write your story</button>
               <p>Share a concise reflection that helps other interns navigate their next opportunity.</p>
             </div>
           </div>
@@ -900,13 +922,12 @@
         <p>Write a short reflection and help future interns learn from your journey.</p>
       </div>
       <form id="shareForm" class="share-modal-form" onsubmit="submitExperienceForm(event)">
+        <div class="share-name-display">
+          <span id="shareStudentName"></span>
+        </div>
         <label>
-          Your name
-          <input type="text" name="name" placeholder="Alex Chen" />
-        </label>
-        <label>
-          Your role
-          <input type="text" name="role" placeholder="Engineering Intern @ Microsoft" />
+          Internship position
+          <select id="sharePositionSelect" required></select>
         </label>
         <label>
           What surprised you most?
@@ -924,124 +945,6 @@
     </div>
   </div>
 
-  <script>
-    const shareTestimonials = [
-      {
-        initials: 'AC',
-        name: 'Alex Chen',
-        role: 'Engineering Intern @ Microsoft',
-        prompt1: 'What surprised me most?',
-        answer1: 'The collaborative culture. Even senior leaders had time for questions.',
-        prompt2: 'Top interview tip:',
-        answer2: 'Focus on understanding the why behind problems, not just coding solutions.',
-        avatarColor: '#5a669d'
-      },
-      {
-        initials: 'PP',
-        name: 'Priya Patel',
-        role: 'Marketing Intern @ Meta',
-        prompt1: 'What surprised me most?',
-        answer1: 'How much mentorship was available once I raised my hand.',
-        prompt2: 'Top interview tip:',
-        answer2: 'Bring a concise story for every skill you mention.',
-        avatarColor: '#5a669d'
-      },
-      {
-        initials: 'MO',
-        name: 'Mia Ortiz',
-        role: 'UX Intern @ Stripe',
-        prompt1: 'What surprised me most?',
-        answer1: 'The speed at which ideas moved from concept to user testing.',
-        prompt2: 'Top interview tip:',
-        answer2: 'Practice your portfolio story so it feels natural.',
-        avatarColor: '#5a669d'
-      }
-    ];
-    let shareIndex = 0;
-
-    function createTestimonialHtml(data) {
-      return `
-        <div class="testimonial-avatar">
-          <span class="avatar-circle" style="background: ${data.avatarColor};">${data.initials}</span>
-          <div class="testimonial-header"><h3>${data.name}</h3><p>${data.role}</p></div>
-        </div>
-        <div class="testimonial-copy">
-          <div><strong>${data.prompt1}</strong>${data.answer1}</div>
-          <div><strong>${data.prompt2}</strong>${data.answer2}</div>
-        </div>
-      `;
-    }
-
-    function updateShareCards() {
-      const left = document.getElementById('testimonialLeft');
-      const right = document.getElementById('testimonialRight');
-      if (!left || !right) return;
-      left.innerHTML = createTestimonialHtml(shareTestimonials[shareIndex]);
-      right.innerHTML = createTestimonialHtml(shareTestimonials[(shareIndex + 1) % shareTestimonials.length]);
-    }
-
-    function prevShareTestimonial() {
-      shareIndex = (shareIndex - 1 + shareTestimonials.length) % shareTestimonials.length;
-      updateShareCards();
-    }
-
-    function nextShareTestimonial() {
-      shareIndex = (shareIndex + 1) % shareTestimonials.length;
-      updateShareCards();
-    }
-
-    function openExperienceModal() {
-      const session = typeof getCurrentSession === 'function' ? getCurrentSession() : null;
-      if (!session || session.role !== 1) {
-        window.location.href = 'auth.html?mode=login';
-        return;
-      }
-      const modal = document.getElementById('shareModal');
-      if (modal) {
-        modal.style.display = 'flex';
-      }
-    }
-
-    function closeExperienceModal() {
-      const modal = document.getElementById('shareModal');
-      if (modal) {
-        modal.style.display = 'none';
-      }
-      const form = document.getElementById('shareForm');
-      if (form) {
-        form.reset();
-      }
-    }
-
-    function submitExperienceForm(event) {
-      event.preventDefault();
-      const form = event.target;
-      const name = form.name.value.trim() || 'Shared Intern';
-      const role = form.role.value.trim() || 'Intern';
-      const answer1 = form.surprise.value.trim() || 'I learned a lot by asking questions and staying curious.';
-      const answer2 = form.tip.value.trim() || 'Keep your examples focused and practice your story ahead of time.';
-      const initials = name.split(' ').filter(Boolean).map(part => part[0]).slice(0, 2).join('').toUpperCase() || 'SI';
-      const themeColors = [
-        '#5a669d',
-      ];
-      const avatarColor = themeColors[shareTestimonials.length % themeColors.length];
-      shareTestimonials.push({
-        initials,
-        name,
-        role,
-        prompt1: 'What surprised me most?',
-        answer1,
-        prompt2: 'Top interview tip:',
-        answer2,
-        avatarColor
-      });
-      shareIndex = shareTestimonials.length - 1;
-      updateShareCards();
-      closeExperienceModal();
-    }
-
-    document.addEventListener('DOMContentLoaded', updateShareCards);
-  </script>
 
   <!-- Footer -->
   <footer>
@@ -1089,6 +992,7 @@
   <script src="js/auth.js"></script>
   <script src="js/i18n.js"></script>
   <script src="js/script.js"></script>
+  <script src="js/share-experience.js"></script>
   <script src="js/cookie-consent.js"></script>
 </body>
 </html>
