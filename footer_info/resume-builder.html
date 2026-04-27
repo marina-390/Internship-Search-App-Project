@@ -78,33 +78,33 @@ input, textarea {
 <section class="section">
   <div class="container">
 
-    <h2 style="text-align:center;">Resume Builder 🚀</h2>
+    <h2 style="text-align:center;" data-i18n="pages.resumeBuilder.title">Resume Builder 🚀</h2>
 
     <div class="container-flex">
 
       <!-- FORM -->
       <div class="card">
-        <h3>Fill Your Info</h3>
+        <h3 data-i18n="pages.resumeBuilder.fillInfo">Fill Your Info</h3>
 
-        <input type="text" id="name" placeholder="Full Name" oninput="updateResume()">
+        <input type="text" id="name" data-i18n-placeholder="pages.resumeBuilder.namePh" placeholder="Full Name" oninput="updateResume()">
         <br><br>
 
-        <input type="text" id="email" placeholder="Email" oninput="updateResume()">
+        <input type="text" id="email" data-i18n-placeholder="pages.resumeBuilder.emailPh" placeholder="Email" oninput="updateResume()">
         <br><br>
 
-        <input type="text" id="phone" placeholder="Phone" oninput="updateResume()">
+        <input type="text" id="phone" data-i18n-placeholder="pages.resumeBuilder.phonePh" placeholder="Phone" oninput="updateResume()">
         <br><br>
 
-        <textarea id="education" placeholder="Education" oninput="updateResume()"></textarea>
+        <textarea id="education" data-i18n-placeholder="pages.resumeBuilder.educationPh" placeholder="Education" oninput="updateResume()"></textarea>
         <br><br>
 
-        <textarea id="experience" placeholder="Experience" oninput="updateResume()"></textarea>
+        <textarea id="experience" data-i18n-placeholder="pages.resumeBuilder.experiencePh" placeholder="Experience" oninput="updateResume()"></textarea>
         <br><br>
 
-        <textarea id="skills" placeholder="Skills" oninput="updateResume()"></textarea>
+        <textarea id="skills" data-i18n-placeholder="pages.resumeBuilder.skillsPh" placeholder="Skills" oninput="updateResume()"></textarea>
         <br><br>
 
-        <button class="btn btn-primary" onclick="downloadPDF()" style="width:100%;">
+        <button class="btn btn-primary" onclick="downloadPDF()" style="width:100%;" data-i18n="pages.resumeBuilder.downloadBtn">
           Download PDF
         </button>
       </div>
@@ -115,18 +115,18 @@ input, textarea {
         <h2 id="r_name">Your Name</h2>
         <p id="r_email">email@example.com</p>
         <p id="r_phone">+000000000</p>
-      
+
         <hr>
-      
-        <h4>Education</h4>
+
+        <h4 data-i18n="pages.resumeBuilder.previewEdu">Education</h4>
         <p id="r_education">Your education...</p>
-      
-        <h4>Experience</h4>
+
+        <h4 data-i18n="pages.resumeBuilder.previewExp">Experience</h4>
         <p id="r_experience">Your experience...</p>
-      
-        <h4>Skills</h4>
+
+        <h4 data-i18n="pages.resumeBuilder.previewSkills">Skills</h4>
         <p id="r_skills">Your skills...</p>
-      
+
       </div>
 
     </div>

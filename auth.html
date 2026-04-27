@@ -38,136 +38,181 @@
         }
       }
 
-    .auth-form-wrapper {
-      display: none;
-    }
+      .auth-form-wrapper {
+        display: none;
+      }
 
-    .auth-form-wrapper.active {
-      display: block;
-    }
+      .auth-form-wrapper.active {
+        display: block;
+      }
 
-    .form-tabs {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 2rem;
-      border-bottom: 2px solid var(--border-color);
-    }
+      .form-tabs {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 2px solid var(--border-color);
+      }
 
-    .form-tab {
-      padding: 1rem 0;
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--text-light);
-      border-bottom: 3px solid transparent;
-      margin-bottom: -2px;
-      transition: all 0.3s ease;
-    }
+      .form-tab {
+        padding: 1rem 0;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-light);
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
+        transition: all 0.3s ease;
+      }
 
-    .form-tab.active {
-      color: var(--primary-color);
-      border-bottom-color: var(--primary-color);
-    }
+      .form-tab.active {
+        color: var(--primary-color);
+        border-bottom-color: var(--primary-color);
+      }
 
-    .form-tab:hover {
-      color: var(--text-color);
-    }
+      .form-tab:hover {
+        color: var(--text-color);
+      }
 
-    .password-toggle {
-      position: relative;
-    }
+      .password-toggle {
+        position: relative;
+      }
 
-    .password-toggle input {
-      padding-right: 2.5rem;
-    }
+      .password-toggle input {
+        padding-right: 2.5rem;
+      }
 
-    .password-toggle button {
-      position: absolute;
-      right: 0.75rem;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: var(--text-light);
-      font-size: 1rem;
-    }
+      .password-toggle button {
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--text-light);
+        font-size: 1rem;
+      }
 
-    .social-login {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 0.75rem;
-      margin: 1.5rem 0;
-    }
+      .social-login {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 0.75rem;
+        margin: 1.5rem 0;
+      }
 
-    .social-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      padding: 0.7rem 0.5rem;
-      border: 1.5px solid var(--border-color);
-      border-radius: 0.5rem;
-      background: white;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-weight: 500;
-      font-size: 0.9rem;
-      color: #333;
-    }
+      .social-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.7rem 0.5rem;
+        border: 1.5px solid var(--border-color);
+        border-radius: 0.5rem;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-weight: 500;
+        font-size: 0.9rem;
+        color: #333;
+      }
 
-    .social-btn svg {
-      flex-shrink: 0;
-    }
+      .social-btn svg {
+        flex-shrink: 0;
+      }
 
-    .social-btn:hover {
-      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-      transform: translateY(-1px);
-    }
+      .social-btn:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+        transform: translateY(-1px);
+      }
 
-    .social-btn.google:hover  { border-color: #4285F4; }
-    .social-btn.github:hover  { border-color: #333; }
-    .social-btn.linkedin:hover { border-color: #0A66C2; }
+      .social-btn.google:hover {
+        border-color: #4285f4;
+      }
+      .social-btn.github:hover {
+        border-color: #333;
+      }
+      .social-btn.linkedin:hover {
+        border-color: #0a66c2;
+      }
 
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin: 1.5rem 0;
-      color: var(--text-light);
-    }
+      .divider {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin: 1.5rem 0;
+        color: var(--text-light);
+      }
 
-    .divider::before,
-    .divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background-color: var(--border-color);
-    }
+      .divider::before,
+      .divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background-color: var(--border-color);
+      }
     </style>
   </head>
   <body>
     <nav>
       <div class="nav-container">
-        <a href="index.html" class="logo"><img src="logo-hub.svg" alt="InternHub" class="logo-img"></a>
+        <a href="index.html" class="logo"
+          ><img src="logo-hub.svg" alt="InternHub" class="logo-img"
+        /></a>
         <ul class="nav-menu">
           <li class="nav-item">
-            <a href="internships.html" class="nav-link" data-i18n="nav.internships">Internships</a>
+            <a
+              href="internships.html"
+              class="nav-link"
+              data-i18n="nav.internships"
+              >Internships</a
+            >
           </li>
           <li class="nav-item">
             <div class="lang-switcher">
-              <button class="lang-toggle" onclick="toggleLangDropdown(event)">🌐 <span class="lang-current">EN</span> <span class="lang-caret">▾</span></button>
+              <button class="lang-toggle" onclick="toggleLangDropdown(event)">
+                🌐 <span class="lang-current">EN</span>
+                <span class="lang-caret">▾</span>
+              </button>
               <ul class="lang-dropdown">
-                <li><button class="lang-btn" data-lang="en" onclick="setLanguage('en')">🇬🇧 English</button></li>
-                <li><button class="lang-btn" data-lang="fi" onclick="setLanguage('fi')">🇫🇮 Suomi</button></li>
-                <li><button class="lang-btn" data-lang="sv" onclick="setLanguage('sv')">🇸🇪 Svenska</button></li>
+                <li>
+                  <button
+                    class="lang-btn"
+                    data-lang="en"
+                    onclick="setLanguage('en')"
+                  >
+                    🇬🇧 English
+                  </button>
+                </li>
+                <li>
+                  <button
+                    class="lang-btn"
+                    data-lang="fi"
+                    onclick="setLanguage('fi')"
+                  >
+                    🇫🇮 Suomi
+                  </button>
+                </li>
+                <li>
+                  <button
+                    class="lang-btn"
+                    data-lang="sv"
+                    onclick="setLanguage('sv')"
+                  >
+                    🇸🇪 Svenska
+                  </button>
+                </li>
               </ul>
             </div>
           </li>
           <li class="nav-item">
-            <a href="auth.html" class="nav-link active" data-i18n="nav.loginRegister">Login/Register</a>
+            <a
+              href="auth.html"
+              class="nav-link active"
+              data-i18n="nav.loginRegister"
+              >Login/Register</a
+            >
           </li>
         </ul>
         <div class="hamburger">
@@ -182,17 +227,28 @@
       class="section"
       style="
         background: linear-gradient(
-          135deg,
-          var(--primary-color) 0%,
-          #667eea 100%
+          160deg,
+          #3b30c8 0%,
+          #435088 0%,
+          #524ba2 100%
         );
         color: white;
         padding: 3rem 1rem;
       "
     >
       <div class="container text-center">
-        <h1 style="color: white; margin-bottom: 0.5rem" data-i18n="auth.pageTitle">Join InternHub</h1>
-        <p data-i18n="auth.pageSubtitle">Start your internship journey today</p>
+        <h1
+          style="color: white; margin-bottom: 0.5rem"
+          data-i18n="auth.pageTitle"
+        >
+          Join InternHub
+        </h1>
+        <p
+          data-i18n="auth.pageSubtitle"
+          style="color: rgba(255, 255, 255, 0.9)"
+        >
+          Start your internship journey today
+        </p>
       </div>
     </section>
 
@@ -201,19 +257,31 @@
         <div class="auth-container">
           <div class="form-container">
             <div class="form-tabs">
-              <button class="form-tab active" onclick="switchTab('login')" data-i18n="auth.tabLogin">
+              <button
+                class="form-tab active"
+                onclick="switchTab('login')"
+                data-i18n="auth.tabLogin"
+              >
                 Login
               </button>
-              <button class="form-tab" onclick="switchTab('register')" data-i18n="auth.tabRegister">
+              <button
+                class="form-tab"
+                onclick="switchTab('register')"
+                data-i18n="auth.tabRegister"
+              >
                 Register
               </button>
             </div>
 
             <div id="loginForm" class="auth-form-wrapper active">
-              <h2 style="margin-bottom: 1.5rem" data-i18n="auth.loginHeading">Welcome Back</h2>
+              <h2 style="margin-bottom: 1.5rem" data-i18n="auth.loginHeading">
+                Welcome Back
+              </h2>
               <form id="loginForm_form" action="javascript:void(0)">
                 <div class="form-group">
-                  <label for="loginEmail" data-i18n="auth.emailLabel">Email Address</label>
+                  <label for="loginEmail" data-i18n="auth.emailLabel"
+                    >Email Address</label
+                  >
                   <input
                     type="email"
                     id="loginEmail"
@@ -225,7 +293,9 @@
                 </div>
 
                 <div class="form-group">
-                  <label for="loginPassword" data-i18n="auth.passwordLabel">Password</label>
+                  <label for="loginPassword" data-i18n="auth.passwordLabel"
+                    >Password</label
+                  >
                   <div class="password-toggle">
                     <input
                       type="password"
@@ -246,7 +316,10 @@
 
                 <div class="checkbox-group" style="margin-bottom: 1.5rem">
                   <input type="checkbox" id="rememberMe" name="rememberMe" />
-                  <label for="rememberMe" style="margin: 0; font-weight: 400" data-i18n="auth.rememberMe"
+                  <label
+                    for="rememberMe"
+                    style="margin: 0; font-weight: 400"
+                    data-i18n="auth.rememberMe"
                     >Remember me</label
                   >
                 </div>
@@ -260,7 +333,12 @@
                   Sign In
                 </button>
 
-                <a href="#" onclick="showForgotPrompt()" data-i18n="auth.forgotPassword">Forgot Password?</a>
+                <a
+                  href="#"
+                  onclick="showForgotPrompt()"
+                  data-i18n="auth.forgotPassword"
+                  >Forgot Password?</a
+                >
               </form>
 
               <div class="divider" data-i18n="auth.divider">or</div>
@@ -331,10 +409,19 @@
 
             <div id="registerForm" class="auth-form-wrapper">
               <div id="registerFormContent">
-                <h2 style="margin-bottom: 1.5rem" data-i18n="auth.registerHeading">Create Your Account</h2>
+                <h2
+                  style="margin-bottom: 1.5rem"
+                  data-i18n="auth.registerHeading"
+                >
+                  Create Your Account
+                </h2>
                 <form id="registerForm_form" action="javascript:void(0)">
                   <div class="form-group" style="margin-bottom: 1.5rem">
-                    <label style="margin-bottom: 1rem" data-i18n="auth.roleLabel">I am a...</label>
+                    <label
+                      style="margin-bottom: 1rem"
+                      data-i18n="auth.roleLabel"
+                      >I am a...</label
+                    >
                     <div style="display: flex; gap: 1rem">
                       <label class="checkbox-group">
                         <input
@@ -344,7 +431,11 @@
                           checked
                           onchange="toggleRoleFields()"
                         />
-                        <span style="margin-left: 0.5rem" data-i18n="auth.roleStudent">🎓 Student</span>
+                        <span
+                          style="margin-left: 0.5rem"
+                          data-i18n="auth.roleStudent"
+                          >🎓 Student</span
+                        >
                       </label>
                       <label class="checkbox-group">
                         <input
@@ -353,7 +444,9 @@
                           value="company"
                           onchange="toggleRoleFields()"
                         />
-                        <span style="margin-left: 0.5rem" data-i18n="auth.roleEmployer"
+                        <span
+                          style="margin-left: 0.5rem"
+                          data-i18n="auth.roleEmployer"
                           >💼 Company/Employer</span
                         >
                       </label>
@@ -362,7 +455,9 @@
 
                   <div class="form-row">
                     <div class="form-group" style="margin-bottom: 1.5rem">
-                      <label for="firstName" data-i18n="auth.firstNameLabel">First Name</label>
+                      <label for="firstName" data-i18n="auth.firstNameLabel"
+                        >First Name</label
+                      >
                       <input
                         type="text"
                         id="firstName"
@@ -375,7 +470,9 @@
                     </div>
 
                     <div class="form-group" style="margin-bottom: 1.5rem">
-                      <label for="lastName" data-i18n="auth.lastNameLabel">Last Name</label>
+                      <label for="lastName" data-i18n="auth.lastNameLabel"
+                        >Last Name</label
+                      >
                       <input
                         type="text"
                         id="lastName"
@@ -389,7 +486,9 @@
                   </div>
 
                   <div class="form-group">
-                    <label for="regEmail" data-i18n="auth.emailLabel">Email Address</label>
+                    <label for="regEmail" data-i18n="auth.emailLabel"
+                      >Email Address</label
+                    >
                     <input
                       type="email"
                       id="regEmail"
@@ -403,24 +502,40 @@
                   <div id="studentFields">
                     <div class="form-row">
                       <div class="form-group" style="margin-bottom: 1.5rem">
-                        <label for="eduType" data-i18n="auth.eduLevelLabel">Education Level</label>
+                        <label for="eduType" data-i18n="auth.eduLevelLabel"
+                          >Education Level</label
+                        >
                         <select id="eduType" name="eduType">
-                          <option value="" disabled selected data-i18n="auth.eduLevelPlaceholder">
+                          <option
+                            value=""
+                            disabled
+                            selected
+                            data-i18n="auth.eduLevelPlaceholder"
+                          >
                             Select level...
                           </option>
-                          <option value="university" data-i18n="auth.eduUniversity">
+                          <option
+                            value="university"
+                            data-i18n="auth.eduUniversity"
+                          >
                             University / Applied Sciences
                           </option>
-                          <option value="college" data-i18n="auth.eduCollege">College / Vocational</option>
+                          <option value="college" data-i18n="auth.eduCollege">
+                            College / Vocational
+                          </option>
                           <option value="school" data-i18n="auth.eduHighSchool">
                             High School / Secondary
                           </option>
-                          <option value="other" data-i18n="auth.eduOther">Other</option>
+                          <option value="other" data-i18n="auth.eduOther">
+                            Other
+                          </option>
                         </select>
                       </div>
 
                       <div class="form-group">
-                        <label for="major" data-i18n="auth.majorLabel">Major</label>
+                        <label for="major" data-i18n="auth.majorLabel"
+                          >Major</label
+                        >
                         <input
                           type="text"
                           id="major"
@@ -433,7 +548,9 @@
                   </div>
                   <div id="companyFields" style="display: none">
                     <div class="form-group">
-                      <label for="jobTitle" data-i18n="auth.jobTitleLabel">Your Job Title</label>
+                      <label for="jobTitle" data-i18n="auth.jobTitleLabel"
+                        >Your Job Title</label
+                      >
                       <input
                         type="text"
                         id="jobTitle"
@@ -444,7 +561,9 @@
                     </div>
 
                     <div class="form-group">
-                      <label for="companyName" data-i18n="auth.companyNameLabel">Company Name</label>
+                      <label for="companyName" data-i18n="auth.companyNameLabel"
+                        >Company Name</label
+                      >
                       <input
                         type="text"
                         id="companyName"
@@ -455,7 +574,11 @@
                     </div>
 
                     <div class="form-group">
-                      <label for="companyWebsite" data-i18n="auth.companyWebsiteLabel">Company Website</label>
+                      <label
+                        for="companyWebsite"
+                        data-i18n="auth.companyWebsiteLabel"
+                        >Company Website</label
+                      >
                       <input
                         type="text"
                         id="companyWebsite"
@@ -466,8 +589,8 @@
                     </div>
 
                     <div class="form-group">
-                      <label for="yTunnus"
-                        data-i18n="auth.yTunnusLabel">Y-Tunnus
+                      <label for="yTunnus" data-i18n="auth.yTunnusLabel"
+                        >Y-Tunnus
                         <small style="color: #666" data-i18n="auth.yTunnusNote"
                           >(Finnish Business ID, required)</small
                         ></label
@@ -486,7 +609,9 @@
                     </div>
                   </div>
                   <div class="form-group">
-                    <label for="regPassword" data-i18n="auth.passwordLabel">Password</label>
+                    <label for="regPassword" data-i18n="auth.passwordLabel"
+                      >Password</label
+                    >
                     <div class="password-toggle">
                       <input
                         type="password"
@@ -503,14 +628,21 @@
                         👁️
                       </button>
                     </div>
-                    <small class="text-muted" data-i18n="auth.passwordRequirements">
+                    <small
+                      class="text-muted"
+                      data-i18n="auth.passwordRequirements"
+                    >
                       Password: Min 8 chars, 2 numbers (0-9), and 2 special
                       symbols (!!, @#, etc.)
                     </small>
                   </div>
 
                   <div class="form-group">
-                    <label for="confirmPassword" data-i18n="auth.confirmPasswordLabel">Confirm Password</label>
+                    <label
+                      for="confirmPassword"
+                      data-i18n="auth.confirmPasswordLabel"
+                      >Confirm Password</label
+                    >
                     <div class="password-toggle">
                       <input
                         type="password"
@@ -537,8 +669,20 @@
                       required
                     />
                     <label for="agreeTerms" style="margin: 0; font-weight: 400">
-                      <span data-i18n="auth.agreePrefix">I agree to the</span> <a href="footer_info/terms-of-service.html" target="_blank" data-i18n="auth.termsLink">Terms of Service</a> and
-                      <a href="footer_info/privacy-policy.html" target="_blank" data-i18n="auth.privacyLink">Privacy Policy</a>
+                      <span data-i18n="auth.agreePrefix">I agree to the</span>
+                      <a
+                        href="footer_info/terms-of-service.html"
+                        target="_blank"
+                        data-i18n="auth.termsLink"
+                        >Terms of Service</a
+                      >
+                      and
+                      <a
+                        href="footer_info/privacy-policy.html"
+                        target="_blank"
+                        data-i18n="auth.privacyLink"
+                        >Privacy Policy</a
+                      >
                     </label>
                   </div>
 
@@ -552,7 +696,13 @@
                   </button>
                 </form>
 
-                <div class="divider" id="registerSocialDivider" data-i18n="auth.divider">or</div>
+                <div
+                  class="divider"
+                  id="registerSocialDivider"
+                  data-i18n="auth.divider"
+                >
+                  or
+                </div>
 
                 <div class="social-login" id="registerSocialLogin">
                   <button
@@ -609,7 +759,9 @@
                 </div>
 
                 <p class="text-center text-muted" style="margin-top: 1.5rem">
-                  <span data-i18n="auth.hasAccount">Already have an account?</span>
+                  <span data-i18n="auth.hasAccount"
+                    >Already have an account?</span
+                  >
                   <a
                     href="#"
                     onclick="
@@ -628,20 +780,48 @@
                 style="display: none; text-align: center; padding: 2rem 0"
               >
                 <div style="font-size: 3rem; margin-bottom: 1rem">📧</div>
-                <h3 style="margin-bottom: 1rem" data-i18n="auth.emailConfirmTitle">Check your email!</h3>
+                <h3
+                  style="margin-bottom: 1rem"
+                  data-i18n="auth.emailConfirmTitle"
+                >
+                  Check your email!
+                </h3>
                 <p>
-                  <span data-i18n="auth.emailConfirmMsg">We sent a confirmation link to</span>
+                  <span data-i18n="auth.emailConfirmMsg"
+                    >We sent a confirmation link to</span
+                  >
                   <strong id="sentToEmail"></strong>
                 </p>
-                <p style="color: #666; font-size: 0.9rem; margin-top: 0.5rem" data-i18n="auth.emailConfirmNote">
+                <p
+                  style="color: #666; font-size: 0.9rem; margin-top: 0.5rem"
+                  data-i18n="auth.emailConfirmNote"
+                >
                   Click the link to activate your account. Check your spam
                   folder if you don't see it.
                 </p>
-                <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; align-items: center;">
-                  <button onclick="resendConfirmEmail()" class="btn btn-secondary" style="width: 100%" data-i18n="auth.btnResend">
+                <div
+                  style="
+                    margin-top: 1.5rem;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.75rem;
+                    align-items: center;
+                  "
+                >
+                  <button
+                    onclick="resendConfirmEmail()"
+                    class="btn btn-secondary"
+                    style="width: 100%"
+                    data-i18n="auth.btnResend"
+                  >
                     Resend confirmation email
                   </button>
-                  <button onclick="switchTab('login')" class="btn btn-primary" style="width: 100%" data-i18n="auth.btnBackSignin">
+                  <button
+                    onclick="switchTab('login')"
+                    class="btn btn-primary"
+                    style="width: 100%"
+                    data-i18n="auth.btnBackSignin"
+                  >
                     Back to Sign In
                   </button>
                 </div>
@@ -651,7 +831,10 @@
 
           <!-- Info Section -->
           <div class="benefits-section">
-            <h2 style="margin-bottom: 2rem; color: var(--text-color)" data-i18n="auth.benefitsTitle">
+            <h2
+              style="margin-bottom: 2rem; color: var(--text-color)"
+              data-i18n="auth.benefitsTitle"
+            >
               Why Join InternHub?
             </h2>
 
@@ -674,7 +857,9 @@
                     <h4
                       style="margin: 0 0 0.5rem 0; color: var(--primary-color)"
                     >
-                      <span data-i18n="auth.benefit1Title">Save Your Progress</span>
+                      <span data-i18n="auth.benefit1Title"
+                        >Save Your Progress</span
+                      >
                     </h4>
                     <p
                       style="
@@ -707,7 +892,9 @@
                     <h4
                       style="margin: 0 0 0.5rem 0; color: var(--primary-color)"
                     >
-                      <span data-i18n="auth.benefit2Title">Manage Favorites</span>
+                      <span data-i18n="auth.benefit2Title"
+                        >Manage Favorites</span
+                      >
                     </h4>
                     <p
                       style="
@@ -740,7 +927,9 @@
                     <h4
                       style="margin: 0 0 0.5rem 0; color: var(--primary-color)"
                     >
-                      <span data-i18n="auth.benefit3Title">Build Your Profile</span>
+                      <span data-i18n="auth.benefit3Title"
+                        >Build Your Profile</span
+                      >
                     </h4>
                     <p
                       style="
@@ -769,9 +958,21 @@
         <div class="footer-section">
           <h4 data-i18n="footer.aboutHeading">About InternHub</h4>
           <ul>
-            <li><a href="footer_info/about-us.html" data-i18n="footer.aboutUs">About Us</a></li>
-            <li><a href="footer_info/team.html" data-i18n="footer.team">Our Team</a></li>
-            <li><a href="footer_info/contact.html" data-i18n="footer.contact">Contact</a></li>
+            <li>
+              <a href="footer_info/about-us.html" data-i18n="footer.aboutUs"
+                >About Us</a
+              >
+            </li>
+            <li>
+              <a href="footer_info/team.html" data-i18n="footer.team"
+                >Our Team</a
+              >
+            </li>
+            <li>
+              <a href="footer_info/contact.html" data-i18n="footer.contact"
+                >Contact</a
+              >
+            </li>
           </ul>
         </div>
 
@@ -779,13 +980,25 @@
           <h4 data-i18n="footer.studentsHeading">For Students</h4>
           <ul>
             <li>
-              <a href="footer_info/career-resources.html" data-i18n="footer.careerResources">Career Resources</a>
+              <a
+                href="footer_info/career-resources.html"
+                data-i18n="footer.careerResources"
+                >Career Resources</a
+              >
             </li>
             <li>
-              <a href="footer_info/resume-builder.html" data-i18n="footer.resumeBuilder">Resume Builder</a>
+              <a
+                href="footer_info/resume-builder.html"
+                data-i18n="footer.resumeBuilder"
+                >Resume Builder</a
+              >
             </li>
             <li>
-              <a href="footer_info/interview-tips.html" data-i18n="footer.interviewTips">Interview Tips</a>
+              <a
+                href="footer_info/interview-tips.html"
+                data-i18n="footer.interviewTips"
+                >Interview Tips</a
+              >
             </li>
           </ul>
         </div>
@@ -793,11 +1006,23 @@
         <div class="footer-section">
           <h4 data-i18n="footer.employersHeading">For Employers</h4>
           <ul>
-            <li><a href="footer_info/company.html" data-i18n="footer.postJob">Post Job</a></li>
             <li>
-              <a href="footer_info/browse-candidates.html" data-i18n="footer.browseCandidates">Browse Candidates</a>
+              <a href="footer_info/company.html" data-i18n="footer.postJob"
+                >Post Job</a
+              >
             </li>
-            <li><a href="footer_info/support.html" data-i18n="footer.support">Support</a></li>
+            <li>
+              <a
+                href="footer_info/browse-candidates.html"
+                data-i18n="footer.browseCandidates"
+                >Browse Candidates</a
+              >
+            </li>
+            <li>
+              <a href="footer_info/support.html" data-i18n="footer.support"
+                >Support</a
+              >
+            </li>
           </ul>
         </div>
 
@@ -805,19 +1030,34 @@
           <h4 data-i18n="footer.legalHeading">Legal</h4>
           <ul>
             <li>
-              <a href="footer_info/privacy-policy.html" data-i18n="footer.privacyPolicy">Privacy Policy</a>
+              <a
+                href="footer_info/privacy-policy.html"
+                data-i18n="footer.privacyPolicy"
+                >Privacy Policy</a
+              >
             </li>
             <li>
-              <a href="footer_info/terms-of-service.html" data-i18n="footer.termsOfService">Terms of Service</a>
+              <a
+                href="footer_info/terms-of-service.html"
+                data-i18n="footer.termsOfService"
+                >Terms of Service</a
+              >
             </li>
-            <li><a href="footer_info/cookie-policy.html" data-i18n="footer.cookiePolicy">Cookie Policy</a></li>
+            <li>
+              <a
+                href="footer_info/cookie-policy.html"
+                data-i18n="footer.cookiePolicy"
+                >Cookie Policy</a
+              >
+            </li>
           </ul>
         </div>
       </div>
 
       <div class="footer-bottom">
         <p data-i18n="footer.copyright">
-          &copy; 2026 InternHub. All rights reserved. | Helping students find their next opportunity
+          &copy; 2026 InternHub. All rights reserved. | Helping students find
+          their next opportunity
         </p>
       </div>
     </footer>
@@ -829,7 +1069,7 @@
     <script src="js/profile.js"></script>
     <script src="js/i18n.js"></script>
     <script src="js/script.js"></script>
-  <script src="js/cookie-consent.js"></script>
+    <script src="js/cookie-consent.js"></script>
 
     <script src="js/auth-page.js"></script>
 
@@ -859,8 +1099,16 @@
           box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         "
       >
-        <h3 style="margin-top: 0; margin-bottom: 0.5rem" data-i18n="auth.forgotHeading">Reset Password</h3>
-        <p style="margin: 0 0 1.25rem; font-size: 0.9rem; color: #6b7280" data-i18n="auth.forgotDesc">
+        <h3
+          style="margin-top: 0; margin-bottom: 0.5rem"
+          data-i18n="auth.forgotHeading"
+        >
+          Reset Password
+        </h3>
+        <p
+          style="margin: 0 0 1.25rem; font-size: 0.9rem; color: #6b7280"
+          data-i18n="auth.forgotDesc"
+        >
           Enter your email address and we'll send you a reset link.
         </p>
         <input
