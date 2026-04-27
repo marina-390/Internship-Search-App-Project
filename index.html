@@ -230,7 +230,28 @@
       margin-bottom: 0.15rem;
       font-weight: 700;
     }
-    
+    .char-counter {
+      display: block;
+      text-align: right;
+      font-size: 0.78rem;
+      color: #6b7280;
+      margin-top: 0.25rem;
+    }
+    .char-counter.char-limit { color: #ef4444; font-weight: 600; }
+    .show-more-btn {
+      background: none;
+      border: none;
+      color: #5a669d;
+      font-size: 0.82rem;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 0.25rem;
+      font-weight: 600;
+      text-decoration: underline;
+      display: inline-block;
+    }
+    .show-more-btn:hover { color: #4a5788; }
+
     .journey-card {
       background: linear-gradient(135deg, #f0f4ff 0%, #f5f7ff 100%);
       border-radius: 20px;
@@ -931,11 +952,13 @@
         </label>
         <label>
           What surprised you most?
-          <textarea name="surprise" rows="4" placeholder="The team was so supportive..." required></textarea>
+          <textarea name="surprise" rows="4" placeholder="The team was so supportive..." required maxlength="200" oninput="updateCharCounter(this,'surpriseCount')"></textarea>
+          <span class="char-counter" id="surpriseCount">0/200</span>
         </label>
         <label>
           Top interview tip
-          <textarea name="tip" rows="3" placeholder="Prepare strong examples..." required></textarea>
+          <textarea name="tip" rows="3" placeholder="Prepare strong examples..." required maxlength="200" oninput="updateCharCounter(this,'tipCount')"></textarea>
+          <span class="char-counter" id="tipCount">0/200</span>
         </label>
         <div class="share-modal-actions">
           <button type="button" class="btn-cancel" onclick="closeExperienceModal()">Cancel</button>

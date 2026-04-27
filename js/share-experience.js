@@ -1,15 +1,50 @@
 const shareTestimonials = [];
 let shareIndex = 0;
+const PREVIEW_LENGTH = 100;
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function renderText(text) {
+  const safe = escHtml(text || '');
+  if (!text || text.length <= PREVIEW_LENGTH) return safe;
+  const short = escHtml(text.slice(0, PREVIEW_LENGTH).trimEnd()) + '…';
+  return `<span class="review-text"><span class="review-short">${short}</span><span class="review-full" hidden>${safe}</span></span><button type="button" class="show-more-btn" onclick="toggleReviewText(this)">Show more</button>`;
+}
+
+function toggleReviewText(btn) {
+  const container = btn.previousElementSibling;
+  const short = container.querySelector('.review-short');
+  const full = container.querySelector('.review-full');
+  const expanding = full.hidden;
+  full.hidden = !expanding;
+  short.hidden = expanding;
+  btn.textContent = expanding ? 'Show less' : 'Show more';
+}
+
+function updateCharCounter(textarea, counterId) {
+  const counter = document.getElementById(counterId);
+  if (!counter) return;
+  const len = textarea.value.length;
+  counter.textContent = len + '/200';
+  counter.classList.toggle('char-limit', len >= 200);
+}
 
 function createTestimonialHtml(data) {
   return `
     <div class="testimonial-avatar">
-      <span class="avatar-circle" style="background: ${data.avatarColor};">${data.initials}</span>
-      <div class="testimonial-header"><h3>${data.name}</h3><p>${data.role}</p></div>
+      <span class="avatar-circle" style="background: ${escHtml(data.avatarColor)};">${escHtml(data.initials)}</span>
+      <div class="testimonial-header"><h3>${escHtml(data.name)}</h3><p>${escHtml(data.role)}</p></div>
     </div>
     <div class="testimonial-copy">
-      <div><strong>${data.prompt1}</strong>${data.answer1}</div>
-      <div><strong>${data.prompt2}</strong>${data.answer2}</div>
+      <div><strong>${escHtml(data.prompt1)}</strong>${renderText(data.answer1)}</div>
+      <div><strong>${escHtml(data.prompt2)}</strong>${renderText(data.answer2)}</div>
     </div>
   `;
 }
@@ -150,6 +185,10 @@ function closeExperienceModal() {
   if (modal) modal.style.display = 'none';
   const form = document.getElementById('shareForm');
   if (form) form.reset();
+  ['surpriseCount', 'tipCount'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = '0/200'; el.classList.remove('char-limit'); }
+  });
 }
 
 async function submitExperienceForm(event) {
