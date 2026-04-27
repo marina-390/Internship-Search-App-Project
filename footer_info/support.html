@@ -1,187 +1,299 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/png" href="../icon.png">
-  <title>Support - InternHub</title>
-  <link rel="stylesheet" href="../css/style.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="../icon.png" />
+    <title>Support - InternHub</title>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <nav>
+      <div class="nav-container">
+        <a href="../index.html" class="logo"
+          ><img src="../logo-hub.svg" alt="InternHub" class="logo-img"
+        /></a>
 
-  <nav>
-    <div class="nav-container">
-      <a href="../index.html" class="logo"><img src="../logo-hub.svg" alt="InternHub" class="logo-img"></a>
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a
+              href="../internships.html"
+              class="nav-link"
+              data-i18n="nav.internships"
+              >Internships</a
+            >
+          </li>
+          <li class="nav-item">
+            <div class="lang-switcher">
+              <button class="lang-toggle" onclick="toggleLangDropdown(event)">
+                🌐 <span class="lang-current">EN</span>
+                <span class="lang-caret">▾</span>
+              </button>
+              <ul class="lang-dropdown">
+                <li>
+                  <button
+                    class="lang-btn"
+                    data-lang="en"
+                    onclick="setLanguage('en')"
+                  >
+                    🇬🇧 English
+                  </button>
+                </li>
+                <li>
+                  <button
+                    class="lang-btn"
+                    data-lang="fi"
+                    onclick="setLanguage('fi')"
+                  >
+                    🇫🇮 Suomi
+                  </button>
+                </li>
+                <li>
+                  <button
+                    class="lang-btn"
+                    data-lang="sv"
+                    onclick="setLanguage('sv')"
+                  >
+                    🇸🇪 Svenska
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </li>
+          <li class="nav-item">
+            <a
+              href="../auth.html"
+              class="nav-link"
+              data-i18n="nav.loginRegister"
+              >Login/Register</a
+            >
+          </li>
+        </ul>
 
-      <ul class="nav-menu">
-        <li class="nav-item">
-          <a href="../internships.html" class="nav-link" data-i18n="nav.internships">Internships</a>
-        </li>
-        <li class="nav-item">
-          <div class="lang-switcher">
-            <button class="lang-toggle" onclick="toggleLangDropdown(event)">🌐 <span class="lang-current">EN</span> <span class="lang-caret">▾</span></button>
-            <ul class="lang-dropdown">
-              <li><button class="lang-btn" data-lang="en" onclick="setLanguage('en')">🇬🇧 English</button></li>
-              <li><button class="lang-btn" data-lang="fi" onclick="setLanguage('fi')">🇫🇮 Suomi</button></li>
-              <li><button class="lang-btn" data-lang="sv" onclick="setLanguage('sv')">🇸🇪 Svenska</button></li>
-            </ul>
-          </div>
-        </li>
-        <li class="nav-item">
-          <a href="../auth.html" class="nav-link" data-i18n="nav.loginRegister">Login/Register</a>
-        </li>
-      </ul>
-
-      <div class="hamburger">
-        <span></span>
-        <span></span>
-        <span></span>
+        <div class="hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
       </div>
-    </div>
-  </nav>
+    </nav>
 
-  <section class="section" style="background: linear-gradient(135deg, var(--primary-color) 0%, #667eea 100%); color: white; padding: 3rem 1rem;">
-    <div class="container text-center">
-      <h1 style="color: white;">Support Center</h1>
-      <p>We are here to help you if you need assistance</p>
-    </div>
-  </section>
+    <section
+      class="section"
+      style="
+        background: linear-gradient(
+          160deg,
+          #3b30c8 0%,
+          #435088 0%,
+          #524ba2 100%
+        );
+        color: white;
+        padding: 3rem 1rem;
+      "
+    >
+      <div class="container text-center">
+        <h1 style="color: white">Support Center</h1>
+        <p style="color: rgba(255, 255, 255, 0.9)">
+          We are here to help you if you need assistance
+        </p>
+      </div>
+    </section>
 
-  <section class="section">
-    <div class="container">
+    <section class="section">
+      <div class="container">
+        <div style="margin-bottom: 3rem">
+          <h2>How Can We Help You?</h2>
 
-      <div style="margin-bottom: 3rem;">
-        <h2>How Can We Help You?</h2>
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+              gap: 2rem;
+              margin-top: 2rem;
+            "
+          >
+            <div class="card">
+              <h3>📚 Help Guide</h3>
+              <p>
+                Find answers to common questions about using InternHub and
+                applying for internships.
+              </p>
+            </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 2rem;">
+            <div class="card">
+              <h3>💬 Community</h3>
+              <p>Connect with other students and share your experience.</p>
+            </div>
 
-          <div class="card">
-            <h3>📚 Help Guide</h3>
-            <p>Find answers to common questions about using InternHub and applying for internships.</p>
+            <div class="card">
+              <h3>📧 Email Support</h3>
+              <p>
+                Contact us directly for help with your account or technical
+                issues.
+              </p>
+              <a href="mailto:interhub88@gmail.com" class="text-primary"
+                >interhhub88@gmail.com</a
+              >
+            </div>
+
+            <div class="card">
+              <h3>📞 Quick Help</h3>
+              <p>Get fast support for basic questions and account problems.</p>
+            </div>
+
+            <div class="card">
+              <h3>👤 Account Help</h3>
+              <p>
+                Problems with login, registration, or profile? We can help you
+                fix it.
+              </p>
+            </div>
+
+            <div class="card">
+              <h3>❓ General Questions</h3>
+              <p>
+                Learn how the platform works and how to find internships easily.
+              </p>
+            </div>
           </div>
+        </div>
 
-          <div class="card">
-            <h3>💬 Community</h3>
-            <p>Connect with other students and share your experience.</p>
+        <div>
+          <h2>Frequently Asked Questions</h2>
+
+          <div style="margin-top: 1.5rem">
+            <div class="card" style="margin-bottom: 1rem">
+              <h4>How do I apply for an internship?</h4>
+              <p>
+                You can browse available internships, open a listing, and submit
+                your application with your resume.
+              </p>
+            </div>
+
+            <div class="card" style="margin-bottom: 1rem">
+              <h4>Is InternHub free?</h4>
+              <p>Yes, InternHub is completely free for students.</p>
+            </div>
+
+            <div class="card" style="margin-bottom: 1rem">
+              <h4>Can I edit my profile later?</h4>
+              <p>Yes, you can update your profile anytime after logging in.</p>
+            </div>
+
+            <div class="card" style="margin-bottom: 1rem">
+              <h4>How do employers see my CV?</h4>
+              <p>
+                When you apply for an internship, employers can view your
+                uploaded CV and profile details.
+              </p>
+            </div>
           </div>
+        </div>
+      </div>
+    </section>
 
-          <div class="card">
-            <h3>📧 Email Support</h3>
-            <p>Contact us directly for help with your account or technical issues.</p>
-            <a href="mailto:interhub88@gmail.com" class="text-primary">interhhub88@gmail.com</a>
-          </div>
+    <footer>
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4 data-i18n="footer.aboutHeading">About InternHub</h4>
+          <ul>
+            <li>
+              <a href="about-us.html" data-i18n="footer.aboutUs">About Us</a>
+            </li>
+            <li><a href="team.html" data-i18n="footer.team">Our Team</a></li>
+            <li>
+              <a href="contact.html" data-i18n="footer.contact">Contact</a>
+            </li>
+          </ul>
+        </div>
 
-          <div class="card">
-            <h3>📞 Quick Help</h3>
-            <p>Get fast support for basic questions and account problems.</p>
-          </div>
+        <div class="footer-section">
+          <h4 data-i18n="footer.studentsHeading">For Students</h4>
+          <ul>
+            <li>
+              <a href="career-resources.html" data-i18n="footer.careerResources"
+                >Career Resources</a
+              >
+            </li>
+            <li>
+              <a href="resume-builder.html" data-i18n="footer.resumeBuilder"
+                >Resume Builder</a
+              >
+            </li>
+            <li>
+              <a href="interview-tips.html" data-i18n="footer.interviewTips"
+                >Interview Tips</a
+              >
+            </li>
+          </ul>
+        </div>
 
-          <div class="card">
-            <h3>👤 Account Help</h3>
-            <p>Problems with login, registration, or profile? We can help you fix it.</p>
-          </div>
+        <div class="footer-section">
+          <h4 data-i18n="footer.employersHeading">For Employers</h4>
+          <ul>
+            <li>
+              <a href="company.html" data-i18n="footer.postJob">Post Job</a>
+            </li>
+            <li>
+              <a
+                href="browse-candidates.html"
+                data-i18n="footer.browseCandidates"
+                >Browse Candidates</a
+              >
+            </li>
+            <li>
+              <a href="support.html" data-i18n="footer.support">Support</a>
+            </li>
+          </ul>
+        </div>
 
-          <div class="card">
-            <h3>❓ General Questions</h3>
-            <p>Learn how the platform works and how to find internships easily.</p>
-          </div>
-
+        <div class="footer-section">
+          <h4 data-i18n="footer.legalHeading">Legal</h4>
+          <ul>
+            <li>
+              <a href="privacy-policy.html" data-i18n="footer.privacyPolicy"
+                >Privacy Policy</a
+              >
+            </li>
+            <li>
+              <a href="terms-of-service.html" data-i18n="footer.termsOfService"
+                >Terms of Service</a
+              >
+            </li>
+            <li>
+              <a href="cookie-policy.html" data-i18n="footer.cookiePolicy"
+                >Cookie Policy</a
+              >
+            </li>
+          </ul>
         </div>
       </div>
 
-      <div>
-        <h2>Frequently Asked Questions</h2>
-
-        <div style="margin-top: 1.5rem;">
-
-          <div class="card" style="margin-bottom: 1rem;">
-            <h4>How do I apply for an internship?</h4>
-            <p>You can browse available internships, open a listing, and submit your application with your resume.</p>
-          </div>
-
-          <div class="card" style="margin-bottom: 1rem;">
-            <h4>Is InternHub free?</h4>
-            <p>Yes, InternHub is completely free for students.</p>
-          </div>
-
-          <div class="card" style="margin-bottom: 1rem;">
-            <h4>Can I edit my profile later?</h4>
-            <p>Yes, you can update your profile anytime after logging in.</p>
-          </div>
-
-          <div class="card" style="margin-bottom: 1rem;">
-            <h4>How do employers see my CV?</h4>
-            <p>When you apply for an internship, employers can view your uploaded CV and profile details.</p>
-          </div>
-
-        </div>
+      <div class="footer-bottom">
+        <p data-i18n="footer.copyright">
+          &copy; 2026 InternHub. All rights reserved. | Helping students find
+          their next opportunity
+        </p>
       </div>
+    </footer>
 
-    </div>
-  </section>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase.js"></script>
 
-  <footer>
-    <div class="footer-content">
+    <script src="../js/auth.js"></script>
+    <script src="../js/i18n.js"></script>
+    <script src="../js/script.js"></script>
+    <script src="../js/cookie-consent.js"></script>
 
-      <div class="footer-section">
-        <h4>About InternHub</h4>
-        <ul>
-          <li><a href="about-us.html">About Us</a></li>
-          <li><a href="team.html">Our Team</a></li>
-          <li><a href="contact.html">Contact</a></li>
-        </ul>
-      </div>
-
-      <div class="footer-section">
-        <h4>For Students</h4>
-        <ul>
-          <li><a href="career-resources.html">Career Resources</a></li>
-          <li><a href="resume-builder.html">Resume Builder</a></li>
-          <li><a href="interview-tips.html">Interview Tips</a></li>
-        </ul>
-      </div>
-
-      <div class="footer-section">
-        <h4>For Employers</h4>
-        <ul>
-          <li><a href="company.html">Post Job</a></li>
-          <li><a href="browse-candidates.html">Browse Candidates</a></li>
-          <li><a href="support.html">Support</a></li>
-        </ul>
-      </div>
-
-      <div class="footer-section">
-        <h4>Legal</h4>
-        <ul>
-          <li><a href="privacy-policy.html">Privacy Policy</a></li>
-          <li><a href="terms-of-service.html">Terms of Service</a></li>
-          <li><a href="cookie-policy.html">Cookie Policy</a></li>
-        </ul>
-      </div>
-
-    </div>
-
-    <div class="footer-bottom">
-      <p>&copy; 2026 InternHub. All rights reserved. | Helping students find their next opportunity</p>
-    </div>
-  </footer>
-
-  
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../js/supabase.js"></script>
-
-<script src="../js/auth.js"></script>
-<script src="../js/i18n.js"></script>
-<script src="../js/script.js"></script>
-  <script src="../js/cookie-consent.js"></script>
-
-<script>
-  // Hide CTA login/register section if already logged in
-  document.addEventListener('DOMContentLoaded', function () {
-    const loggedIn = localStorage.getItem('isLoggedIn') === 'true' && localStorage.getItem('userId');
-    const cta = document.getElementById('ctaSection');
-    if (loggedIn && cta) cta.style.display = 'none';
-  });
-</script>
-</body>
+    <script>
+      // Hide CTA login/register section if already logged in
+      document.addEventListener("DOMContentLoaded", function () {
+        const loggedIn =
+          localStorage.getItem("isLoggedIn") === "true" &&
+          localStorage.getItem("userId");
+        const cta = document.getElementById("ctaSection");
+        if (loggedIn && cta) cta.style.display = "none";
+      });
+    </script>
+  </body>
 </html>

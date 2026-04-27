@@ -1,207 +1,371 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/png" href="../icon.png">
-  <title>Privacy Policy - InternHub</title>
-  <link rel="stylesheet" href="../css/style.css">
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="../icon.png" />
+    <title>Privacy Policy - InternHub</title>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
 
-<body>
+  <body>
+    <nav>
+      <div class="nav-container">
+        <a href="../index.html" class="logo"
+          ><img src="../logo-hub.svg" alt="InternHub" class="logo-img"
+        /></a>
 
-  <nav>
-    <div class="nav-container">
-      <a href="../index.html" class="logo"><img src="../logo-hub.svg" alt="InternHub" class="logo-img"></a>
-
-      <ul class="nav-menu">
-        <li class="nav-item">
-          <a href="../internships.html" class="nav-link" data-i18n="nav.internships">Internships</a>
-        </li>
-        <li class="nav-item">
-          <div class="lang-switcher">
-            <button class="lang-toggle" onclick="toggleLangDropdown(event)">🌐 <span class="lang-current">EN</span> <span class="lang-caret">▾</span></button>
-            <ul class="lang-dropdown">
-              <li><button class="lang-btn" data-lang="en" onclick="setLanguage('en')">🇬🇧 English</button></li>
-              <li><button class="lang-btn" data-lang="fi" onclick="setLanguage('fi')">🇫🇮 Suomi</button></li>
-              <li><button class="lang-btn" data-lang="sv" onclick="setLanguage('sv')">🇸🇪 Svenska</button></li>
-            </ul>
-          </div>
-        </li>
-        <li class="nav-item">
-          <a href="../auth.html" class="nav-link" data-i18n="nav.loginRegister">Login/Register</a>
-        </li>
-      </ul>
-
-      <div class="hamburger">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-    </div>
-  </nav>
-
-  <!-- HERO -->
-  <section class="section" style="background: linear-gradient(135deg, var(--primary-color) 0%, #667eea 100%); color: white; padding: 3rem 1rem;">
-    <div class="container text-center">
-      <h1 style="color: white;">Privacy Policy</h1>
-      <p>Last updated: April 2026</p>
-    </div>
-  </section>
-
-  <!-- CONTENT -->
-  <section class="section">
-    <div class="container" style="max-width: 800px; line-height: 1.7;">
-
-      <h2>1. Data Controller</h2>
-      <p>
-        InternHub ("we", "us", or "our") is the data controller responsible for your personal data.<br>
-        <strong>Address:</strong> Talonpojankatu 6, 67100 Kokkola, Finland<br>
-        <strong>Email:</strong> <a href="mailto:internhub88@gmail.com">internhub88@gmail.com</a>
-      </p>
-
-      <h2>2. What Data We Collect</h2>
-      <h3>Data you provide directly</h3>
-      <ul style="margin-left: 1.5rem;">
-        <li>Account details: name, email address, password (stored as a hash)</li>
-        <li>Student profile: first name, last name, phone number, city, education, skills, about me</li>
-        <li>Company profile: company name, business ID (Y-tunnus), contact email, website, city, description</li>
-        <li>Uploaded files: CV/resume (PDF), profile photo</li>
-        <li>Application data: cover letters, internship applications</li>
-      </ul>
-      <h3>Data collected automatically</h3>
-      <ul style="margin-left: 1.5rem;">
-        <li>Browser type and device information</li>
-        <li>Session cookies required for login functionality</li>
-      </ul>
-
-      <h2>3. Legal Basis for Processing (GDPR Art. 6)</h2>
-      <ul style="margin-left: 1.5rem;">
-        <li><strong>Contract performance (Art. 6(1)(b)):</strong> processing necessary to provide our internship matching service</li>
-        <li><strong>Consent (Art. 6(1)(a)):</strong> for optional features and marketing communications, which you may withdraw at any time</li>
-        <li><strong>Legitimate interests (Art. 6(1)(f)):</strong> for improving service quality and preventing fraud</li>
-        <li><strong>Legal obligation (Art. 6(1)(c)):</strong> where required by Finnish or EU law</li>
-      </ul>
-
-      <h2>4. How We Use Your Data</h2>
-      <ul style="margin-left: 1.5rem;">
-        <li>To create and manage your account</li>
-        <li>To match students with internship opportunities</li>
-        <li>To allow companies to review applications</li>
-        <li>To send transactional emails (application confirmations, interview invitations)</li>
-        <li>To improve the platform</li>
-      </ul>
-
-      <h2>5. Data Sharing</h2>
-      <p>We do not sell your personal data. We share data only with:</p>
-      <ul style="margin-left: 1.5rem;">
-        <li><strong>Supabase Inc.</strong> — our database and authentication provider (servers in EU region). Data Processing Agreement in place.</li>
-        <li><strong>EmailJS</strong> — used to send transactional emails. Only the data necessary for sending the email is transmitted.</li>
-        <li><strong>Companies on our platform</strong> — when you submit an internship application, your profile data and CV are shared with the relevant employer.</li>
-      </ul>
-
-      <h2>6. Data Retention</h2>
-      <ul style="margin-left: 1.5rem;">
-        <li>Account data is retained as long as your account is active</li>
-        <li>Upon account deletion, personal data is permanently removed within 30 days</li>
-        <li>Uploaded CVs and photos are deleted immediately upon account deletion</li>
-        <li>Application records may be retained for up to 12 months for legal compliance</li>
-      </ul>
-
-      <h2>7. Your Rights Under GDPR</h2>
-      <p>As an EU resident, you have the following rights:</p>
-      <ul style="margin-left: 1.5rem;">
-        <li><strong>Right of access:</strong> request a copy of your personal data</li>
-        <li><strong>Right to rectification:</strong> correct inaccurate data via your profile settings</li>
-        <li><strong>Right to erasure:</strong> delete your account and all associated data via the "Danger Zone" section in your profile</li>
-        <li><strong>Right to data portability:</strong> request your data in a machine-readable format</li>
-        <li><strong>Right to object:</strong> object to processing based on legitimate interests</li>
-        <li><strong>Right to withdraw consent:</strong> at any time, without affecting prior processing</li>
-      </ul>
-
-      <h2>8. Cookies</h2>
-      <p>
-        We use only essential session cookies required for login functionality. We do not use advertising or tracking cookies. For more details, see our <a href="cookie-policy.html">Cookie Policy</a>.
-      </p>
-
-      <h2>9. Data Security</h2>
-      <p>
-        We use industry-standard security measures including encrypted connections (HTTPS), hashed passwords, and role-based access controls. However, no system is 100% secure.
-      </p>
-
-      <h2>10. Supervisory Authority</h2>
-      <p>
-        If you believe we have not handled your data correctly, you have the right to lodge a complaint with the Finnish Data Protection Ombudsman (<em>Tietosuojavaltuutettu</em>):<br>
-        <strong>Website:</strong> <a href="https://tietosuoja.fi" target="_blank">tietosuoja.fi</a><br>
-        <strong>Email:</strong> tietosuoja@om.fi
-      </p>
-
-      <h2>11. Contact</h2>
-      <p>
-        For any privacy-related requests or questions:<br>
-        <strong>Email:</strong> <a href="mailto:internhub88@gmail.com">internhub88@gmail.com</a><br>
-        <strong>Address:</strong> Talonpojankatu 6, 67100 Kokkola, Finland
-      </p>
-
-    </div>
-  </section>
-
-  <footer>
-    <div class="footer-content">
-      <div class="footer-section">
-        <h4>About InternHub</h4>
-        <ul>
-          <li><a href="about-us.html">About Us</a></li>
-          <li><a href="team.html">Our Team</a></li>
-          <li><a href="contact.html">Contact</a></li>
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a
+              href="../internships.html"
+              class="nav-link"
+              data-i18n="nav.internships"
+              >Internships</a
+            >
+          </li>
+          <li class="nav-item">
+            <div class="lang-switcher">
+              <button class="lang-toggle" onclick="toggleLangDropdown(event)">
+                🌐 <span class="lang-current">EN</span>
+                <span class="lang-caret">▾</span>
+              </button>
+              <ul class="lang-dropdown">
+                <li>
+                  <button
+                    class="lang-btn"
+                    data-lang="en"
+                    onclick="setLanguage('en')"
+                  >
+                    🇬🇧 English
+                  </button>
+                </li>
+                <li>
+                  <button
+                    class="lang-btn"
+                    data-lang="fi"
+                    onclick="setLanguage('fi')"
+                  >
+                    🇫🇮 Suomi
+                  </button>
+                </li>
+                <li>
+                  <button
+                    class="lang-btn"
+                    data-lang="sv"
+                    onclick="setLanguage('sv')"
+                  >
+                    🇸🇪 Svenska
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </li>
+          <li class="nav-item">
+            <a
+              href="../auth.html"
+              class="nav-link"
+              data-i18n="nav.loginRegister"
+              >Login/Register</a
+            >
+          </li>
         </ul>
-      </div>
-      <div class="footer-section">
-        <h4>For Students</h4>
-        <ul>
-          <li><a href="career-resources.html">Career Resources</a></li>
-          <li><a href="resume-builder.html">Resume Builder</a></li>
-          <li><a href="interview-tips.html">Interview Tips</a></li>
-        </ul>
-      </div>
-      <div class="footer-section">
-        <h4>For Employers</h4>
-        <ul>
-          <li><a href="company.html">Post Job</a></li>
-          <li><a href="browse-candidates.html">Browse Candidates</a></li>
-          <li><a href="support.html">Support</a></li>
-        </ul>
-      </div>
-      <div class="footer-section">
-        <h4>Legal</h4>
-        <ul>
-          <li><a href="privacy-policy.html">Privacy Policy</a></li>
-          <li><a href="terms-of-service.html">Terms of Service</a></li>
-          <li><a href="cookie-policy.html">Cookie Policy</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p>&copy; 2026 InternHub. All rights reserved. | Helping students find their next opportunity</p>
-    </div>
-  </footer>
 
-  
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../js/supabase.js"></script>
+        <div class="hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </nav>
 
-<script src="../js/auth.js"></script>
-<script src="../js/i18n.js"></script>
-<script src="../js/script.js"></script>
-  <script src="../js/cookie-consent.js"></script>
+    <!-- HERO -->
+    <section
+      class="section"
+      style="
+        background: linear-gradient(
+          160deg,
+          #3b30c8 0%,
+          #435088 0%,
+          #524ba2 100%
+        );
+        color: white;
+        padding: 3rem 1rem;
+      "
+    >
+      <div class="container text-center">
+        <h1 style="color: white">Privacy Policy</h1>
+        <p style="color: rgba(255, 255, 255, 0.9)">Last updated: April 2026</p>
+      </div>
+    </section>
 
-<script>
-  // Hide CTA login/register section if already logged in
-  document.addEventListener('DOMContentLoaded', function () {
-    const loggedIn = localStorage.getItem('isLoggedIn') === 'true' && localStorage.getItem('userId');
-    const cta = document.getElementById('ctaSection');
-    if (loggedIn && cta) cta.style.display = 'none';
-  });
-</script>
-</body>
+    <!-- CONTENT -->
+    <section class="section">
+      <div class="container" style="max-width: 800px; line-height: 1.7">
+        <h2>1. Data Controller</h2>
+        <p>
+          InternHub ("we", "us", or "our") is the data controller responsible
+          for your personal data.<br />
+          <strong>Address:</strong> Talonpojankatu 6, 67100 Kokkola, Finland<br />
+          <strong>Email:</strong>
+          <a href="mailto:internhub88@gmail.com">internhub88@gmail.com</a>
+        </p>
+
+        <h2>2. What Data We Collect</h2>
+        <h3>Data you provide directly</h3>
+        <ul style="margin-left: 1.5rem">
+          <li>
+            Account details: name, email address, password (stored as a hash)
+          </li>
+          <li>
+            Student profile: first name, last name, phone number, city,
+            education, skills, about me
+          </li>
+          <li>
+            Company profile: company name, business ID (Y-tunnus), contact
+            email, website, city, description
+          </li>
+          <li>Uploaded files: CV/resume (PDF), profile photo</li>
+          <li>Application data: cover letters, internship applications</li>
+        </ul>
+        <h3>Data collected automatically</h3>
+        <ul style="margin-left: 1.5rem">
+          <li>Browser type and device information</li>
+          <li>Session cookies required for login functionality</li>
+        </ul>
+
+        <h2>3. Legal Basis for Processing (GDPR Art. 6)</h2>
+        <ul style="margin-left: 1.5rem">
+          <li>
+            <strong>Contract performance (Art. 6(1)(b)):</strong> processing
+            necessary to provide our internship matching service
+          </li>
+          <li>
+            <strong>Consent (Art. 6(1)(a)):</strong> for optional features and
+            marketing communications, which you may withdraw at any time
+          </li>
+          <li>
+            <strong>Legitimate interests (Art. 6(1)(f)):</strong> for improving
+            service quality and preventing fraud
+          </li>
+          <li>
+            <strong>Legal obligation (Art. 6(1)(c)):</strong> where required by
+            Finnish or EU law
+          </li>
+        </ul>
+
+        <h2>4. How We Use Your Data</h2>
+        <ul style="margin-left: 1.5rem">
+          <li>To create and manage your account</li>
+          <li>To match students with internship opportunities</li>
+          <li>To allow companies to review applications</li>
+          <li>
+            To send transactional emails (application confirmations, interview
+            invitations)
+          </li>
+          <li>To improve the platform</li>
+        </ul>
+
+        <h2>5. Data Sharing</h2>
+        <p>We do not sell your personal data. We share data only with:</p>
+        <ul style="margin-left: 1.5rem">
+          <li>
+            <strong>Supabase Inc.</strong> — our database and authentication
+            provider (servers in EU region). Data Processing Agreement in place.
+          </li>
+          <li>
+            <strong>EmailJS</strong> — used to send transactional emails. Only
+            the data necessary for sending the email is transmitted.
+          </li>
+          <li>
+            <strong>Companies on our platform</strong> — when you submit an
+            internship application, your profile data and CV are shared with the
+            relevant employer.
+          </li>
+        </ul>
+
+        <h2>6. Data Retention</h2>
+        <ul style="margin-left: 1.5rem">
+          <li>Account data is retained as long as your account is active</li>
+          <li>
+            Upon account deletion, personal data is permanently removed within
+            30 days
+          </li>
+          <li>
+            Uploaded CVs and photos are deleted immediately upon account
+            deletion
+          </li>
+          <li>
+            Application records may be retained for up to 12 months for legal
+            compliance
+          </li>
+        </ul>
+
+        <h2>7. Your Rights Under GDPR</h2>
+        <p>As an EU resident, you have the following rights:</p>
+        <ul style="margin-left: 1.5rem">
+          <li>
+            <strong>Right of access:</strong> request a copy of your personal
+            data
+          </li>
+          <li>
+            <strong>Right to rectification:</strong> correct inaccurate data via
+            your profile settings
+          </li>
+          <li>
+            <strong>Right to erasure:</strong> delete your account and all
+            associated data via the "Danger Zone" section in your profile
+          </li>
+          <li>
+            <strong>Right to data portability:</strong> request your data in a
+            machine-readable format
+          </li>
+          <li>
+            <strong>Right to object:</strong> object to processing based on
+            legitimate interests
+          </li>
+          <li>
+            <strong>Right to withdraw consent:</strong> at any time, without
+            affecting prior processing
+          </li>
+        </ul>
+
+        <h2>8. Cookies</h2>
+        <p>
+          We use only essential session cookies required for login
+          functionality. We do not use advertising or tracking cookies. For more
+          details, see our
+          <a href="cookie-policy.html" data-i18n="footer.cookiePolicy"
+            >Cookie Policy</a
+          >.
+        </p>
+
+        <h2>9. Data Security</h2>
+        <p>
+          We use industry-standard security measures including encrypted
+          connections (HTTPS), hashed passwords, and role-based access controls.
+          However, no system is 100% secure.
+        </p>
+
+        <h2>10. Supervisory Authority</h2>
+        <p>
+          If you believe we have not handled your data correctly, you have the
+          right to lodge a complaint with the Finnish Data Protection Ombudsman
+          (<em>Tietosuojavaltuutettu</em>):<br />
+          <strong>Website:</strong>
+          <a href="https://tietosuoja.fi" target="_blank">tietosuoja.fi</a
+          ><br />
+          <strong>Email:</strong> tietosuoja@om.fi
+        </p>
+
+        <h2>11. Contact</h2>
+        <p>
+          For any privacy-related requests or questions:<br />
+          <strong>Email:</strong>
+          <a href="mailto:internhub88@gmail.com">internhub88@gmail.com</a><br />
+          <strong>Address:</strong> Talonpojankatu 6, 67100 Kokkola, Finland
+        </p>
+      </div>
+    </section>
+
+    <footer>
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4 data-i18n="footer.aboutHeading">About InternHub</h4>
+          <ul>
+            <li>
+              <a href="about-us.html" data-i18n="footer.aboutUs">About Us</a>
+            </li>
+            <li><a href="team.html" data-i18n="footer.team">Our Team</a></li>
+            <li>
+              <a href="contact.html" data-i18n="footer.contact">Contact</a>
+            </li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4 data-i18n="footer.studentsHeading">For Students</h4>
+          <ul>
+            <li>
+              <a href="career-resources.html" data-i18n="footer.careerResources"
+                >Career Resources</a
+              >
+            </li>
+            <li>
+              <a href="resume-builder.html" data-i18n="footer.resumeBuilder"
+                >Resume Builder</a
+              >
+            </li>
+            <li>
+              <a href="interview-tips.html" data-i18n="footer.interviewTips"
+                >Interview Tips</a
+              >
+            </li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4 data-i18n="footer.employersHeading">For Employers</h4>
+          <ul>
+            <li>
+              <a href="company.html" data-i18n="footer.postJob">Post Job</a>
+            </li>
+            <li>
+              <a
+                href="browse-candidates.html"
+                data-i18n="footer.browseCandidates"
+                >Browse Candidates</a
+              >
+            </li>
+            <li>
+              <a href="support.html" data-i18n="footer.support">Support</a>
+            </li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4 data-i18n="footer.legalHeading">Legal</h4>
+          <ul>
+            <li>
+              <a href="privacy-policy.html" data-i18n="footer.privacyPolicy"
+                >Privacy Policy</a
+              >
+            </li>
+            <li>
+              <a href="terms-of-service.html" data-i18n="footer.termsOfService"
+                >Terms of Service</a
+              >
+            </li>
+            <li>
+              <a href="cookie-policy.html" data-i18n="footer.cookiePolicy"
+                >Cookie Policy</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p data-i18n="footer.copyright">
+          &copy; 2026 InternHub. All rights reserved. | Helping students find
+          their next opportunity
+        </p>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase.js"></script>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/i18n.js"></script>
+    <script src="../js/script.js"></script>
+    <script src="../js/cookie-consent.js"></script>
+
+    <script>
+      // Hide CTA login/register section if already logged in
+      document.addEventListener("DOMContentLoaded", function () {
+        const loggedIn =
+          localStorage.getItem("isLoggedIn") === "true" &&
+          localStorage.getItem("userId");
+        const cta = document.getElementById("ctaSection");
+        if (loggedIn && cta) cta.style.display = "none";
+      });
+    </script>
+  </body>
 </html>

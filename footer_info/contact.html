@@ -1,219 +1,337 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/png" href="../icon.png">
-  <title>Contact - InternHub</title>
-  <link rel="stylesheet" href="../css/style.css">
-</head>
-<body>
-  <nav>
-    <div class="nav-container">
-      <a href="../index.html" class="logo"><img src="../logo-hub.svg" alt="InternHub" class="logo-img"></a>
-      <ul class="nav-menu">
-        <li class="nav-item">
-          <a href="../internships.html" class="nav-link" data-i18n="nav.internships">Internships</a>
-        </li>
-        <li class="nav-item">
-          <div class="lang-switcher">
-            <button class="lang-toggle" onclick="toggleLangDropdown(event)">🌐 <span class="lang-current">EN</span> <span class="lang-caret">▾</span></button>
-            <ul class="lang-dropdown">
-              <li><button class="lang-btn" data-lang="en" onclick="setLanguage('en')">🇬🇧 English</button></li>
-              <li><button class="lang-btn" data-lang="fi" onclick="setLanguage('fi')">🇫🇮 Suomi</button></li>
-              <li><button class="lang-btn" data-lang="sv" onclick="setLanguage('sv')">🇸🇪 Svenska</button></li>
-            </ul>
-          </div>
-        </li>
-        <li class="nav-item">
-          <a href="../auth.html" class="nav-link active" data-i18n="nav.loginRegister">Login/Register</a>
-        </li>
-      </ul>
-      <div class="hamburger">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-    </div>
-  </nav>
-
-  <section class="section" style="background: linear-gradient(135deg, var(--primary-color) 0%, #667eea 100%); color: white; padding: 3rem 1rem;">
-    <div class="container text-center">
-      <h1 style="color: white;">Contact Us</h1>
-      <p>We'd love to hear from you</p>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="container">
-      <div class="grid-2">
-        <div>
-          <h2>Get in Touch</h2>
-          <p>Have questions or feedback? We're here to help!</p>
-
-          <form onsubmit="handleContactForm(event)" class="card">
-            <div class="form-group">
-              <label for="contactName">Full Name</label>
-              <input type="text" id="contactName" name="name" required>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="../icon.png" />
+    <title>Contact - InternHub</title>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <nav>
+      <div class="nav-container">
+        <a href="../index.html" class="logo"
+          ><img src="../logo-hub.svg" alt="InternHub" class="logo-img"
+        /></a>
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a
+              href="../internships.html"
+              class="nav-link"
+              data-i18n="nav.internships"
+              >Internships</a
+            >
+          </li>
+          <li class="nav-item">
+            <div class="lang-switcher">
+              <button class="lang-toggle" onclick="toggleLangDropdown(event)">
+                🌐 <span class="lang-current">EN</span>
+                <span class="lang-caret">▾</span>
+              </button>
+              <ul class="lang-dropdown">
+                <li>
+                  <button
+                    class="lang-btn"
+                    data-lang="en"
+                    onclick="setLanguage('en')"
+                  >
+                    🇬🇧 English
+                  </button>
+                </li>
+                <li>
+                  <button
+                    class="lang-btn"
+                    data-lang="fi"
+                    onclick="setLanguage('fi')"
+                  >
+                    🇫🇮 Suomi
+                  </button>
+                </li>
+                <li>
+                  <button
+                    class="lang-btn"
+                    data-lang="sv"
+                    onclick="setLanguage('sv')"
+                  >
+                    🇸🇪 Svenska
+                  </button>
+                </li>
+              </ul>
             </div>
-
-            <div class="form-group">
-              <label for="contactEmail">Email</label>
-              <input type="email" id="contactEmail" name="email" required>
-            </div>
-
-            <div class="form-group">
-              <label for="contactSubject">Subject</label>
-              <input type="text" id="contactSubject" name="subject" required>
-            </div>
-
-            <div class="form-group">
-              <label for="contactMessage">Message</label>
-              <textarea id="contactMessage" name="message" rows="5" required></textarea>
-            </div>
-
-            <button type="submit" class="btn btn-primary" style="width: 100%;">Send Message</button>
-          </form>
-        </div>
-
-        <div>
-          <div class="card">
-            <h3 style="margin-top: 0;">Contact Information</h3>
-
-            <div style="margin: 2rem 0;">
-              <h4>📍 Address</h4>
-              <p>Talonpojankatu 6<br>Kokkola, 67100<br>Finland</p>
-            </div>
-
-            <div style="margin: 2rem 0;">
-              <h4>📧 Email</h4>
-              <p><a href="mailto:internhub88@gmail.com" class="text-primary">internhub88@gmail.com</a></p>
-            </div>
-
-            <div style="margin: 2rem 0;">
-              <h4>📞 Phone</h4>
-              <p><a href="tel:+14155551234" class="text-primary">+1 (415) 555-1234</a></p>
-            </div>
-
-            <div style="margin: 2rem 0;">
-              <h4>⏰ Business Hours</h4>
-              <p>Monday - Friday: 9:00 AM - 6:00 PM PST<br>Saturday - Sunday: Closed</p>
-            </div>
-          </div>
+          </li>
+          <li class="nav-item">
+            <a
+              href="../auth.html"
+              class="nav-link active"
+              data-i18n="nav.loginRegister"
+              >Login/Register</a
+            >
+          </li>
+        </ul>
+        <div class="hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
         </div>
       </div>
-    </div>
-  </section>
+    </nav>
 
-  
-
-  <footer>
-    <div class="footer-content">
-      <div class="footer-section">
-        <h4>About InternHub</h4>
-        <ul>
-          <li><a href="about-us.html">About Us</a></li>
-          <li><a href="team.html">Our Team</a></li>
-          <li><a href="contact.html">Contact</a></li>
-        </ul>
+    <section
+      class="section"
+      style="
+        background: linear-gradient(
+          160deg,
+          #3b30c8 0%,
+          #435088 0%,
+          #524ba2 100%
+        );
+        color: white;
+        padding: 3rem 1rem;
+      "
+    >
+      <div class="container text-center">
+        <h1 style="color: white">Contact Us</h1>
+        <p style="color: rgba(255, 255, 255, 0.9)">
+          We'd love to hear from you
+        </p>
       </div>
-      <div class="footer-section">
-        <h4>For Students</h4>
-        <ul>
-          <li><a href="career-resources.html">Career Resources</a></li>
-          <li><a href="resume-builder.html">Resume Builder</a></li>
-          <li><a href="interview-tips.html">Interview Tips</a></li>
-        </ul>
-      </div>
-      <div class="footer-section">
-        <h4>For Employers</h4>
-        <ul>
-          <li><a href="company.html">Post Job</a></li>
-          <li><a href="browse-candidates.html">Browse Candidates</a></li>
-          <li><a href="support.html">Support</a></li>
-        </ul>
-      </div>
-      <div class="footer-section">
-        <h4>Legal</h4>
-        <ul>
-          <li><a href="privacy-policy.html">Privacy Policy</a></li>
-          <li><a href="terms-of-service.html">Terms of Service</a></li>
-          <li><a href="cookie-policy.html">Cookie Policy</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p>&copy; 2026 InternHub. All rights reserved. | Helping students find their next opportunity</p>
-    </div>
-  </footer>
+    </section>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <section class="section">
+      <div class="container">
+        <div class="grid-2">
+          <div>
+            <h2>Get in Touch</h2>
+            <p>Have questions or feedback? We're here to help!</p>
 
-  <script src="../js/supabase.js"></script>
-  
-  <script src="../js/auth.js"></script>
-  <script src="../js/i18n.js"></script>
-  <script src="../js/script.js"></script>
-  <script src="../js/cookie-consent.js"></script>
-  
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-  
-  <script>
-    
-  // Hide CTA login/register section if already logged in
-  document.addEventListener('DOMContentLoaded', function () {
-    const loggedIn = localStorage.getItem('isLoggedIn') === 'true' && localStorage.getItem('userId');
-    const cta = document.getElementById('ctaSection');
-    if (loggedIn && cta) cta.style.display = 'none';
-  });
+            <form onsubmit="handleContactForm(event)" class="card">
+              <div class="form-group">
+                <label for="contactName">Full Name</label>
+                <input type="text" id="contactName" name="name" required />
+              </div>
 
-    // Initialize EmailJS
-    (function() {
-      emailjs.init("sEPTKkb6HZBc_Qopf");
-    })();
-  
-    async function handleContactForm(event) {
-      event.preventDefault();
-      
-      // Check if client exists
-      if (typeof supabaseClient === 'undefined') {
+              <div class="form-group">
+                <label for="contactEmail">Email</label>
+                <input type="email" id="contactEmail" name="email" required />
+              </div>
+
+              <div class="form-group">
+                <label for="contactSubject">Subject</label>
+                <input
+                  type="text"
+                  id="contactSubject"
+                  name="subject"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="contactMessage">Message</label>
+                <textarea
+                  id="contactMessage"
+                  name="message"
+                  rows="5"
+                  required
+                ></textarea>
+              </div>
+
+              <button type="submit" class="btn btn-primary" style="width: 100%">
+                Send Message
+              </button>
+            </form>
+          </div>
+
+          <div>
+            <div class="card">
+              <h3 style="margin-top: 0">Contact Information</h3>
+
+              <div style="margin: 2rem 0">
+                <h4>📍 Address</h4>
+                <p>Talonpojankatu 6<br />Kokkola, 67100<br />Finland</p>
+              </div>
+
+              <div style="margin: 2rem 0">
+                <h4>📧 Email</h4>
+                <p>
+                  <a href="mailto:internhub88@gmail.com" class="text-primary"
+                    >internhub88@gmail.com</a
+                  >
+                </p>
+              </div>
+
+              <div style="margin: 2rem 0">
+                <h4>📞 Phone</h4>
+                <p>
+                  <a href="tel:+14155551234" class="text-primary"
+                    >+1 (415) 555-1234</a
+                  >
+                </p>
+              </div>
+
+              <div style="margin: 2rem 0">
+                <h4>⏰ Business Hours</h4>
+                <p>
+                  Monday - Friday: 9:00 AM - 6:00 PM PST<br />Saturday - Sunday:
+                  Closed
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4 data-i18n="footer.aboutHeading">About InternHub</h4>
+          <ul>
+            <li>
+              <a href="about-us.html" data-i18n="footer.aboutUs">About Us</a>
+            </li>
+            <li><a href="team.html" data-i18n="footer.team">Our Team</a></li>
+            <li>
+              <a href="contact.html" data-i18n="footer.contact">Contact</a>
+            </li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4 data-i18n="footer.studentsHeading">For Students</h4>
+          <ul>
+            <li>
+              <a href="career-resources.html" data-i18n="footer.careerResources"
+                >Career Resources</a
+              >
+            </li>
+            <li>
+              <a href="resume-builder.html" data-i18n="footer.resumeBuilder"
+                >Resume Builder</a
+              >
+            </li>
+            <li>
+              <a href="interview-tips.html" data-i18n="footer.interviewTips"
+                >Interview Tips</a
+              >
+            </li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4 data-i18n="footer.employersHeading">For Employers</h4>
+          <ul>
+            <li>
+              <a href="company.html" data-i18n="footer.postJob">Post Job</a>
+            </li>
+            <li>
+              <a
+                href="browse-candidates.html"
+                data-i18n="footer.browseCandidates"
+                >Browse Candidates</a
+              >
+            </li>
+            <li>
+              <a href="support.html" data-i18n="footer.support">Support</a>
+            </li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4 data-i18n="footer.legalHeading">Legal</h4>
+          <ul>
+            <li>
+              <a href="privacy-policy.html" data-i18n="footer.privacyPolicy"
+                >Privacy Policy</a
+              >
+            </li>
+            <li>
+              <a href="terms-of-service.html" data-i18n="footer.termsOfService"
+                >Terms of Service</a
+              >
+            </li>
+            <li>
+              <a href="cookie-policy.html" data-i18n="footer.cookiePolicy"
+                >Cookie Policy</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p data-i18n="footer.copyright">
+          &copy; 2026 InternHub. All rights reserved. | Helping students find
+          their next opportunity
+        </p>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="../js/supabase.js"></script>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/i18n.js"></script>
+    <script src="../js/script.js"></script>
+    <script src="../js/cookie-consent.js"></script>
+
+    <script
+      type="text/javascript"
+      src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"
+    ></script>
+
+    <script>
+      // Hide CTA login/register section if already logged in
+      document.addEventListener("DOMContentLoaded", function () {
+        const loggedIn =
+          localStorage.getItem("isLoggedIn") === "true" &&
+          localStorage.getItem("userId");
+        const cta = document.getElementById("ctaSection");
+        if (loggedIn && cta) cta.style.display = "none";
+      });
+
+      // Initialize EmailJS
+      (function () {
+        emailjs.init("sEPTKkb6HZBc_Qopf");
+      })();
+
+      async function handleContactForm(event) {
+        event.preventDefault();
+
+        // Check if client exists
+        if (typeof supabaseClient === "undefined") {
           alert("Error: Supabase is not connected. Check your file paths!");
           return;
-      }
-  
-      const formData = new FormData(event.target);
-      const contactData = {
-        name: formData.get('name'),
-        email: formData.get('email'),
-        subject: formData.get('subject'),
-        message: formData.get('message')
-      };
-  
-      try {
-        // THE FIX: Use .select() to confirm it was added
-        const { data, error: dbError } = await supabaseClient
-          .from('contact_messages')
-          .insert([contactData])
-          .select(); 
-  
-        if (dbError) throw dbError;
-  
-        await emailjs.send('service_q4hp8tj', 'template_vq3sxru', {
-          to_email: 'internhub88@gmail.com',
-          from_name: contactData.name,
-          from_email: contactData.email,
-          subject: `[CONTACT FORM] ${contactData.subject}`,
-          message: contactData.message
-        });
-  
-        showToast('Message saved and sent to Admin!', 'success');
-        event.target.reset();
+        }
 
-      } catch (err) {
-        console.error('Submission Error:', err);
-        showToast('Failed to send: ' + err.message, 'error');
+        const formData = new FormData(event.target);
+        const contactData = {
+          name: formData.get("name"),
+          email: formData.get("email"),
+          subject: formData.get("subject"),
+          message: formData.get("message"),
+        };
+
+        try {
+          // THE FIX: Use .select() to confirm it was added
+          const { data, error: dbError } = await supabaseClient
+            .from("contact_messages")
+            .insert([contactData])
+            .select();
+
+          if (dbError) throw dbError;
+
+          await emailjs.send("service_q4hp8tj", "template_vq3sxru", {
+            to_email: "internhub88@gmail.com",
+            from_name: contactData.name,
+            from_email: contactData.email,
+            subject: `[CONTACT FORM] ${contactData.subject}`,
+            message: contactData.message,
+          });
+
+          showToast("Message saved and sent to Admin!", "success");
+          event.target.reset();
+        } catch (err) {
+          console.error("Submission Error:", err);
+          showToast("Failed to send: " + err.message, "error");
+        }
       }
-    }
-  </script>
-</body>
+    </script>
+  </body>
 </html>

@@ -1,188 +1,278 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/png" href="../icon.png">
-<title>Internships - InternHub</title>
-<link rel="stylesheet" href="../css/style.css">
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="../icon.png" />
+    <title>Internships - InternHub</title>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
 
-<body>
+  <body>
+    <nav>
+      <div class="nav-container">
+        <a href="../index.html" class="logo"
+          ><img src="../logo-hub.svg" alt="InternHub" class="logo-img"
+        /></a>
 
-  <nav>
-    <div class="nav-container">
-      <a href="../index.html" class="logo"><img src="../logo-hub.svg" alt="InternHub" class="logo-img"></a>
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a
+              href="../internships.html"
+              class="nav-link"
+              data-i18n="nav.internships"
+              >Internships</a
+            >
+          </li>
+          <li class="nav-item">
+            <div class="lang-switcher">
+              <button class="lang-toggle" onclick="toggleLangDropdown(event)">
+                🌐 <span class="lang-current">EN</span>
+                <span class="lang-caret">▾</span>
+              </button>
+              <ul class="lang-dropdown">
+                <li>
+                  <button
+                    class="lang-btn"
+                    data-lang="en"
+                    onclick="setLanguage('en')"
+                  >
+                    🇬🇧 English
+                  </button>
+                </li>
+                <li>
+                  <button
+                    class="lang-btn"
+                    data-lang="fi"
+                    onclick="setLanguage('fi')"
+                  >
+                    🇫🇮 Suomi
+                  </button>
+                </li>
+                <li>
+                  <button
+                    class="lang-btn"
+                    data-lang="sv"
+                    onclick="setLanguage('sv')"
+                  >
+                    🇸🇪 Svenska
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </li>
+          <li class="nav-item">
+            <a
+              href="../auth.html"
+              class="nav-link"
+              data-i18n="nav.loginRegister"
+              >Login/Register</a
+            >
+          </li>
+        </ul>
 
-      <ul class="nav-menu">
-        <li class="nav-item">
-          <a href="../internships.html" class="nav-link" data-i18n="nav.internships">Internships</a>
-        </li>
-        <li class="nav-item">
-          <div class="lang-switcher">
-            <button class="lang-toggle" onclick="toggleLangDropdown(event)">🌐 <span class="lang-current">EN</span> <span class="lang-caret">▾</span></button>
-            <ul class="lang-dropdown">
-              <li><button class="lang-btn" data-lang="en" onclick="setLanguage('en')">🇬🇧 English</button></li>
-              <li><button class="lang-btn" data-lang="fi" onclick="setLanguage('fi')">🇫🇮 Suomi</button></li>
-              <li><button class="lang-btn" data-lang="sv" onclick="setLanguage('sv')">🇸🇪 Svenska</button></li>
-            </ul>
-          </div>
-        </li>
-        <li class="nav-item">
-          <a href="../auth.html" class="nav-link" data-i18n="nav.loginRegister">Login/Register</a>
-        </li>
-      </ul>
-
-      <div class="hamburger">
-        <span></span>
-        <span></span>
-        <span></span>
+        <div class="hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
       </div>
-    </div>
-  </nav>
+    </nav>
 
-<!-- HEADER -->
-<section class="section" style="background:linear-gradient(135deg,#5a669d,#667eea); color:white;">
-  <div class="container text-center">
-    <h1 style="color:white;">Internships</h1>
-    <p>How internship opportunities work on InternHub</p>
-  </div>
-</section>
+    <!-- HEADER -->
+    <section
+      class="section"
+      style="
+        background: linear-gradient(
+          160deg,
+          #3b30c8 0%,
+          #435088 0%,
+          #524ba2 100%
+        );
+        color: white;
+        padding: 3rem 1rem;
+      "
+    >
+      <div class="container text-center">
+        <h1 style="color: white">Internships</h1>
+        <p style="color: rgba(255, 255, 255, 0.9)">
+          How internship opportunities work on InternHub
+        </p>
+      </div>
+    </section>
 
-<!-- CONTENT -->
-<section class="section">
-  <div class="container" style="max-width:900px;">
+    <!-- CONTENT -->
+    <section class="section">
+      <div class="container" style="max-width: 900px">
+        <div class="card">
+          <h2>📌 What are internships here?</h2>
 
-    <div class="card">
-      <h2>📌 What are internships here?</h2>
+          <p>
+            Internships on InternHub are opportunities created by companies.
+            Students can browse these opportunities and apply directly.
+          </p>
+        </div>
 
-      <p>
-        Internships on InternHub are opportunities created by companies.
-        Students can browse these opportunities and apply directly.
-      </p>
-    </div>
+        <div class="card" style="margin-top: 2rem">
+          <h2>🎓 How students use this page</h2>
 
-    <div class="card" style="margin-top:2rem;">
-      <h2>🎓 How students use this page</h2>
+          <ul style="margin-left: 1.5rem">
+            <li>Browse available internship listings</li>
+            <li>Read job description and requirements</li>
+            <li>Choose a position that matches skills</li>
+            <li>Apply by submitting CV and details</li>
+          </ul>
+        </div>
 
-      <ul style="margin-left:1.5rem;">
-        <li>Browse available internship listings</li>
-        <li>Read job description and requirements</li>
-        <li>Choose a position that matches skills</li>
-        <li>Apply by submitting CV and details</li>
-      </ul>
-    </div>
+        <div class="card" style="margin-top: 2rem">
+          <h2>🏢 How companies use this system</h2>
 
-    <div class="card" style="margin-top:2rem;">
-      <h2>🏢 How companies use this system</h2>
+          <ul style="margin-left: 1.5rem">
+            <li>Publish internship offers</li>
+            <li>Receive applications from students</li>
+            <li>Review CVs and skills</li>
+            <li>Contact selected candidates</li>
+          </ul>
+        </div>
 
-      <ul style="margin-left:1.5rem;">
-        <li>Publish internship offers</li>
-        <li>Receive applications from students</li>
-        <li>Review CVs and skills</li>
-        <li>Contact selected candidates</li>
-      </ul>
-    </div>
+        <div class="card" style="margin-top: 2rem">
+          <h2>🔄 How the system works</h2>
 
-    <div class="card" style="margin-top:2rem;">
-      <h2>🔄 How the system works</h2>
+          <p>
+            InternHub is not a social platform for browsing people. It is an
+            application-based system:
+          </p>
 
-      <p>
-        InternHub is not a social platform for browsing people.
-        It is an application-based system:
-      </p>
+          <ul style="margin-left: 1.5rem">
+            <li>Company creates internship post</li>
+            <li>Student sees it in this page</li>
+            <li>Student applies</li>
+            <li>Company receives application</li>
+          </ul>
+        </div>
 
-      <ul style="margin-left:1.5rem;">
-        <li>Company creates internship post</li>
-        <li>Student sees it in this page</li>
-        <li>Student applies</li>
-        <li>Company receives application</li>
-      </ul>
-    </div>
+        <div class="card" style="margin-top: 2rem">
+          <h2>🔒 Important rule</h2>
 
-    <div class="card" style="margin-top:2rem;">
-      <h2>🔒 Important rule</h2>
+          <p>
+            Students cannot be contacted or viewed before applying. All
+            interaction happens only after an application is submitted.
+          </p>
+        </div>
 
-      <p>
-        Students cannot be contacted or viewed before applying.
-        All interaction happens only after an application is submitted.
-      </p>
-    </div>
+        <div class="card" style="margin-top: 2rem">
+          <h2>💡 Summary</h2>
 
-    <div class="card" style="margin-top:2rem;">
-      <h2>💡 Summary</h2>
+          <p>
+            This page is the main entry point for students. It connects them to
+            internship opportunities and starts the application process.
+          </p>
+        </div>
+      </div>
+    </section>
 
-      <p>
-        This page is the main entry point for students.
-        It connects them to internship opportunities and starts the application process.
-      </p>
-    </div>
+    <footer>
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4 data-i18n="footer.aboutHeading">About InternHub</h4>
+          <ul>
+            <li>
+              <a href="about-us.html" data-i18n="footer.aboutUs">About Us</a>
+            </li>
+            <li><a href="team.html" data-i18n="footer.team">Our Team</a></li>
+            <li>
+              <a href="contact.html" data-i18n="footer.contact">Contact</a>
+            </li>
+          </ul>
+        </div>
 
-  </div>
-</section>
+        <div class="footer-section">
+          <h4 data-i18n="footer.studentsHeading">For Students</h4>
+          <ul>
+            <li>
+              <a href="career-resources.html" data-i18n="footer.careerResources"
+                >Career Resources</a
+              >
+            </li>
+            <li>
+              <a href="resume-builder.html" data-i18n="footer.resumeBuilder"
+                >Resume Builder</a
+              >
+            </li>
+            <li>
+              <a href="interview-tips.html" data-i18n="footer.interviewTips"
+                >Interview Tips</a
+              >
+            </li>
+          </ul>
+        </div>
 
-<footer>
-  <div class="footer-content">
+        <div class="footer-section">
+          <h4 data-i18n="footer.employersHeading">For Employers</h4>
+          <ul>
+            <li>
+              <a href="company.html" data-i18n="footer.postJob">Post Job</a>
+            </li>
+            <li>
+              <a
+                href="browse-candidates.html"
+                data-i18n="footer.browseCandidates"
+                >Browse Candidates</a
+              >
+            </li>
+            <li>
+              <a href="support.html" data-i18n="footer.support">Support</a>
+            </li>
+          </ul>
+        </div>
 
-    <div class="footer-section">
-      <h4>About InternHub</h4>
-      <ul>
-        <li><a href="about-us.html">About Us</a></li>
-        <li><a href="team.html">Our Team</a></li>
-        <li><a href="contact.html">Contact</a></li>
-      </ul>
-    </div>
+        <div class="footer-section">
+          <h4 data-i18n="footer.legalHeading">Legal</h4>
+          <ul>
+            <li>
+              <a href="privacy-policy.html" data-i18n="footer.privacyPolicy"
+                >Privacy Policy</a
+              >
+            </li>
+            <li>
+              <a href="terms-of-service.html" data-i18n="footer.termsOfService"
+                >Terms of Service</a
+              >
+            </li>
+            <li>
+              <a href="cookie-policy.html" data-i18n="footer.cookiePolicy"
+                >Cookie Policy</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
 
-    <div class="footer-section">
-      <h4>For Students</h4>
-      <ul>
-        <li><a href="career-resources.html">Career Resources</a></li>
-        <li><a href="resume-builder.html">Resume Builder</a></li>
-        <li><a href="interview-tips.html">Interview Tips</a></li>
-      </ul>
-    </div>
+      <div class="footer-bottom">
+        <p data-i18n="footer.copyright">
+          &copy; 2026 InternHub. All rights reserved. | Helping students find
+          their next opportunity
+        </p>
+      </div>
+    </footer>
 
-    <div class="footer-section">
-      <h4>For Employers</h4>
-      <ul>
-        <li><a href="company.html">Post Job</a></li>
-        <li><a href="browse-candidates.html">Browse Candidates</a></li>
-        <li><a href="support.html">Support</a></li>
-      </ul>
-    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase.js"></script>
 
-    <div class="footer-section">
-      <h4>Legal</h4>
-      <ul>
-        <li><a href="privacy-policy.html">Privacy Policy</a></li>
-        <li><a href="terms-of-service.html">Terms of Service</a></li>
-        <li><a href="cookie-policy.html">Cookie Policy</a></li>
-      </ul>
-    </div>
+    <script src="../js/auth.js"></script>
+    <script src="../js/i18n.js"></script>
+    <script src="../js/script.js"></script>
+    <script src="../js/cookie-consent.js"></script>
 
-  </div>
-
-  <div class="footer-bottom">
-    <p>&copy; 2026 InternHub. All rights reserved. | Helping students find their next opportunity</p>
-  </div>
-</footer>
-
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../js/supabase.js"></script>
-
-<script src="../js/auth.js"></script>
-<script src="../js/i18n.js"></script>
-<script src="../js/script.js"></script>
-  <script src="../js/cookie-consent.js"></script>
-
-<script>
-  // Hide CTA login/register section if already logged in
-  document.addEventListener('DOMContentLoaded', function () {
-    const loggedIn = localStorage.getItem('isLoggedIn') === 'true' && localStorage.getItem('userId');
-    const cta = document.getElementById('ctaSection');
-    if (loggedIn && cta) cta.style.display = 'none';
-  });
-</script>
-</body>
+    <script>
+      // Hide CTA login/register section if already logged in
+      document.addEventListener("DOMContentLoaded", function () {
+        const loggedIn =
+          localStorage.getItem("isLoggedIn") === "true" &&
+          localStorage.getItem("userId");
+        const cta = document.getElementById("ctaSection");
+        if (loggedIn && cta) cta.style.display = "none";
+      });
+    </script>
+  </body>
 </html>
