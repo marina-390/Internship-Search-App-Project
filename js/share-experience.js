@@ -21,7 +21,7 @@ function renderText(text) {
   const safe = escHtml(text || '');
   if (!text || text.length <= PREVIEW_LENGTH) return safe;
   const short = escHtml(text.slice(0, PREVIEW_LENGTH).trimEnd()) + '…';
-  return `<span class="review-text"><span class="review-short">${short}</span><span class="review-full" hidden>${safe}</span></span><button type="button" class="show-more-btn" onclick="toggleReviewText(this)">Show more</button>`;
+  return `<span class="review-text"><span class="review-short">${short}</span><span class="review-full" hidden>${safe}</span></span><button type="button" class="show-more-btn" onclick="toggleReviewText(this)">${t('shareExperience.showMore')}</button>`;
 }
 
 function toggleReviewText(btn) {
@@ -31,7 +31,7 @@ function toggleReviewText(btn) {
   const expanding = full.hidden;
   full.hidden = !expanding;
   short.hidden = expanding;
-  btn.textContent = expanding ? 'Show less' : 'Show more';
+  btn.textContent = expanding ? t('shareExperience.showLess') : t('shareExperience.showMore');
 }
 
 function updateCharCounter(textarea, counterId) {
@@ -111,9 +111,9 @@ async function loadExperiencesFromDB() {
       const initials = [sp.first_name, sp.last_name].filter(Boolean).map(p => p[0]).slice(0, 2).join('').toUpperCase() || 'IN';
       shareTestimonials.push({
         initials, name, role,
-        prompt1: 'What surprised me most?',
+        prompt1: t('shareExperience.prompt1'),
         answer1: exp.question1 || '',
-        prompt2: 'Top interview tip:',
+        prompt2: t('shareExperience.prompt2'),
         answer2: exp.question2 || '',
         avatarColor: '#5a669d'
       });
@@ -236,9 +236,9 @@ async function submitExperienceForm(event) {
   const initials = [sp.first_name, sp.last_name].filter(Boolean).map(p => p[0]).slice(0, 2).join('').toUpperCase() || 'IN';
   shareTestimonials.push({
     initials, name, role,
-    prompt1: 'What surprised me most?',
+    prompt1: t('shareExperience.prompt1'),
     answer1,
-    prompt2: 'Top interview tip:',
+    prompt2: t('shareExperience.prompt2'),
     answer2,
     avatarColor: '#5a669d'
   });

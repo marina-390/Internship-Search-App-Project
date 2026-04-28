@@ -903,9 +903,9 @@
   <section id="share-experience-section">
     <div class="share-experience-inner">
       <div class="section-header">
-        <p class="section-subtitle">Pay It Forward</p>
-        <h2>Share Your Experience</h2>
-        <p>Join thousands of successful interns in helping the next generation. Your advice can launch a career.</p>
+        <p class="section-subtitle" data-i18n="shareExperience.sectionSubtitle">Pay It Forward</p>
+        <h2 data-i18n="shareExperience.sectionTitle">Share Your Experience</h2>
+        <p data-i18n="shareExperience.sectionDesc">Join thousands of successful interns in helping the next generation. Your advice can launch a career.</p>
       </div>
       <div class="share-grid">
         <!-- Left panel: [←] [card] -->
@@ -917,11 +917,11 @@
         <!-- Center — fixed, never navigates -->
         <article class="journey-card">
           <div class="journey-card-inner">
-            <span class="journey-label">Share Your Journey</span>
-            <h3 class="journey-heading">Write your story</h3>
+            <span class="journey-label" data-i18n="shareExperience.journeyLabel">Share Your Journey</span>
+            <h3 class="journey-heading" data-i18n="shareExperience.journeyHeading">Write your story</h3>
             <div class="journey-cta journey-cta--centered">
-              <button type="button" id="writeStoryBtn" class="journey-action-btn" onclick="openExperienceModal()">Write your story</button>
-              <p>Share a concise reflection that helps other interns navigate their next opportunity.</p>
+              <button type="button" id="writeStoryBtn" class="journey-action-btn" onclick="openExperienceModal()" data-i18n="shareExperience.journeyBtn">Write your story</button>
+              <p data-i18n="shareExperience.journeyDesc">Share a concise reflection that helps other interns navigate their next opportunity.</p>
             </div>
           </div>
         </article>
@@ -939,31 +939,31 @@
     <div class="share-modal-panel">
       <button type="button" class="share-modal-close" onclick="closeExperienceModal()" aria-label="Close form">×</button>
       <div class="share-modal-header">
-        <p class="section-subtitle">Share Your Story</p>
-        <h3>Publish your experience</h3>
-        <p>Write a short reflection and help future interns learn from your journey.</p>
+        <p class="section-subtitle" data-i18n="shareExperience.modalSubtitle">Share Your Story</p>
+        <h3 data-i18n="shareExperience.modalTitle">Publish your experience</h3>
+        <p data-i18n="shareExperience.modalDesc">Write a short reflection and help future interns learn from your journey.</p>
       </div>
       <form id="shareForm" class="share-modal-form" onsubmit="submitExperienceForm(event)">
         <div class="share-name-display">
           <span id="shareStudentName"></span>
         </div>
         <label>
-          Internship position
+          <span data-i18n="shareExperience.positionLabel">Internship position</span>
           <select id="sharePositionSelect" required></select>
         </label>
         <label>
-          What surprised you most?
-          <textarea name="surprise" rows="4" placeholder="The team was so supportive..." required maxlength="200" oninput="updateCharCounter(this,'surpriseCount')"></textarea>
+          <span data-i18n="shareExperience.surpriseLabel">What surprised you most?</span>
+          <textarea name="surprise" rows="4" placeholder="The team was so supportive..." data-i18n-placeholder="shareExperience.surprisePlaceholder" required maxlength="200" oninput="updateCharCounter(this,'surpriseCount')"></textarea>
           <span class="char-counter" id="surpriseCount">0/200</span>
         </label>
         <label>
-          Top interview tip
-          <textarea name="tip" rows="3" placeholder="Prepare strong examples..." required maxlength="200" oninput="updateCharCounter(this,'tipCount')"></textarea>
+          <span data-i18n="shareExperience.tipLabel">Top interview tip</span>
+          <textarea name="tip" rows="3" placeholder="Prepare strong examples..." data-i18n-placeholder="shareExperience.tipPlaceholder" required maxlength="200" oninput="updateCharCounter(this,'tipCount')"></textarea>
           <span class="char-counter" id="tipCount">0/200</span>
         </label>
         <div class="share-modal-actions">
-          <button type="button" class="btn-cancel" onclick="closeExperienceModal()">Cancel</button>
-          <button type="submit" class="btn-publish">Publish story</button>
+          <button type="button" class="btn-cancel" onclick="closeExperienceModal()" data-i18n="shareExperience.btnCancel">Cancel</button>
+          <button type="submit" class="btn-publish" data-i18n="shareExperience.btnPublish">Publish story</button>
         </div>
       </form>
     </div>

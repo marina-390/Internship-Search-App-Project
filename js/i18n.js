@@ -48,6 +48,29 @@ const TRANSLATIONS = {
       employerTitle: "I'm an Employer", employerDesc: 'Post positions and find great interns',
       signinTitle: 'Sign In', signinDesc: 'Continue where you left off'
     },
+    shareExperience: {
+      sectionSubtitle: 'Pay It Forward',
+      sectionTitle: 'Share Your Experience',
+      sectionDesc: 'Join thousands of successful interns in helping the next generation. Your advice can launch a career.',
+      journeyLabel: 'Share Your Journey',
+      journeyHeading: 'Write your story',
+      journeyBtn: 'Write your story',
+      journeyDesc: 'Share a concise reflection that helps other interns navigate their next opportunity.',
+      modalSubtitle: 'Share Your Story',
+      modalTitle: 'Publish your experience',
+      modalDesc: 'Write a short reflection and help future interns learn from your journey.',
+      positionLabel: 'Internship position',
+      surpriseLabel: 'What surprised you most?',
+      surprisePlaceholder: 'The team was so supportive...',
+      tipLabel: 'Top interview tip',
+      tipPlaceholder: 'Prepare strong examples...',
+      btnCancel: 'Cancel',
+      btnPublish: 'Publish story',
+      prompt1: 'What surprised me most?',
+      prompt2: 'Top interview tip:',
+      showMore: 'Show more',
+      showLess: 'Show less'
+    },
     auth: {
       pageTitle: 'Join InternHub', pageSubtitle: 'Start your internship journey today',
       tabLogin: 'Login', tabRegister: 'Register',
@@ -336,6 +359,29 @@ const TRANSLATIONS = {
       employerTitle: 'Olen työnantaja', employerDesc: 'Ilmoita paikkoja ja löydä hyviä harjoittelijoita',
       signinTitle: 'Kirjaudu sisään', signinDesc: 'Jatka siitä mihin jäit'
     },
+    shareExperience: {
+      sectionSubtitle: 'Auta seuraavia',
+      sectionTitle: 'Jaa kokemuksesi',
+      sectionDesc: 'Liity tuhansien menestyneiden harjoittelijoiden joukkoon auttamaan seuraavaa sukupolvea. Neuvojesi avulla voi alkaa ura.',
+      journeyLabel: 'Jaa matkasi',
+      journeyHeading: 'Kirjoita tarinasi',
+      journeyBtn: 'Kirjoita tarinasi',
+      journeyDesc: 'Jaa lyhyt reflektio, joka auttaa muita harjoittelijoita löytämään seuraavan mahdollisuutensa.',
+      modalSubtitle: 'Jaa tarinasi',
+      modalTitle: 'Julkaise kokemuksesi',
+      modalDesc: 'Kirjoita lyhyt pohdinta ja auta tulevia harjoittelijoita oppimaan matkastasi.',
+      positionLabel: 'Harjoittelupaikka',
+      surpriseLabel: 'Mikä yllätti sinut eniten?',
+      surprisePlaceholder: 'Tiimi oli niin tukeva...',
+      tipLabel: 'Paras haastatteluvinkki',
+      tipPlaceholder: 'Valmistele hyviä esimerkkejä...',
+      btnCancel: 'Peruuta',
+      btnPublish: 'Julkaise tarina',
+      prompt1: 'Mikä yllätti minut eniten?',
+      prompt2: 'Paras haastatteluvinkki:',
+      showMore: 'Näytä lisää',
+      showLess: 'Näytä vähemmän'
+    },
     auth: {
       pageTitle: 'Liity InternHubiin', pageSubtitle: 'Aloita harjoittelumatkasi tänään',
       tabLogin: 'Kirjaudu', tabRegister: 'Rekisteröidy',
@@ -623,6 +669,29 @@ const TRANSLATIONS = {
       studentTitle: 'Jag är student', studentDesc: 'Hitta praktikplatser som matchar dina färdigheter',
       employerTitle: 'Jag är arbetsgivare', employerDesc: 'Publicera tjänster och hitta bra praktikanter',
       signinTitle: 'Logga in', signinDesc: 'Fortsätt där du slutade'
+    },
+    shareExperience: {
+      sectionSubtitle: 'Ge tillbaka',
+      sectionTitle: 'Dela din erfarenhet',
+      sectionDesc: 'Gå med tusentals framgångsrika praktikanter för att hjälpa nästa generation. Ditt råd kan starta en karriär.',
+      journeyLabel: 'Dela din resa',
+      journeyHeading: 'Skriv din berättelse',
+      journeyBtn: 'Skriv din berättelse',
+      journeyDesc: 'Dela en kortfattad reflektion som hjälper andra praktikanter att navigera sin nästa möjlighet.',
+      modalSubtitle: 'Dela din berättelse',
+      modalTitle: 'Publicera din erfarenhet',
+      modalDesc: 'Skriv en kort reflektion och hjälp framtida praktikanter att lära sig av din resa.',
+      positionLabel: 'Praktikplats',
+      surpriseLabel: 'Vad överraskade dig mest?',
+      surprisePlaceholder: 'Teamet var så stöttande...',
+      tipLabel: 'Bästa intervjutips',
+      tipPlaceholder: 'Förbered starka exempel...',
+      btnCancel: 'Avbryt',
+      btnPublish: 'Publicera berättelse',
+      prompt1: 'Vad överraskade mig mest?',
+      prompt2: 'Bästa intervjutips:',
+      showMore: 'Visa mer',
+      showLess: 'Visa mindre'
     },
     auth: {
       pageTitle: 'Gå med i InternHub', pageSubtitle: 'Starta din praktikresa idag',
@@ -917,6 +986,7 @@ function applyTranslations() {
   document.querySelectorAll('.lang-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.lang === lang);
   });
+  if (typeof updateShareCards === 'function') updateShareCards();
 }
 
 document.addEventListener('DOMContentLoaded', applyTranslations);
