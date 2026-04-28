@@ -60,6 +60,12 @@ async function loadInternshipDetail(positionId) {
             if (countBadge) countBadge.textContent = '👥 N/A';
         }
 
+        const bPublished = document.getElementById('badgePublished');
+        if (bPublished) {
+            bPublished.title = `Published on ${formatDateEuropean(position.created_at)}`;
+            bPublished.textContent = `Published: ${formatDateEuropean(position.created_at)}`;
+        }
+
         const bLocation = document.getElementById('badgeLocation');
         if (bLocation) {
             bLocation.textContent = position.location || company?.city || 'Remote';
