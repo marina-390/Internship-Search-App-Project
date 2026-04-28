@@ -2154,38 +2154,43 @@ async function handleCityInput(query) {
   const datalist = document.getElementById('citySuggestions');
   const cleanQuery = query.trim();
 
-  // Only search if 2 or more characters are typed
-  if (!cleanQuery || cleanQuery.length < 2) {
-      if (datalist) datalist.innerHTML = '';
-      return;
+  if (!cleanQuery || cleanQuery.length < 1) {
+    if (datalist) datalist.innerHTML = '';
+    return;
   }
 
   try {
-      const url = `https://api.digitransit.fi/geocoding/v1/autocomplete?text=${encodeURIComponent(cleanQuery)}&sources=oa,osm&layers=address,locality&digitransit-subscription-key=${DIGITRANSIT_API_KEY}`;
+    // Only request locality/localadmin layers — no address layer
+    const url = `https://api.digitransit.fi/geocoding/v1/autocomplete?text=${encodeURIComponent(cleanQuery)}&layers=locality,localadmin&digitransit-subscription-key=${DIGITRANSIT_API_KEY}`;
 
-      const response = await fetch(url);
-      const data = await response.json();
+    const response = await fetch(url);
+    const data = await response.json();
 
-      if (datalist) {
-          datalist.innerHTML = ''; // Clear previous suggestions
+    if (datalist) {
+      datalist.innerHTML = '';
 
-          if (data.features && data.features.length > 0) {
-              // Filter and display unique city/locality names
-              const uniqueCities = new Set();
-              
-              data.features.forEach(feature => {
-                  const cityName = feature.properties.locality || feature.properties.name;
-                  if (cityName && !uniqueCities.has(cityName)) {
-                      uniqueCities.add(cityName);
-                      const option = document.createElement('option');
-                      option.value = cityName;
-                      datalist.appendChild(option);
-                  }
-              });
+      if (data.features && data.features.length > 0) {
+        const uniqueCities = new Set();
+
+        data.features.forEach(feature => {
+          const layer = feature.properties.layer;
+
+          // Only process locality and localadmin layers (skip addresses)
+          if (layer !== 'locality' && layer !== 'localadmin') return;
+
+          const cityName = feature.properties.name;
+
+          if (cityName && !uniqueCities.has(cityName)) {
+            uniqueCities.add(cityName);
+            const option = document.createElement('option');
+            option.value = cityName;
+            datalist.appendChild(option);
           }
+        });
       }
+    }
   } catch (err) {
-      console.error("City Search Error:", err);
+    console.error("City Search Error:", err);
   }
 }
 /* ----------------------------------------------------------
