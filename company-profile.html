@@ -330,10 +330,10 @@
                  Sisältää "Save" (saveCompanyProfile() → UPDATE Companies SET ...) ja
                  "Cancel" (toggleCompanyEdit(false) → palaa näyttötilaan tallentamatta). -->
       <div>
-        <button class="btn btn-small btn-primary" id="editCompanyBtn" onclick="toggleCompanyEdit(true)">Edit Profile</button>
+        <button class="btn btn-small btn-primary" id="editCompanyBtn" onclick="toggleCompanyEdit(true)" data-i18n="companyProfile.btnEdit">Edit Profile</button>
         <div id="editActionButtons" style="display: none; gap: 0.5rem;">
-          <button class="btn btn-small btn-primary" id="saveCompanyBtn" onclick="saveCompanyProfile()">Save</button>
-          <button class="btn btn-small btn-secondary" onclick="toggleCompanyEdit(false)">Cancel</button>
+          <button class="btn btn-small btn-primary" id="saveCompanyBtn" onclick="saveCompanyProfile()" data-i18n="companyProfile.btnSave">Save</button>
+          <button class="btn btn-small btn-secondary" onclick="toggleCompanyEdit(false)" data-i18n="companyProfile.btnCancel">Cancel</button>
         </div>
       </div>
     </div>
@@ -345,7 +345,7 @@
              #dCompanyDesc täytetään Companies.description-kentästä loadCompanyProfile():n avulla.
              Piilotetaan muokkaustilassa; palautetaan toggleCompanyEdit(false):n avulla. -->
     <div id="companyDisplayAbout">
-      <div class="company-section-title">About Company</div>
+      <div class="company-section-title" data-i18n="companyProfile.aboutTitle">About Company</div>
       <p id="dCompanyDesc">Describe your company mission...</p>
     </div>
 
@@ -386,22 +386,22 @@
                business_id, website WHERE id = <currentCompanyId>
          ──────────────────────────────────────────────────────── -->
     <div id="companyEditMode" style="display: none; margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
-      <div class="company-section-title">Edit Company Details</div>
+      <div class="company-section-title" data-i18n="companyProfile.editTitle">Edit Company Details</div>
 <div class="form-group">
-          <label>Company Name</label>
+          <label data-i18n="companyProfile.nameLabel">Company Name</label>
           <input type="text" id="eCompanyName" class="edit-input" style="width:100%; margin-bottom:1rem;" placeholder="Company">
         </div>
         <div class="form-group">
-          <label>Company Email</label>
+          <label data-i18n="companyProfile.emailLabel">Company Email</label>
           <input type="email" id="eCompanyEmail" class="edit-input" style="width:100%; margin-bottom:1rem;" placeholder="company@example.com">
         </div>
       <div class="form-group">
-        <label>About Company</label>
+        <label data-i18n="companyProfile.aboutLabel">About Company</label>
         <textarea id="eCompanyDesc" rows="4" style="width:100%; margin-bottom:1rem;" placeholder="Write somthing about your company"></textarea>
       </div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
         <div class="form-group">
-          <label>Location</label>
+          <label data-i18n="companyProfile.locationLabel">Location</label>
           <input type="text" 
        id="eHeadquarters" 
        list="citySuggestions" 
@@ -411,13 +411,13 @@
           <datalist id="citySuggestions"></datalist>
           </div>
         <div class="form-group">
-<label>Business ID (Y-Tunnus)</label>
+<label data-i18n="companyProfile.businessIdLabel">Business ID (Y-Tunnus)</label>
           <input type="text" id="eTeamSize" class="edit-input" list="prhSuggestions" autocomplete="off" placeholder="23456-7"> 
           <small id="prhStatus" style="font-size: 0.8rem; color: var(--text-light); margin-top: 0.25rem;"></small>
           <datalist id="prhSuggestions"></datalist>
         </div>
         <div class="form-group">
-          <label>Website</label>
+          <label data-i18n="companyProfile.websiteLabel">Website</label>
           <input type="text" id="eWebsite" class="edit-input" placeholder="www.company.com">
         </div>
         <!-- ── TEAM EDIT SECTION ─────────────────────────────
@@ -451,20 +451,20 @@
         <!-- TEAM EDIT SECTION -->
         <div class="form-group" style="grid-column: 1 / -1; margin-top: 1rem;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h4 style="margin: 0;">Our Team</h4>
-        <button type="button" class="btn btn-small btn-primary" id="addMemberToggleBtn" onclick="showAddMemberForm()">➕ Add New Member</button>
+        <h4 style="margin: 0;" data-i18n="companyProfile.teamTitle">Our Team</h4>
+        <button type="button" class="btn btn-small btn-primary" id="addMemberToggleBtn" onclick="showAddMemberForm()" data-i18n="companyProfile.btnAddMember">➕ Add New Member</button>
     </div>
 
     <div id="newMemberForm" style="display: none; background: #f9fafb; padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <input type="text" id="nmName" placeholder="Full Name" class="form-control">
-            <input type="text" id="nmTitle" placeholder="Job Title (e.g. CEO)" class="form-control">
-            <input type="email" id="nmEmail" placeholder="Email Address" class="form-control">
-            <input type="text" id="nmPhone" placeholder="Phone Number" class="form-control">
+            <input type="text" id="nmName" placeholder="Full Name" class="form-control" data-i18n-placeholder="companyProfile.memberNamePlaceholder">
+            <input type="text" id="nmTitle" placeholder="Job Title (e.g. CEO)" class="form-control" data-i18n-placeholder="companyProfile.memberTitlePlaceholder">
+            <input type="email" id="nmEmail" placeholder="Email Address" class="form-control" data-i18n-placeholder="companyProfile.memberEmailPlaceholder">
+            <input type="text" id="nmPhone" placeholder="Phone Number" class="form-control" data-i18n-placeholder="companyProfile.memberPhonePlaceholder">
         </div>
         <div style="margin-top: 10px; display: flex; gap: 10px;">
-            <button type="button" class="btn btn-small btn-primary" onclick="saveNewTeamMember()">Confirm Add</button>
-            <button type="button" class="btn btn-small" style="background:#ccc;" onclick="hideAddMemberForm()">Cancel</button>
+            <button type="button" class="btn btn-small btn-primary" onclick="saveNewTeamMember()" data-i18n="companyProfile.btnConfirmAdd">Confirm Add</button>
+            <button type="button" class="btn btn-small" style="background:#ccc;" onclick="hideAddMemberForm()" data-i18n="companyProfile.btnCancel">Cancel</button>
         </div>
     </div>
 
@@ -476,10 +476,10 @@
 
 
     <div class="card-header">
-        <h3 class="card-title">OUR TEAM</h3>
+        <h3 class="card-title" data-i18n="companyProfile.teamTitle">OUR TEAM</h3>
     </div>
     <div class="card-content" id="displayTeamList">
-        <p style="color: var(--text-light); text-align: center;">No team members listed.</p>
+        <p style="color: var(--text-light); text-align: center;" data-i18n="companyProfile.teamEmpty">No team members listed.</p>
     </div>   
             <div id="edit-mode-1" style="display: none; margin-top: 10px;">
               <input type="text" id="input-title-1" class="form-control" style="margin-bottom: 5px;">
@@ -512,10 +512,10 @@
         <!-- Current Postings Card -->
         <div class="card" style="margin-top: 1rem;">
           <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-            <h3 class="card-title">Current Postings</h3>
+            <h3 class="card-title" data-i18n="companyProfile.postingsTitle">Current Postings</h3>
           </div>
           <div class="card-content" id="companyPostingsList">
-            <p style="color:var(--text-light); text-align:center;">No postings yet.</p>
+            <p style="color:var(--text-light); text-align:center;" data-i18n="companyProfile.postingsEmpty">No postings yet.</p>
           </div>
         </div>
 
@@ -550,9 +550,9 @@
           <!-- Post Job Card -->
 
           <div class="sidebar-card" style="position:sticky; top:80px;">
-            <h4>Post New Job</h4>
-            <p>Create a new internship listing.</p>
-            <button class="btn btn-primary" style="width:100%;" onclick="openPostModal()">➕ Post New Position</button>
+            <h4 data-i18n="companyProfile.postSidebarTitle">Post New Job</h4>
+            <p data-i18n="companyProfile.postSidebarDesc">Create a new internship listing.</p>
+            <button class="btn btn-primary" style="width:100%;" onclick="openPostModal()" data-i18n="companyProfile.btnPostNew">➕ Post New Position</button>
           </div>
           
 
@@ -612,59 +612,59 @@
     <div class="modal-content">
       <input type="hidden" id="editPositionId" value="">
         <button onclick="closePostModal()" class="modal-close">&times;</button>
-        <h2 id="modalTitle" style="margin-bottom: 1.5rem;">Create New Internship</h2>
+        <h2 id="modalTitle" style="margin-bottom: 1.5rem;" data-i18n="companyProfile.postModalTitle">Create New Internship</h2>
 
         <div class="form-group">
-            <label>Job Title *</label>
+            <label data-i18n="companyProfile.postTitleLabel">Job Title *</label>
             <input type="text" id="pTitle" class="form-control" placeholder="e.g. Frontend Developer Intern">
         </div>
 
         <div class="form-group">
-            <label>Description *</label>
+            <label data-i18n="companyProfile.postDescLabel">Description *</label>
             <textarea id="pDesc" class="form-control" rows="4" placeholder="Describe the company and the role..."></textarea>
         </div>
 
         <div class="form-group">
-          <label>Responsibilities</label>
+          <label data-i18n="companyProfile.postResponLabel">Responsibilities</label>
           <textarea id="pRespon" class="form-control" rows="3" placeholder="Daily tasks and duties..."></textarea>
         </div>
 
         <div class="form-group">
-          <label>Requirements</label>
+          <label data-i18n="companyProfile.postReqsLabel">Requirements</label>
           <textarea id="pReqs" class="form-control" rows="3" placeholder="Skills, tools..."></textarea>
         </div>
-      
+
       <div class="form-group">
-        <label>Salary / Compensation</label>
+        <label data-i18n="companyProfile.postSalaryLabel">Salary / Compensation</label>
         <input type="text" id="pSalary" class="form-control" placeholder="e.g., 2000€/month or Negotiable">
     </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
             <div class="form-group">
-                <label>Start Date</label>
+                <label data-i18n="companyProfile.postStartLabel">Start Date</label>
                 <input type="date" id="pStart" class="form-control">
             </div>
             <div class="form-group">
-                <label>End Date</label>
+                <label data-i18n="companyProfile.postEndLabel">End Date</label>
                 <input type="date" id="pEnd" class="form-control">
             </div>
         </div>
 
         <div class="form-group">
             <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                <input type="checkbox" id="pOpenEnded" onchange="document.getElementById('pEnd').disabled = this.checked"> 
-                This position is open-ended (no fixed end date)
+                <input type="checkbox" id="pOpenEnded" onchange="document.getElementById('pEnd').disabled = this.checked">
+                <span data-i18n="companyProfile.postOpenEnded">This position is open-ended (no fixed end date)</span>
             </label>
         </div>
 
         <div class="form-group">
-            <label>Category *</label>
+            <label data-i18n="companyProfile.postCategoryLabel">Category *</label>
             <select id="pCategory" class="form-control">
-                <option value="">Select a category...</option>
+                <option value="" data-i18n="companyProfile.postCategoryDefault">Select a category...</option>
                 </select>
         </div>
         <div class="form-group">
-          <label>Visibility</label>
+          <label data-i18n="companyProfile.postVisibilityLabel">Visibility</label>
           <select id="pStatus" class="form-control">
               <option value="active">Active</option>
               <option value="draft">Draft</option>
@@ -672,9 +672,9 @@
       </div>
 
       <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
-        <button class="btn btn-secondary" onclick="closePostModal()">Cancel</button>
-        
-        <button class="btn btn-primary" id="submitPostBtn" onclick="submitPosition()">Post Position</button>
+        <button class="btn btn-secondary" onclick="closePostModal()" data-i18n="companyProfile.btnCancel">Cancel</button>
+
+        <button class="btn btn-primary" id="submitPostBtn" onclick="submitPosition()" data-i18n="companyProfile.btnPostSubmit">Post Position</button>
         </div>
     </div>
         
@@ -940,18 +940,18 @@
   <div id="companyAppModal" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:10000; overflow-y:auto;">
     <div class="modal-content" style="background:#fff; margin:4% auto; padding:2rem; width:95%; max-width:700px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.2); position:relative;">
       <button onclick="document.getElementById('companyAppModal').style.display='none'" style="position:absolute; top:1rem; right:1rem; background:none; border:none; font-size:1.8rem; cursor:pointer; color:#666;">&times;</button>
-      <h2 style="margin-top:0; margin-bottom:1rem;">Review Application</h2>
+      <h2 style="margin-top:0; margin-bottom:1rem;" data-i18n="companyProfile.appReviewTitle">Review Application</h2>
       <input type="hidden" id="companyAppId">
       <input type="hidden" id="companyAppStudentId">
 
       <div style="display:grid; gap:1rem;">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.75rem;">
           <div>
-            <p style="margin:0 0 0.25rem 0;"><strong>Position:</strong> <span id="companyAppPosition"></span></p>
-            <p style="margin:0 0 0.25rem 0;"><strong>Applicant:</strong> <span id="companyAppName"></span></p>
-            <p style="margin:0 0 0.25rem 0;"><strong>Email:</strong> <span id="companyAppEmail"></span></p>
-            <p style="margin:0 0 0.25rem 0;"><strong>Phone:</strong> <span id="companyAppPhone"></span></p>
-            <p style="margin:0 0 0.25rem 0;"><strong>Status:</strong> <span id="companyAppStatus"></span></p>
+            <p style="margin:0 0 0.25rem 0;"><strong data-i18n="companyProfile.appPositionLabel">Position:</strong> <span id="companyAppPosition"></span></p>
+            <p style="margin:0 0 0.25rem 0;"><strong data-i18n="companyProfile.appApplicantLabel">Applicant:</strong> <span id="companyAppName"></span></p>
+            <p style="margin:0 0 0.25rem 0;"><strong data-i18n="companyProfile.appEmailLabel">Email:</strong> <span id="companyAppEmail"></span></p>
+            <p style="margin:0 0 0.25rem 0;"><strong data-i18n="companyProfile.appPhoneLabel">Phone:</strong> <span id="companyAppPhone"></span></p>
+            <p style="margin:0 0 0.25rem 0;"><strong data-i18n="companyProfile.appStatusLabel">Status:</strong> <span id="companyAppStatus"></span></p>
           </div>
           <button class="btn btn-outline btn-small" onclick="openStudentProfileModal(document.getElementById('companyAppStudentId').value)" style="white-space:nowrap; align-self:flex-start;">
             👤 View Student Profile
@@ -959,12 +959,12 @@
         </div>
 
         <div style="background:#f8fafc; padding:1rem; border-radius:10px; border:1px solid #e5e7eb;">
-          <p style="margin:0 0 0.5rem 0; font-weight:600;">Cover Letter</p>
-          <p id="companyAppCoverLetter" style="margin:0; white-space:pre-wrap; color:#374151;">No cover letter provided.</p>
+          <p style="margin:0 0 0.5rem 0; font-weight:600;" data-i18n="companyProfile.appLetterLabel">Cover Letter</p>
+          <p id="companyAppCoverLetter" style="margin:0; white-space:pre-wrap; color:#374151;" data-i18n="companyProfile.appLetterEmpty">No cover letter provided.</p>
         </div>
 
         <div style="background:#f8fafc; padding:1rem; border-radius:10px; border:1px solid #e5e7eb;">
-          <p style="margin:0 0 0.5rem 0; font-weight:600;">CV / Resume</p>
+          <p style="margin:0 0 0.5rem 0; font-weight:600;" data-i18n="companyProfile.appCvLabel">CV / Resume</p>
           <p id="companyAppCvLink" style="margin:0;"></p>
         </div>
 
@@ -975,10 +975,10 @@
       </div>
 
       <div style="display:flex; flex-wrap:wrap; gap:0.75rem; margin-top:1.5rem; justify-content:flex-end;">
-        <button class="btn btn-primary" onclick="saveCompanyApplicationStatus('accepted')">Accept</button>
-        <button class="btn btn-danger" onclick="saveCompanyApplicationStatus('rejected')">Decline</button>
-        <button class="btn btn-outline" onclick="saveCompanyApplicationStatus('viewed')">Mark Viewed</button>
-        <button class="btn btn-secondary" onclick="document.getElementById('companyAppModal').style.display='none'">Close</button>
+        <button class="btn btn-primary" onclick="saveCompanyApplicationStatus('accepted')" data-i18n="companyProfile.btnAccept">Accept</button>
+        <button class="btn btn-danger" onclick="saveCompanyApplicationStatus('rejected')" data-i18n="companyProfile.btnDecline">Decline</button>
+        <button class="btn btn-outline" onclick="saveCompanyApplicationStatus('viewed')" data-i18n="companyProfile.btnViewed">Mark Viewed</button>
+        <button class="btn btn-secondary" onclick="document.getElementById('companyAppModal').style.display='none'" data-i18n="companyProfile.btnClose">Close</button>
       </div>
     </div>
   </div>
