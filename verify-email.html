@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+  ============================================================
+  verify-email.html — Email verification landing page
+  Sähköpostin vahvistussivu — käyttäjä ohjataan tänne rekisteröinnin vahvistuslinkin kautta
+  ============================================================
+-->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -8,6 +14,24 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <!-- ── EMAIL VERIFICATION UI ──────────────────────────────────────────
+       EN: Three mutually exclusive state divs: #stateLoading (default), #stateSuccess,
+           #stateError. The inline <script> listens to supabaseClient.auth.onAuthStateChange:
+           when SIGNED_IN fires after clicking the email link, completeRegistration() runs.
+           It checks if a Users row already exists (idempotency for double-clicks), then creates
+           the Users + student_profiles or Companies + company_team rows as appropriate.
+           finishSession() writes userId/userRole/userLogin to localStorage and redirects
+           after 1.5 s to student-profile.html (role=1) or company-profile.html (role=2).
+           A 15-second timeout shows #stateError if no SIGNED_IN event fires.
+       FI: Kolme toisensa poissulkevaa tiladiv-elementtiä: #stateLoading (oletus), #stateSuccess,
+           #stateError. Inline <script> kuuntelee supabaseClient.auth.onAuthStateChange:
+           kun SIGNED_IN laukeaa sähköpostilinkin napsautuksen jälkeen, completeRegistration() suoritetaan.
+           Se tarkistaa onko Users-rivi jo olemassa (idempotenssi tuplenapsautuksille), sitten luo
+           Users + student_profiles tai Companies + company_team -rivit tarpeen mukaan.
+           finishSession() kirjoittaa userId/userRole/userLogin localStorage:iin ja ohjaa
+           1,5 s kuluttua student-profile.html:ään (role=1) tai company-profile.html:ään (role=2).
+           15 sekunnin aikakatkaisu näyttää #stateError jos SIGNED_IN-tapahtumaa ei tule.
+       ──────────────────────────────────────────────────────── -->
   <div style="max-width: 500px; margin: 100px auto; text-align: center; padding: 2rem;">
 
     <div id="stateLoading">
@@ -31,6 +55,18 @@
 
   </div>
 
+  <!-- ── SCRIPTS ──────────────────────────────────────────
+       EN: 1. supabase-js CDN — Supabase client library (must load first)
+           2. js/supabase.js  — initialises supabaseClient (needed for auth state and DB calls)
+           3. Inline script   — contains all verification logic (completeRegistration, finishSession,
+                                showError). Kept inline for simplicity since this is a standalone page
+                                with no other JS dependencies.
+       FI: 1. supabase-js CDN — Supabase-asiakaskirjasto (ladattava ensin)
+           2. js/supabase.js  — alustaa supabaseClient:n (tarvitaan autentikointitilalle ja DB-kutsuille)
+           3. Inline-skripti  — sisältää kaiken vahvistuslogiikan (completeRegistration, finishSession,
+                                showError). Pidetään inline-muodossa koska kyseessä on itsenäinen sivu
+                                ilman muita JS-riippuvuuksia.
+       ──────────────────────────────────────────────────────── -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js"></script>
   <script>
@@ -96,7 +132,8 @@
               user_id: newUser.user_id,
               company_name: meta.company_name,
               website: meta.website || null,
-              y_tunnus: meta.y_tunnus
+              country: meta.country,
+              business_id: meta.business_id
             })
             .select('company_id')
             .single();

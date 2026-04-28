@@ -170,7 +170,7 @@ async function loadInternshipDetail(positionId) {
         if (displayCity) displayCity.textContent = company?.city || 'N/A';
 
         const displayY = document.getElementById('dYTunnus');
-        if (displayY) displayY.textContent = company?.y_tunnus || 'N/A';
+        if (displayY) displayY.textContent = company?.business_id || 'N/A';
   
         const descSection = document.getElementById('descriptionSection');
         const descEl = document.getElementById('displayDescription');
@@ -203,7 +203,7 @@ async function loadInternshipDetail(positionId) {
         if (document.getElementById('dCompanyDesc')) document.getElementById('dCompanyDesc').textContent = company?.description || '';
         if (document.getElementById('dWebsite')) document.getElementById('dWebsite').textContent = company?.website || 'N/A';
         if (document.getElementById('dHeadquarters')) document.getElementById('dHeadquarters').textContent = company?.city || 'N/A';
-        if (document.getElementById('dYTunnus')) document.getElementById('dYTunnus').textContent = company?.y_tunnus || 'N/A';
+        if (document.getElementById('dYTunnus')) document.getElementById('dYTunnus').textContent = company?.business_id || 'N/A';
 
         // --- 4. FAVORITES LOGIC ---
         // --- 4. FAVORITES LOGIC ---

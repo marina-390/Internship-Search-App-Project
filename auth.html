@@ -1,10 +1,20 @@
 <!doctype html>
+<!--
+  ============================================================
+  auth.html — Authentication page: Login and Registration forms
+  Kirjautumissivu: sisäänkirjautumis- ja rekisteröintilomakkeet
+  ============================================================
+-->
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login & Register - InternHub</title>
     <link rel="stylesheet" href="css/style.css" />
+    <!-- EN: Inline switchTab() defined here in <head> so tab switching works immediately on page load,
+             before external auth-page.js finishes loading. Toggles .active on form wrappers and tab buttons.
+         FI: Inline switchTab() on määritelty tässä <head>:ssä, jotta välilehtien vaihto toimii heti,
+             ennen kuin ulkoinen auth-page.js on ladattu. Vaihtaa .active-luokkaa lomakkeissa ja painikkeissa. -->
     <script>
       function switchTab(tab) {
         var lf = document.getElementById("loginForm");
@@ -24,6 +34,12 @@
         }
       }
     </script>
+    <!-- EN: Inline styles for the auth page layout, tab system, social login buttons, and divider.
+             Kept inline because they are specific to this page and not reused in style.css.
+             The .password-toggle wrapper positions the eye icon (👁️) inside the input field.
+         FI: Inline-tyylit auth-sivun asettelulle, välilehtijärjestelmälle, sosiaalisen kirjautumisen
+             painikkeille ja erottimelle. Pidetään inline-tyylinä koska ne ovat sivukohtaisia.
+             .password-toggle sijoittaa silmäikonin (👁️) syöttökentän sisälle. -->
     <style>
       .auth-container {
         display: grid;
@@ -152,9 +168,20 @@
         height: 1px;
         background-color: var(--border-color);
       }
+
+      label.req::after {
+        content: " *";
+        color: red;
+      }
     </style>
   </head>
   <body>
+    <!-- ── NAVIGATION ──────────────────────────────────────────
+         EN: Standard site nav. This page marks "Login/Register" link as active (class="active").
+             Language switcher and hamburger behave the same as on index.html.
+         FI: Vakio sivustonavigaatio. Tämä sivu merkitsee "Login/Register"-linkin aktiiviseksi.
+             Kielivalitsin ja hampurilaisvalikko toimivat samoin kuin index.html:ssä.
+         ──────────────────────────────────────────────────────── -->
     <nav>
       <div class="nav-container">
         <a href="index.html" class="logo"
@@ -223,6 +250,12 @@
       </div>
     </nav>
 
+    <!-- ── PAGE HERO BANNER ──────────────────────────────────────────
+         EN: Simple gradient banner at the top of the auth page. Provides visual
+             consistency with other pages. Text is translatable via data-i18n.
+         FI: Yksinkertainen liukuväribanneri auth-sivun yläosassa. Tarjoaa visuaalisen
+             yhteneväisyyden muiden sivujen kanssa. Teksti käännetään data-i18n:n avulla.
+         ──────────────────────────────────────────────────────── -->
     <section
       class="section"
       style="
@@ -252,10 +285,23 @@
       </div>
     </section>
 
+    <!-- ── MAIN AUTH SECTION ──────────────────────────────────────────
+         EN: Two-column grid (.auth-container): left column has the tabbed login/register
+             form, right column has the benefits section. On mobile (<768px) collapses to 1 column.
+             .form-tabs holds Login and Register tabs; switching calls switchTab() defined in <head>.
+         FI: Kaksipalstainen ruudukko (.auth-container): vasen sarake sisältää kirjautumis-/
+             rekisteröintilomakkeen välilehtinä, oikea sarake edut-osion. Mobiilissa (<768px)
+             laskostuu yhteen sarakkeeseen.
+             .form-tabs sisältää Login ja Register -välilehdet; vaihto kutsuu switchTab()-funktiota.
+         ──────────────────────────────────────────────────────── -->
     <section class="section">
       <div class="container">
         <div class="auth-container">
           <div class="form-container">
+            <!-- EN: Tab buttons — onclick calls switchTab('login') or switchTab('register').
+                     The active tab has class="active" which is styled in the inline <style>. -->
+            <!-- FI: Välilehtipainikkeet — onclick kutsuu switchTab('login') tai switchTab('register').
+                     Aktiivisella välilehdellä on class="active", joka tyylitellään inline-<style>:ssä. -->
             <div class="form-tabs">
               <button
                 class="form-tab active"
@@ -273,6 +319,12 @@
               </button>
             </div>
 
+            <!-- EN: Login form wrapper — starts as active (visible). Hidden when Register tab is selected.
+                     action="javascript:void(0)" prevents real form submission; auth-page.js intercepts
+                     the submit event and calls supabaseClient.auth.signInWithPassword(). -->
+            <!-- FI: Kirjautumislomakkeen kääre — alkaa aktiivisena (näkyvä). Piilotetaan Register-välilehdellä.
+                     action="javascript:void(0)" estää oikean lomakkeen lähetyksen; auth-page.js kaappaa
+                     submit-tapahtuman ja kutsuu supabaseClient.auth.signInWithPassword(). -->
             <div id="loginForm" class="auth-form-wrapper active">
               <h2 style="margin-bottom: 1.5rem" data-i18n="auth.loginHeading">
                 Welcome Back
@@ -296,6 +348,12 @@
                   <label for="loginPassword" data-i18n="auth.passwordLabel"
                     >Password</label
                   >
+                  <!-- EN: .password-toggle wraps the input and the eye button together.
+                           togglePasswordVisibility('loginPassword') in auth-page.js switches
+                           the input type between 'password' and 'text'. -->
+                  <!-- FI: .password-toggle ryhmittää syöttökentän ja silmäpainikkeen yhteen.
+                           togglePasswordVisibility('loginPassword') auth-page.js:ssä vaihtaa
+                           syöttökentän tyypin 'password'- ja 'text'-arvojen välillä. -->
                   <div class="password-toggle">
                     <input
                       type="password"
@@ -343,6 +401,12 @@
 
               <div class="divider" data-i18n="auth.divider">or</div>
 
+              <!-- EN: Social login buttons — each calls an OAuth function in auth-page.js:
+                       signInWithGoogle(), signInWithGitHub(), signInWithLinkedIn().
+                       Each function calls supabaseClient.auth.signInWithOAuth({ provider: '...' }).
+                   FI: Sosiaalisen kirjautumisen painikkeet — kukin kutsuu OAuth-funktiota auth-page.js:ssä:
+                       signInWithGoogle(), signInWithGitHub(), signInWithLinkedIn().
+                       Jokainen kutsuu supabaseClient.auth.signInWithOAuth({ provider: '...' }). -->
               <div class="social-login">
                 <button class="social-btn google" onclick="signInWithGoogle()">
                   <svg width="18" height="18" viewBox="0 0 48 48">
@@ -407,6 +471,12 @@
               </p>
             </div>
 
+            <!-- EN: Register form wrapper — hidden by default, shown when Register tab is clicked.
+                     Contains the full registration form with role selection (student/company),
+                     personal info fields, and role-specific conditional fields. -->
+            <!-- FI: Rekisteröintilomakkeen kääre — oletuksena piilotettu, näytetään Register-välilehdellä.
+                     Sisältää koko rekisteröintilomakkeen roolivalinnalla (opiskelija/yritys),
+                     henkilökohtaisilla kentillä ja roolikohtaisilla ehdollisilla kentillä. -->
             <div id="registerForm" class="auth-form-wrapper">
               <div id="registerFormContent">
                 <h2
@@ -416,6 +486,12 @@
                   Create Your Account
                 </h2>
                 <form id="registerForm_form" action="javascript:void(0)">
+                  <!-- EN: Role selector — radio buttons determine which conditional fields show.
+                           onchange calls toggleRoleFields() in auth-page.js, which shows either
+                           #studentFields (education/major) or #companyFields (job title, company info).
+                       FI: Roolivalitsin — radiopainikkeet määräävät mitkä ehdolliset kentät näytetään.
+                           onchange kutsuu toggleRoleFields() auth-page.js:ssä, joka näyttää joko
+                           #studentFields (koulutus/pääaine) tai #companyFields (ammattinimike, yritystiedot). -->
                   <div class="form-group" style="margin-bottom: 1.5rem">
                     <label
                       style="margin-bottom: 1rem"
@@ -499,6 +575,12 @@
                     />
                   </div>
 
+                  <!-- EN: #studentFields — shown when role=student radio is selected (default).
+                           Contains education level dropdown and major field.
+                           toggleRoleFields() in auth-page.js controls its visibility.
+                       FI: #studentFields — näkyvä kun rooli=opiskelija on valittu (oletus).
+                           Sisältää koulutustason pudotusvalikon ja pääainekentän.
+                           toggleRoleFields() auth-page.js:ssä hallitsee sen näkyvyyttä. -->
                   <div id="studentFields">
                     <div class="form-row">
                       <div class="form-group" style="margin-bottom: 1.5rem">
@@ -546,66 +628,42 @@
                       </div>
                     </div>
                   </div>
+                  <!-- EN: #companyFields — hidden by default, shown when role=company radio is selected.
+                           Contains job title, company name, website, and Y-Tunnus (Finnish Business ID).
+                           Y-Tunnus format is validated via the pattern attribute: 6-7 digits dash 1 digit.
+                       FI: #companyFields — oletuksena piilotettu, näytetään kun rooli=yritys on valittu.
+                           Sisältää ammattinimikkeen, yrityksen nimen, verkkosivuston ja Y-tunnuksen.
+                           Y-tunnuksen muoto vahvistetaan pattern-attribuutilla: 6–7 numeroa viiva 1 numero. -->
                   <div id="companyFields" style="display: none">
                     <div class="form-group">
-                      <label for="jobTitle" data-i18n="auth.jobTitleLabel"
-                        >Your Job Title</label
-                      >
-                      <input
-                        type="text"
-                        id="jobTitle"
-                        name="jobTitle"
-                        placeholder="e.g., HR Manager, Recruiter"
-                        data-i18n-placeholder="auth.jobTitlePlaceholder"
-                      />
+                      <label for="jobTitle" data-i18n="auth.jobTitleLabel">Your Job Title</label>
+                      <input type="text" id="jobTitle" name="jobTitle" placeholder="e.g., HR Manager, Recruiter" data-i18n-placeholder="auth.jobTitlePlaceholder" />
                     </div>
-
                     <div class="form-group">
-                      <label for="companyName" data-i18n="auth.companyNameLabel"
-                        >Company Name</label
-                      >
-                      <input
-                        type="text"
-                        id="companyName"
-                        name="companyName"
-                        placeholder="Your company name"
-                        data-i18n-placeholder="auth.companyNamePlaceholder"
-                      />
+                      <label for="companyName" class="req" data-i18n="auth.companyNameLabel">Company Name</label>
+                      <input type="text" id="companyName" name="companyName" placeholder="Your company name" data-i18n-placeholder="auth.companyNamePlaceholder" />
                     </div>
-
                     <div class="form-group">
-                      <label
-                        for="companyWebsite"
-                        data-i18n="auth.companyWebsiteLabel"
-                        >Company Website</label
-                      >
-                      <input
-                        type="text"
-                        id="companyWebsite"
-                        name="companyWebsite"
-                        placeholder="https://www.yourcompany.com"
-                        data-i18n-placeholder="auth.companyWebsitePlaceholder"
-                      />
+                      <label for="companyWebsite" data-i18n="auth.companyWebsiteLabel">Company Website</label>
+                      <input type="text" id="companyWebsite" name="companyWebsite" placeholder="https://www.yourcompany.com" data-i18n-placeholder="auth.companyWebsitePlaceholder" />
                     </div>
-
                     <div class="form-group">
-                      <label for="yTunnus" data-i18n="auth.yTunnusLabel"
-                        >Y-Tunnus
-                        <small style="color: #666" data-i18n="auth.yTunnusNote"
-                          >(Finnish Business ID, required)</small
-                        ></label
-                      >
-                      <input
-                        type="text"
-                        id="yTunnus"
-                        name="yTunnus"
-                        placeholder="123456-7"
-                        pattern="[0-9]{6,7}-[0-9]"
-                        maxlength="9"
-                      />
-                      <small class="text-muted"
-                        >Format: 6-7 digits - 1 digit</small
-                      >
+                      <label for="companyCountry" class="req">Country of Registration</label>
+                      <select id="companyCountry" onchange="updateBusinessIdField()">
+                        <option value="FI">Finland</option>
+                        <option value="EE">Estonia</option>
+                        <option value="SE">Sweden</option>
+                        <option value="NO">Norway</option>
+                        <option value="DE">Germany</option>
+                        <option value="LV">Latvia</option>
+                        <option value="LT">Lithuania</option>
+                        <option value="OTHER">Other country</option>
+                      </select>
+                    </div>
+                    <div class="form-group" id="businessIdGroup">
+                      <label for="businessId" id="businessIdLabel" class="req">Y-Tunnus (Finnish Business ID)</label>
+                      <input type="text" id="businessId" name="businessId" placeholder="1234567-8" maxlength="20" />
+                      <small id="businessIdHint" class="text-muted">Format: 6-7 digits, dash, 1 digit (e.g. 1234567-8)</small>
                     </div>
                   </div>
                   <div class="form-group">
@@ -775,6 +833,14 @@
                   </a>
                 </p>
               </div>
+              <!-- EN: #emailSentMessage — shown after successful registration instead of the form.
+                       Displayed by auth-page.js after supabase.auth.signUp() succeeds.
+                       id="sentToEmail" is populated with the email the user registered with.
+                       "Resend" button calls resendConfirmEmail() to trigger another verification email.
+                   FI: #emailSentMessage — näytetään onnistuneen rekisteröinnin jälkeen lomakkeen sijaan.
+                       auth-page.js näyttää sen kun supabase.auth.signUp() onnistuu.
+                       id="sentToEmail" täytetään rekisteröinnissä käytetyllä sähköpostiosoitteella.
+                       "Resend"-painike kutsuu resendConfirmEmail() lähettääkseen uuden vahvistussähköpostin. -->
               <div
                 id="emailSentMessage"
                 style="display: none; text-align: center; padding: 2rem 0"
@@ -829,7 +895,14 @@
             </div>
           </div>
 
-          <!-- Info Section -->
+          <!-- ── BENEFITS SIDEBAR ──────────────────────────────────────────
+               EN: Right column of the two-column auth layout. Contains benefit cards
+                   explaining why users should create an InternHub account.
+                   Each card has an icon, a title, and a description — all translatable via data-i18n.
+               FI: Auth-asettelun oikea sarake. Sisältää hyötykortteja, jotka selittävät
+                   miksi käyttäjän kannattaa luoda InternHub-tili.
+                   Jokaisessa kortissa on ikoni, otsikko ja kuvaus — kaikki käännettäviä data-i18n:n avulla.
+               ──────────────────────────────────────────────────────── -->
           <div class="benefits-section">
             <h2
               style="margin-bottom: 2rem; color: var(--text-color)"
@@ -952,7 +1025,12 @@
       </div>
     </section>
 
-    <!-- Footer -->
+    <!-- ── FOOTER ──────────────────────────────────────────
+         EN: Standard site footer — identical structure across all pages.
+             Four columns: About InternHub, For Students, For Employers, Legal.
+         FI: Vakio sivuston alatunniste — sama rakenne kaikilla sivuilla.
+             Neljä saraketta: Tietoa InternHubista, Opiskelijoille, Työnantajille, Lakiasiat.
+         ──────────────────────────────────────────────────────── -->
     <footer>
       <div class="footer-content">
         <div class="footer-section">
@@ -1062,6 +1140,30 @@
       </div>
     </footer>
 
+    <!-- ── SCRIPTS — load order is dependency-driven ──────────────────────────────────────────
+         EN: 1. supabase-js CDN   — Supabase client library
+             2. bcryptjs CDN      — password hashing library used when storing hashed password in Users table
+             3. js/supabase.js    — initialises supabaseClient
+             4. js/auth.js        — getCurrentSession(), session management utilities
+             5. js/profile.js     — profile helpers needed during registration flow
+             6. js/i18n.js        — translation system
+             7. js/script.js      — hamburger, shared helpers
+             8. js/cookie-consent.js — GDPR cookie banner
+             9. js/auth-page.js   — loaded last; defines login/register/social-auth handlers,
+                                    toggleRoleFields(), togglePasswordVisibility(), showForgotPrompt(),
+                                    submitForgotPassword(), resendConfirmEmail(). Must load after all others.
+         FI: 1. supabase-js CDN   — Supabase-asiakaskirjasto
+             2. bcryptjs CDN      — salasanan hajautuskirjasto käytetään hashed_password:n tallentamiseen
+             3. js/supabase.js    — alustaa supabaseClient:n
+             4. js/auth.js        — getCurrentSession(), istunnonhallinnan apuohjelmat
+             5. js/profile.js     — profiiliapufunktiot rekisteröinnin aikana
+             6. js/i18n.js        — käännösjärjestelmä
+             7. js/script.js      — hampurilaisvalikko, jaetut apufunktiot
+             8. js/cookie-consent.js — GDPR-evästeikkuna
+             9. js/auth-page.js   — ladataan viimeisenä; määrittelee kirjautumis-/rekisteröintikäsittelijät,
+                                    toggleRoleFields(), togglePasswordVisibility(), showForgotPrompt(),
+                                    submitForgotPassword(), resendConfirmEmail().
+         ──────────────────────────────────────────────────────── -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
     <script src="js/supabase.js"></script>
@@ -1073,7 +1175,18 @@
 
     <script src="js/auth-page.js"></script>
 
-    <!-- Forgot Password Modal -->
+    <!-- MODAL: Forgot Password
+         EN: Displayed when the user clicks "Forgot Password?" link on the login form.
+             showForgotPrompt() in auth-page.js sets this modal to display:block.
+             onclick on the backdrop closes the modal if the user clicks outside the panel.
+             submitForgotPassword() calls supabaseClient.auth.resetPasswordForEmail(),
+             which sends a password reset link to the email entered in #forgotEmailInput.
+             After reset, the link redirects to update-password.html.
+         FI: Näytetään kun käyttäjä napsauttaa "Forgot Password?" -linkkiä kirjautumislomakkeella.
+             showForgotPrompt() auth-page.js:ssä asettaa tämän modaalin näkyviin.
+             onclick taustalla sulkee modaalin jos käyttäjä napsauttaa paneelin ulkopuolelle.
+             submitForgotPassword() kutsuu supabaseClient.auth.resetPasswordForEmail(),
+             joka lähettää salasanan palautuslinkin #forgotEmailInput:iin syötettyyn osoitteeseen. -->
     <div
       id="forgotModal"
       style="

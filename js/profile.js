@@ -708,7 +708,7 @@ function fillCompanyDisplay(profile, session) {
         document.getElementById('dHeadquarters').innerText = profile.city || '';
 
     if(document.getElementById('dTeamSize'))
-        document.getElementById('dTeamSize').innerText = profile.y_tunnus || 'Not set';
+        document.getElementById('dTeamSize').innerText = profile.business_id || 'Not set';
 }
 
 
@@ -745,7 +745,7 @@ async function saveCompanyProfile() {
             description: document.getElementById('eCompanyDesc').value.trim(),
             website: document.getElementById('eWebsite').value.trim(),
             city: document.getElementById('eHeadquarters').value.trim(),
-            y_tunnus: document.getElementById('eTeamSize').value.trim(),
+            business_id: document.getElementById('eTeamSize').value.trim(),
             updated_at: new Date().toISOString()
         };
 
@@ -760,9 +760,9 @@ async function saveCompanyProfile() {
         document.getElementById('dCompanyEmail').innerText = updates.contact_email;
         document.getElementById('dCompanyDesc').innerText = updates.description;
         document.getElementById('dHeadquarters').innerText = updates.city;
-        document.getElementById('dTeamSize').innerText = updates.y_tunnus;
+        document.getElementById('dTeamSize').innerText = updates.business_id;
         if(document.getElementById('dYTunnus'))
-            document.getElementById('dYTunnus').innerText = updates.y_tunnus;
+            document.getElementById('dYTunnus').innerText = updates.business_id;
         document.getElementById('dWebsite').innerText = updates.website;
 
         // Update local cache so toggleCompanyEdit pre-fills correctly next time

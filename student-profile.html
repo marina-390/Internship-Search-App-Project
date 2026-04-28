@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+  ============================================================
+  student-profile.html — Student personal profile management page
+  Opiskelijan henkilökohtaisen profiilin hallintasivu
+  ============================================================
+-->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -6,6 +12,18 @@
   <link rel="icon" type="image/png" href="icon.png">
   <title>Student Profile - InternHub</title>
   <link rel="stylesheet" href="css/style.css">
+  <!-- EN: Inline styles for the profile layout, edit/display modes, category tag system,
+           toggle switch, status badges, application cards, favorites, and education rows.
+           These are page-specific and kept inline to avoid polluting the global style.css.
+           .edu-edit-row — 4-column grid for each education entry (dates, institution, degree, remove button).
+           .toggle-switch — CSS-only custom checkbox toggle for the "Open to offers" setting.
+           .status-pending/viewed/accepted/rejected/searching/found — color badges for application states.
+       FI: Inline-tyylit profiiliasettelulle, muokkaus-/näyttötiloille, kategoriatagi-järjestelmälle,
+           vaihtokytkimelle, tilamerkeille, hakemuskorteille, suosikeille ja koulutusriveille.
+           Ne ovat sivukohtaisia eikä niitä pidä lisätä globaaliin style.css:ään.
+           .edu-edit-row — 4-sarakkeinen ruudukko jokaiselle koulutuskirjaukselle.
+           .toggle-switch — pelkällä CSS:llä toimiva mukautettu valintaruudun vaihdin.
+           .status-pending/viewed/accepted/rejected — värilliset merkit hakemuksen tiloille. -->
   <style>
     .profile-header {
       display: flex;
@@ -477,7 +495,12 @@
   </style>
 </head>
 <body>
-  <!-- Navigation Bar -->
+  <!-- ── NAVIGATION ──────────────────────────────────────────
+       EN: Standard site nav. Auth link may be replaced with profile/logout by auth.js
+           when the user is logged in. Language switcher is included for i18n support.
+       FI: Vakio sivustonavigaatio. auth.js voi korvata kirjautumislinkin profiili/uloskirjautumislinkillä
+           kun käyttäjä on kirjautunut. Kielivalitsin on mukana i18n-tuen vuoksi.
+       ──────────────────────────────────────────────────────── -->
   <nav>
     <div class="nav-container">
       <a href="index.html" class="logo"><img src="logo-hub.svg" alt="InternHub" class="logo-img"></a>
@@ -507,7 +530,20 @@
     </div>
   </nav>
 
-  <!-- Profile Section -->
+  <!-- ── PROFILE SECTION ──────────────────────────────────────────
+       EN: Main content area with .profile-page-layout (two columns: main-content + sidebar).
+           The page has two states: Display Mode (#displayMode) and Edit Mode (#editMode).
+           enterEditMode() / cancelEditMode() / saveProfile() in profile.js control switching.
+           Profile data is loaded on DOMContentLoaded by profile.js from Supabase 'student_profiles'.
+           Avatar upload: label triggers hidden file input (#avatarUpload), uploadAvatar() uploads
+           to Supabase Storage and updates the avatar_url in student_profiles.
+       FI: Pääsisältöalue .profile-page-layout-asettelulla (kaksi saraketta: pääsisältö + sivupalkki).
+           Sivulla on kaksi tilaa: Näyttötila (#displayMode) ja Muokkaustila (#editMode).
+           enterEditMode() / cancelEditMode() / saveProfile() profile.js:ssä ohjaavat vaihtamista.
+           Profiilidata ladataan DOMContentLoaded:ssa profile.js:llä Supabasen 'student_profiles'-taulusta.
+           Avatarin lataus: label aktivoi piilotetun tiedostokentän (#avatarUpload), uploadAvatar()
+           lataa kuvan Supabase Storageen ja päivittää avatar_url:n student_profiles-taulussa.
+       ──────────────────────────────────────────────────────── -->
   <section class="section section-light" style="padding:1.5rem 0;">
     <div class="container">
       <div class="profile-page-layout">
@@ -539,7 +575,12 @@
               <button class="btn btn-small btn-secondary" id="cancelEditBtn" onclick="cancelEditMode()" style="display:none;">Cancel</button>
             </div>
 
-            <!-- Display Mode -->
+            <!-- EN: #displayMode — read-only view of the student's profile data.
+                     All d-prefixed elements (dFirstName, dLastName, etc.) are populated
+                     by profile.js from Supabase on load.
+                 FI: #displayMode — opiskelijan profiilidatan vain luku -näkymä.
+                     Kaikki d-etuliitteelliset elementit (dFirstName, dLastName jne.) täytetään
+                     profile.js:llä Supabasesta latauksen yhteydessä. -->
             <div id="displayMode">
               <div class="profile-section-title">Personal Information</div>
 
@@ -591,7 +632,25 @@
               </div>
             </div>
 
-            <!-- Edit Mode -->
+            <!-- EN: #editMode — shown when "Edit Profile" is clicked (enterEditMode()).
+                     All e-prefixed input elements (eFirstName, eLastName, etc.) are pre-filled
+                     from the display mode values by profile.js.
+                     #categorySearchInput / #categoryDropdown — live-search category selector;
+                     filterCategories() filters the dropdown, selected categories are stored in
+                     #eSelectedCategories as tags managed by profile.js.
+                     addEducationRow() appends new .edu-edit-row elements to #eEducationContainer.
+                     addLinkRow() appends new .link-edit-row elements to #eLinksContainer.
+                     City autocomplete uses a <datalist> (#citySuggestions) populated by
+                     handleCityInput() from a predefined Finnish cities list in profile.js.
+                 FI: #editMode — näytetään kun "Edit Profile" napsautetaan (enterEditMode()).
+                     Kaikki e-etuliitteelliset syöttöelementit (eFirstName, eLastName jne.)
+                     täytetään etukäteen näyttötilan arvoilla profile.js:llä.
+                     #categorySearchInput / #categoryDropdown — reaaliaikainen kategoriahakija;
+                     filterCategories() suodattaa pudotusvalikon, valitut kategoriat tallennetaan
+                     #eSelectedCategories:iin tageina, joita profile.js hallinnoi.
+                     addEducationRow() lisää uusia .edu-edit-row -elementtejä #eEducationContainer:iin.
+                     Kaupungin automaattinen täydennys käyttää <datalist>-elementtiä (#citySuggestions)
+                     jonka handleCityInput() täyttää suomalaisten kaupunkien listalta. -->
             <div id="editMode" style="display: none;">
               <div class="profile-section-title">Personal Information</div>
 
@@ -653,7 +712,17 @@
 
             </div>
 
-            <!-- Internship Requests — always visible -->
+            <!-- ── INTERNSHIP REQUESTS — always visible, not inside display/edit toggle ──────────
+                 EN: Shows the student's active practice period requests. These are used by companies
+                     browsing candidates — the student declares availability period and open-to-offers status.
+                     openAddRequestModal() opens a modal to create a new request with date range and notes.
+                     Requests are stored in Supabase 'practice_requests' table.
+                     "Show all requests" toggle limits visible items for long lists.
+                 FI: Näyttää opiskelijan aktiiviset harjoittelupyyntöjaksot. Yritykset selailevat
+                     näitä ehdokkaita etsiessään — opiskelija ilmoittaa saatavuusjakson ja avoimuutensa.
+                     openAddRequestModal() avaa modaalin uuden pyynnön luomiseksi päivämäärävälillä.
+                     Pyynnöt tallennetaan Supabasen 'practice_requests'-tauluun.
+                 ──────────────────────────────────────────────────────── -->
             <div class="profile-section-title" style="display:flex; justify-content:space-between; align-items:center;">
               <span>Internship Requests</span>
               <button class="btn btn-small btn-primary" onclick="openAddRequestModal()">+ Add</button>
@@ -665,7 +734,14 @@
               <button class="btn btn-small btn-secondary" id="showAllRequestsBtn" onclick="toggleShowAllRequests()">Show all requests</button>
             </div>
 
-            <!-- Language Preference -->
+            <!-- EN: Language preference picker — saves the preferred UI language.
+                     savePreferredLang('xx') writes to localStorage and also updates
+                     the preferred_lang column in the Supabase Users table so the preference
+                     persists across devices and sessions.
+                 FI: Kieliasetusvalitsin — tallentaa suositun käyttöliittymäkielen.
+                     savePreferredLang('xx') kirjoittaa localStorage:iin ja päivittää myös
+                     preferred_lang-sarakkeen Supabasen Users-taulussa, jotta asetus säilyy
+                     laitteiden ja istuntojen välillä. -->
             <div style="margin-top:2rem; padding-top:1.5rem; border-top:1px solid #e5e7eb;">
               <h4 data-i18n="studentProfile.langTitle" style="margin:0 0 0.75rem; color:#1f2937;">🌐 Interface Language</h4>
               <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
@@ -675,7 +751,16 @@
               </div>
             </div>
 
-            <!-- Danger Zone -->
+            <!-- EN: Danger Zone — GDPR Art. 17 "right to erasure" implementation.
+                     openDeleteAccountModal() shows a confirmation modal. The user must type
+                     "DELETE" exactly to confirm. confirmDeleteAccount() in profile.js deletes:
+                     - student_profiles row, - applications rows, - practice_requests rows,
+                     - CV file from Supabase Storage, - Users row, - Supabase Auth user.
+                 FI: Vaaravyöhyke — GDPR Art. 17 "oikeus tulla unohdetuksi" -toteutus.
+                     openDeleteAccountModal() näyttää vahvistusmodaalin. Käyttäjän on kirjoitettava
+                     "DELETE" täsmälleen vahvistaakseen. confirmDeleteAccount() profile.js:ssä poistaa:
+                     - student_profiles-rivi, - applications-rivit, - practice_requests-rivit,
+                     - CV-tiedosto Supabase Storagesta, - Users-rivi, - Supabase Auth -käyttäjä. -->
             <div style="margin-top:3rem; padding-top:2rem; border-top:2px dashed #fca5a5;">
               <div style="border:1px solid #fca5a5; background:#fff5f5; border-radius:8px; padding:1.25rem;">
                 <h4 style="color:#dc2626; margin-top:0;">⚠ Danger Zone</h4>
@@ -687,12 +772,30 @@
           </div>
         </div>
 
-        <!-- Sidebar -->
+        <!-- ── SIDEBAR ──────────────────────────────────────────
+             EN: Right sidebar with three compact cards: CV upload, Applications list,
+                 and Saved Internships (favorites). The sidebar sticks to the top on scroll
+                 thanks to .sidebar-col-inner layout in style.css.
+                 CV upload: label triggers hidden #cvUpload file input; uploadCV() uploads
+                 the PDF to Supabase Storage and saves the public URL in student_profiles.
+                 Applications: loaded by profile.js from 'applications' table; each card
+                 shows status badge, company name, and action buttons (view/edit/delete).
+                 Favorites: loaded by favorites.js from 'favorites' table.
+             FI: Oikea sivupalkki kolmella kompaktilla kortilla: CV-lataus, Hakemukset ja
+                 Tallennetut harjoittelupaikat (suosikit). Sivupalkki pysyy ylhäällä vierittäessä.
+                 CV-lataus: label aktivoi piilotetun #cvUpload-tiedostokentän; uploadCV()
+                 lataa PDF:n Supabase Storageen ja tallentaa julkisen URL:n student_profiles-tauluun.
+                 Hakemukset: profile.js lataa 'applications'-taulusta; jokaisessa kortissa on
+                 tilamerkki, yrityksen nimi ja toimintopainikkeet (näytä/muokkaa/poista).
+             ──────────────────────────────────────────────────────── -->
         <div class="sidebar">
           <!-- Sidebar wrapper -->
           <div class="sidebar-col-inner">
 
-          <!-- CV card — compact -->
+          <!-- EN: CV card — label acts as the upload button. The hidden file input is triggered
+                   by the label's for="cvUpload" association. Only PDFs accepted (.pdf).
+               FI: CV-kortti — label toimii latauksen painikkeena. Piilotettu tiedostoelementti
+                   aktivoituu for="cvUpload"-assosiaation kautta. Vain PDF-tiedostot hyväksytään. -->
           <div class="sidebar-card">
             <h4>📄 CV / Resume</h4>
             <div id="cvFileInfo">
@@ -711,6 +814,18 @@
               <p>No applications yet.</p>
             </div>
           </div>
+          <!-- MODAL: Edit Application
+               EN: Opened by profile.js when the student clicks "Edit" on an application card.
+                   id="editAppId" (hidden) stores the application's database ID for the update query.
+                   On save, updateApplication() in profile.js calls supabaseClient.from('applications')
+                   .update({...}).eq('application_id', editAppId).
+                   If a new CV file is selected, handleEditCVSelection(this) uploads it to Supabase Storage
+                   and stores the new URL before saving the application record.
+               FI: Avataan profile.js:llä kun opiskelija napsauttaa "Edit" hakemuskortin painikkeesta.
+                   id="editAppId" (piilotettu) tallentaa hakemuksen tietokanta-ID:n päivityskyselyä varten.
+                   Tallennuksessa updateApplication() profile.js:ssä kutsuu supabaseClient.from('applications')
+                   .update({...}).eq('application_id', editAppId).
+                   Jos uusi CV-tiedosto valitaan, handleEditCVSelection(this) lataa sen Supabase Storageen. -->
           <div id="editAppModal" class="modal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); overflow-y: auto;">
             <div class="modal-content" style="background:#fff; margin:5% auto; padding:30px; width:95%; max-width:600px; border-radius:12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
               <h3 style="margin-top:0; margin-bottom:1.5rem; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">Edit Your Application</h3>
@@ -766,7 +881,14 @@
           </div><!-- end sidebar-col -->
         </div><!-- end profile-page-layout -->
 
-  <!-- Delete Account Modal -->
+  <!-- MODAL: Delete Account Confirmation
+       EN: Shown by openDeleteAccountModal() when the student clicks "Delete My Account".
+           The user must type "DELETE" exactly in #deleteConfirmInput before the confirm button
+           becomes effective. id="deleteAccountError" shows validation errors.
+           onclick on the backdrop closes the modal without action.
+       FI: Näytetään openDeleteAccountModal()-funktiolla kun opiskelija napsauttaa "Delete My Account".
+           Käyttäjän täytyy kirjoittaa "DELETE" täsmälleen #deleteConfirmInput-kenttään
+           ennen kuin vahvistuspainike toimii. id="deleteAccountError" näyttää validointivirheet. -->
   <div id="deleteAccountModal" style="display:none; position:fixed; z-index:3000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.7);" onclick="if(event.target===this) closeDeleteAccountModal()">
     <div style="background:#fff; margin:8% auto; padding:28px; width:95%; max-width:440px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.3);">
       <h3 style="color:#dc2626; margin-top:0;">Delete Account</h3>
@@ -788,7 +910,15 @@
     </div>
   </div>
 
-  <!-- Add Practice Request Modal -->
+  <!-- MODAL: Add Internship Request
+       EN: Opened by openAddRequestModal() when the student clicks "+ Add" in the Internship Requests section.
+           Allows the student to specify an availability period (start/end date), desired job categories,
+           notes, and "open to offers" toggle. Submitted by saveNewRequest() in profile.js,
+           which inserts a row into Supabase 'practice_requests'.
+       FI: Avataan openAddRequestModal()-funktiolla kun opiskelija napsauttaa "+ Add" -painiketta.
+           Mahdollistaa saatavuusjakson (alku-/loppupäivä), toivottujen työkategorioiden,
+           muistiinpanojen ja "avoin tarjouksille" -asetuksen määrittämisen.
+           Lähettää saveNewRequest() profile.js:ssä lisäämällä rivin Supabasen 'practice_requests'-tauluun. -->
   <div id="addRequestModal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); overflow-y:auto;" onclick="if(event.target===this) closeAddRequestModal()">
     <div style="background:#fff; margin:5% auto; padding:30px; width:95%; max-width:500px; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
       <h3 style="margin-top:0; margin-bottom:1.5rem; border-bottom:2px solid #f0f0f0; padding-bottom:10px;">Add Internship Request</h3>
@@ -896,6 +1026,26 @@
     </div>
   </footer>
 
+  <!-- ── SCRIPTS ──────────────────────────────────────────
+       EN: 1. supabase-js CDN  — Supabase client library
+           2. js/supabase.js   — initialises supabaseClient
+           3. js/auth.js       — session guard; profile.js redirects to auth.html if not logged in
+           4. js/profile.js    — MAIN page script: loads profile data, manages all CRUD operations
+                                  for student_profiles, practice_requests, applications, links, education
+           5. js/i18n.js       — translation system
+           6. js/script.js     — nav hamburger, showToast, shared UI helpers
+           7. js/cookie-consent.js — GDPR cookie banner
+           8. js/favorites.js  — loads and manages the Saved Internships sidebar card
+       FI: 1. supabase-js CDN  — Supabase-asiakaskirjasto
+           2. js/supabase.js   — alustaa supabaseClient:n
+           3. js/auth.js       — istunnon suojaus; profile.js ohjaa auth.html:ään jos ei kirjautunut
+           4. js/profile.js    — PÄÄSKRIPTI: lataa profiilidata, hallitsee kaikkia CRUD-operaatioita
+                                  student_profiles-, practice_requests-, applications-, links- ja education-tauluille
+           5. js/i18n.js       — käännösjärjestelmä
+           6. js/script.js     — hampurilaisvalikko, showToast, jaetut UI-apufunktiot
+           7. js/cookie-consent.js — GDPR-evästeikkuna
+           8. js/favorites.js  — lataa ja hallinnoi Tallennetut harjoittelupaikat -sivupalkkiruutua
+       ──────────────────────────────────────────────────────── -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js"></script>
   <script src="js/auth.js"></script>
