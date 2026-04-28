@@ -662,8 +662,9 @@
                     </div>
                     <div class="form-group" id="businessIdGroup">
                       <label for="businessId" id="businessIdLabel" class="req">Y-Tunnus (Finnish Business ID)</label>
-                      <input type="text" id="businessId" name="businessId" placeholder="1234567-8" maxlength="20" />
+                      <input type="text" id="businessId" name="businessId" placeholder="1234567-8" maxlength="20" oninput="onBusinessIdInput()" />
                       <small id="businessIdHint" class="text-muted">Format: 6-7 digits, dash, 1 digit (e.g. 1234567-8)</small>
+                      <small id="businessIdError" style="color:#ef4444; display:none; margin-top:0.2rem;"></small>
                     </div>
                   </div>
                   <div class="form-group">

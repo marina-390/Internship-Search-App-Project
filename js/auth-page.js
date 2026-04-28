@@ -6,14 +6,14 @@
 console.log('[auth-page.js] loaded')
 
 var BUSINESS_ID_CONFIG = {
-  FI:    { label: 'Y-Tunnus (Finnish Business ID, required)',  placeholder: '1234567-8',    hint: 'Format: 6-7 digits, dash, 1 digit (e.g. 1234567-8)', regex: /^\d{6,7}-\d$/ },
-  EE:    { label: 'Registry Code (required)',                  placeholder: '12345678',      hint: 'Format: 8 digits',                                    regex: /^\d{8}$/ },
-  SE:    { label: 'Organisationsnummer (required)',            placeholder: '123456-7890',   hint: 'Format: 6 digits, dash, 4 digits',                    regex: /^\d{6}-\d{4}$/ },
-  NO:    { label: 'Organisasjonsnummer (required)',            placeholder: '123456789',     hint: 'Format: 9 digits',                                    regex: /^\d{9}$/ },
-  DE:    { label: 'Handelsregisternummer (required)',          placeholder: 'HRB 12345',     hint: 'e.g. HRA 12345 or HRB 12345',                         regex: /^HR[AB]\s*\d+$/i },
-  LV:    { label: 'Registration Number (required)',            placeholder: '40000000000',   hint: 'Format: 11 digits',                                   regex: /^\d{11}$/ },
-  LT:    { label: 'Registration Number (required)',            placeholder: '123456789',     hint: 'Format: 9 digits',                                    regex: /^\d{9}$/ },
-  OTHER: { label: 'Business Registration Number',             placeholder: 'Enter registration number', hint: 'Official business ID from your country',   regex: null }
+  FI:    { label: 'Y-Tunnus (Finnish Business ID, required)',  placeholder: '1234567-8',           hint: 'Format: 6-7 digits, dash, 1 digit (e.g. 1234567-8)', regex: /^\d{6,7}-\d$/,     filter: /[^\d-]/g,      autoDash: null },
+  EE:    { label: 'Registry Code (required)',                  placeholder: '12345678',             hint: 'Format: 8 digits',                                    regex: /^\d{8}$/,          filter: /[^\d]/g,       autoDash: null },
+  SE:    { label: 'Organisationsnummer (required)',            placeholder: '123456-7890',          hint: 'Format: 6 digits, dash, 4 digits',                    regex: /^\d{6}-\d{4}$/,    filter: /[^\d-]/g,      autoDash: 6    },
+  NO:    { label: 'Organisasjonsnummer (required)',            placeholder: '123456789',            hint: 'Format: 9 digits',                                    regex: /^\d{9}$/,          filter: /[^\d]/g,       autoDash: null },
+  DE:    { label: 'Handelsregisternummer (required)',          placeholder: 'HRB 12345',            hint: 'e.g. HRA 12345 or HRB 12345',                         regex: /^HR[AB]\s*\d+$/i,  filter: /[^A-Za-z\d ]/g, autoDash: null },
+  LV:    { label: 'Registration Number (required)',            placeholder: '40000000000',          hint: 'Format: 11 digits',                                   regex: /^\d{11}$/,         filter: /[^\d]/g,       autoDash: null },
+  LT:    { label: 'Registration Number (required)',            placeholder: '123456789',            hint: 'Format: 9 digits',                                    regex: /^\d{9}$/,          filter: /[^\d]/g,       autoDash: null },
+  OTHER: { label: 'Business Registration Number',             placeholder: 'Enter registration number', hint: 'Official business ID from your country',         regex: null,               filter: null,           autoDash: null }
 };
 
 function updateBusinessIdField() {
@@ -26,8 +26,57 @@ function updateBusinessIdField() {
   input.placeholder = config.placeholder;
   input.maxLength = config.regex ? config.placeholder.length + 5 : 50;
   input.value = '';
+  input.style.borderColor = '';
   document.getElementById('businessIdHint').textContent = config.hint;
+  var errEl = document.getElementById('businessIdError');
+  if (errEl) errEl.style.display = 'none';
 };
+
+function onBusinessIdInput() {
+  var country = document.getElementById('companyCountry').value;
+  var config = BUSINESS_ID_CONFIG[country] || BUSINESS_ID_CONFIG['OTHER'];
+  var input = document.getElementById('businessId');
+  var errEl = document.getElementById('businessIdError');
+
+  // Filter disallowed characters
+  if (config.filter) {
+    var pos = input.selectionStart;
+    var before = input.value;
+    input.value = before.replace(config.filter, '');
+    if (input.value.length < before.length) {
+      input.setSelectionRange(Math.max(0, pos - (before.length - input.value.length)), Math.max(0, pos - (before.length - input.value.length)));
+    }
+  }
+
+  // Auto-dash for SE: XXXXXX-XXXX
+  if (config.autoDash !== null) {
+    var digits = input.value.replace(/\D/g, '');
+    input.value = digits.length > config.autoDash
+      ? digits.slice(0, config.autoDash) + '-' + digits.slice(config.autoDash)
+      : digits;
+  }
+
+  // Live format validation
+  var val = input.value.trim();
+  if (!val) {
+    input.style.borderColor = '';
+    errEl.style.display = 'none';
+    return;
+  }
+  if (config.regex) {
+    if (config.regex.test(val)) {
+      input.style.borderColor = '#22c55e';
+      errEl.style.display = 'none';
+    } else {
+      input.style.borderColor = '#ef4444';
+      errEl.textContent = config.hint;
+      errEl.style.display = 'block';
+    }
+  } else {
+    input.style.borderColor = '';
+    errEl.style.display = 'none';
+  }
+}
 
 /**
  * EN: Displays a temporary toast notification on the auth page.
