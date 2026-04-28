@@ -916,10 +916,10 @@ async function handleFavClick(btn, id, title, company, location) {
 
 // On page load — highlight already-saved ones
 async function highlightSavedFavorites() {
-  if (typeof supabase === 'undefined') return;
-  const { data: { user } } = await supabase.auth.getUser();
+  if (typeof supabaseClient === 'undefined') return;
+  const { data: { user } } = await supabaseClient.auth.getUser();
   if (!user) return;
-  const { data } = await supabase.from('favorites').select('internship_id').eq('user_id', user.id);
+  const { data } = await supabaseClient.from('favorites').select('internship_id').eq('user_id', user.id);
   if (!data) return;
   const savedIds = new Set(data.map(f => f.internship_id));
   document.querySelectorAll('.favorite-btn[data-job-id]').forEach(btn => {

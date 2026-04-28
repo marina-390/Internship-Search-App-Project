@@ -1,4 +1,30 @@
 <!DOCTYPE html>
+<!--
+  ============================================================
+  company-profile.html — Company profile management page
+  Yrityksen profiilinhallintasivu
+
+  EN: Allows a logged-in company user (role 2) to:
+      • View and edit company details (name, email, description,
+        headquarters, Business ID / Y-Tunnus, website, logo)
+      • Manage team members (add / edit / delete via company_team table)
+      • View and edit current internship postings (positions table)
+      • Create new internship listings via Post Job Modal
+      • Review incoming applications (companyAppModal) and update
+        their status (accepted / rejected / viewed)
+      • Open a read-only Student Profile Modal for any applicant
+
+  FI: Mahdollistaa kirjautuneelle yritykskäyttäjälle (rooli 2):
+      • Yrityksen tietojen tarkastelu ja muokkaus (nimi, sähköposti,
+        kuvaus, sijainti, Y-tunnus, verkkosivusto, logo)
+      • Tiimijäsenten hallinta (lisäys / muokkaus / poisto company_team-taulusta)
+      • Nykyisten harjoittelupaikkojen (positions-taulu) tarkastelu ja muokkaus
+      • Uusien harjoitteluilmoitusten luominen Post Job -modalin kautta
+      • Saapuvien hakemusten tarkastelu (companyAppModal) ja
+        niiden statuksen päivitys (hyväksytty / hylätty / katsottu)
+      • Opiskelijan profiilin avaaminen lukutilassa hakijalle
+  ============================================================
+-->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -6,6 +32,35 @@
   <link rel="icon" type="image/png" href="icon.png">
   <title>Company Profile - InternHub</title>
   <link rel="stylesheet" href="css/style.css">
+  <!-- ── INLINE STYLES ──────────────────────────────────────
+       EN: Page-specific CSS that supplements css/style.css.
+           .company-header     — flex row (logo + info text), collapses to column on mobile ≤768px
+           .company-logo       — 150×150 rounded square with gradient background; used as
+                                 placeholder when no real logo image is uploaded
+           .company-section-title — purple underlined heading used for each sub-section
+                                    inside the edit form (About, Team, etc.)
+           .posting-item       — left-border card for each internship listing in "Current Postings"
+           .modal-overlay      — full-viewport fixed dark overlay; display:none toggled by
+                                 openPostModal() / closePostModal() in profile.js
+           .modal-content      — white centred card inside the overlay; max-width 600px
+           .modal-close        — absolute ×-button at top-right corner of modal
+           .form-group         — standard form row wrapper (label + input); margin-bottom 1.2rem
+           .form-control       — full-width styled input/select/textarea for the modal form
+       FI: Sivukohtainen CSS, joka täydentää css/style.css-tiedostoa.
+           .company-header     — flex-rivi (logo + infoteksti), muuttuu sarakkeeksi mobiilissa ≤768px
+           .company-logo       — 150×150 pyöristetty neliö gradienttitaustalla; käytetään
+                                 placeholder-kuvana kun oikeaa logoa ei ole ladattu
+           .company-section-title — violetti alleviivattu otsikko jokaiselle aliosa-alueelle
+                                    muokkauslomakkeessa (Yritys, Tiimi jne.)
+           .posting-item       — vasemman reunan kortti jokaiselle harjoitteluilmoitukselle
+                                 "Nykyiset ilmoitukset" -osiossa
+           .modal-overlay      — koko näytön kiinteä tumma peite; display:none kytketään
+                                 openPostModal() / closePostModal() -funktioilla profile.js:ssä
+           .modal-content      — valkoinen keskitetty kortti peittotaustan sisällä; max-leveys 600px
+           .modal-close        — absoluuttinen ×-painike modalin oikeassa yläkulmassa
+           .form-group         — lomake-rivin wrapper (label + syöttökenttä); margin-bottom 1.2rem
+           .form-control       — koko leveyden tyylitelty syöttökenttä/valinta/textarea modalilomakkeelle
+       ──────────────────────────────────────────────────────── -->
   <style>
     .company-header {
       display: flex;
@@ -114,6 +169,26 @@
   </style>
 </head>
 <body>
+  <!-- ── NAVIGATION ────────────────────────────────────────
+       EN: Shared navigation bar identical in structure across all pages.
+           • Logo links back to index.html (home)
+           • "Internships" link — nav.internships i18n key, leads to internships.html
+           • Language switcher: toggleLangDropdown(event) opens/closes the dropdown;
+             setLanguage('en'|'fi'|'sv') persists choice in localStorage('lang')
+             and re-runs applyTranslations() from i18n.js
+           • Login/Register link — shown until auth.js replaces it with
+             a profile avatar / logout button after session is detected
+           • .hamburger — three-line button that toggles .nav-menu on mobile
+       FI: Yhteinen navigointipalkki, jonka rakenne on sama kaikilla sivuilla.
+           • Logo linkittää takaisin index.html (etusivu) -sivulle
+           • "Internships"-linkki — nav.internships i18n-avain, johtaa internships.html-sivulle
+           • Kielenvaihtaja: toggleLangDropdown(event) avaa/sulkee pudotusvalikon;
+             setLanguage('en'|'fi'|'sv') tallentaa valinnan localStorage('lang'):iin
+             ja suorittaa applyTranslations():n uudelleen i18n.js:stä
+           • Login/Register-linkki — näkyy kunnes auth.js korvaa sen
+             profiilikuvakkeella / uloskirjautumispainikkeella istunnon havaitsemisen jälkeen
+           • .hamburger — kolmirivinen painike joka kytkee .nav-menu päälle/pois mobiilissa
+       ──────────────────────────────────────────────────────── -->
   <!-- Navigation Bar -->
   <nav>
     <div class="nav-container">
@@ -144,6 +219,21 @@
     </div>
   </nav>
 
+  <!-- ── COMPANY PROFILE SECTION ───────────────────────────
+       EN: Main section of the page; uses .profile-page-layout (flex row)
+           with two columns: .main-content (left, wide) and .sidebar (right, narrow).
+           auth.js session guard redirects to auth.html if no active session exists.
+           profile.js → loadCompanyProfile() is called 200 ms after DOMContentLoaded
+           (setTimeout avoids a race condition with supabaseClient initialisation).
+           It reads Companies and student_profiles tables and populates all #d* display IDs.
+
+       FI: Sivun pääosio; käyttää .profile-page-layout-asettelua (flex-rivi)
+           kahdella sarakkeella: .main-content (vasen, leveä) ja .sidebar (oikea, kapea).
+           auth.js-istuntovahti ohjaa auth.html:ään jos aktiivista istuntoa ei ole.
+           profile.js → loadCompanyProfile() kutsutaan 200 ms:n viiveellä DOMContentLoaded-tapahtuman jälkeen
+           (setTimeout välttää kilpailutilanteen supabaseClient-alustuksen kanssa).
+           Se lukee Companies- ja student_profiles-taulut ja täyttää kaikki #d* näyttö-id:t.
+       ──────────────────────────────────────────────────────── -->
   <!-- Company Profile Section -->
   <section class="section section-light">
     <div class="container">
@@ -153,7 +243,33 @@
   <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
       <div class="company-header" style="margin-bottom: 0;">        
-          <div class="profile-avatar" id="profileAvatar" 
+          <!-- EN: #profileAvatar — square avatar/logo container (120×120px, rounded corners).
+                   Holds two children:
+                   • #avatarImg — the actual <img> tag (display:none until a logo URL is found);
+                     set to display:block by profile.js when the company has an uploaded logo in
+                     Supabase Storage (Companies.logo_url).
+                   • #avatarPlaceholder — 🏢 emoji span shown when no logo is uploaded yet.
+                   • The + <label> overlays the bottom-right corner and triggers #avatarUpload
+                     (hidden file input) — clicking it opens the OS file picker.
+                   uploadLogo(this) in profile.js:
+                     1. Uploads the chosen file to Supabase Storage bucket 'avatars'
+                     2. Gets the public URL
+                     3. Updates Companies.logo_url with that URL
+                     4. Sets #avatarImg.src and hides the placeholder
+               FI: #profileAvatar — neliömäinen avatar/logo-säiliö (120×120px, pyöristetyt kulmat).
+                   Sisältää kaksi lasta:
+                   • #avatarImg — varsinainen <img>-tagi (display:none kunnes logo-URL löytyy);
+                     profile.js asettaa display:block kun yrityksellä on ladattu logo
+                     Supabase Storagessa (Companies.logo_url).
+                   • #avatarPlaceholder — 🏢-emoji näytetään kun logoa ei ole vielä ladattu.
+                   • +-<label> peittää oikean alakulman ja käynnistää #avatarUpload-tapahtuman
+                     (piilotettu tiedostosyöte) — klikkaus avaa käyttöjärjestelmän tiedostonvalitsimen.
+                   uploadLogo(this) profile.js:ssä:
+                     1. Lataa valitun tiedoston Supabase Storage -säilöön 'avatars'
+                     2. Hakee julkisen URL:n
+                     3. Päivittää Companies.logo_url kyseisellä URL:lla
+                     4. Asettaa #avatarImg.src:n ja piilottaa placeholderin -->
+          <div class="profile-avatar" id="profileAvatar"
           style="width: 120px; 
                  height: 120px; 
                  border: 1px solid #e2e8f0; 
@@ -176,6 +292,22 @@
           </label>
           <input type="file" id="avatarUpload" accept="image/*" style="display:none;" onchange="uploadLogo(this)" />
         </div>
+        <!-- EN: #companyDisplayHeader — READ-ONLY display header block.
+                 Populated by profile.js → loadCompanyProfile() from the Companies table:
+                 • #dCompanyName — Companies.name
+                 • #dCompanyEmail — Companies.company_email
+                 • #dHeadquarters — Companies.headquarters (city / region)
+                 • #dTeamSize — Companies.business_id (Y-Tunnus, Finnish Business Registry ID)
+                 • #dWebsite — Companies.website
+                 This block is hidden (display:none) when toggleCompanyEdit(true) is called.
+             FI: #companyDisplayHeader — VAIN LUKU -näyttöotsikkoblokki.
+                 Täytetään profile.js → loadCompanyProfile():lla Companies-taulusta:
+                 • #dCompanyName — Companies.name
+                 • #dCompanyEmail — Companies.company_email
+                 • #dHeadquarters — Companies.headquarters (kaupunki / alue)
+                 • #dTeamSize — Companies.business_id (Y-tunnus)
+                 • #dWebsite — Companies.website
+                 Tämä blokki piilotetaan (display:none) kun toggleCompanyEdit(true) kutsutaan. -->
         <div id="companyDisplayHeader" class="company-info">
           <h2 id="dCompanyName">Company Name</h2>
           <p id="dCompanyEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="452c2b21303631373c05262a2835242b3c6b262a28">[email&#160;protected]</a></p>
@@ -185,6 +317,18 @@
         </div>
       </div>
       
+      <!-- EN: Edit / Save / Cancel button group.
+               • "Edit Profile" (#editCompanyBtn) — visible in display mode; calls
+                 toggleCompanyEdit(true) which hides display elements and shows #companyEditMode.
+               • #editActionButtons — hidden in display mode; shown in edit mode.
+                 Contains "Save" (saveCompanyProfile() → UPDATE Companies SET ...) and
+                 "Cancel" (toggleCompanyEdit(false) → reverts to display mode without saving).
+           FI: Muokkaa / Tallenna / Peruuta -painikejoukko.
+               • "Edit Profile" (#editCompanyBtn) — näkyvissä näyttötilassa; kutsuu
+                 toggleCompanyEdit(true):tä joka piilottaa näyttöelementit ja näyttää #companyEditMode:n.
+               • #editActionButtons — piilotettu näyttötilassa; näkyy muokkaustilassa.
+                 Sisältää "Save" (saveCompanyProfile() → UPDATE Companies SET ...) ja
+                 "Cancel" (toggleCompanyEdit(false) → palaa näyttötilaan tallentamatta). -->
       <div>
         <button class="btn btn-small btn-primary" id="editCompanyBtn" onclick="toggleCompanyEdit(true)">Edit Profile</button>
         <div id="editActionButtons" style="display: none; gap: 0.5rem;">
@@ -194,11 +338,53 @@
       </div>
     </div>
 
+    <!-- EN: #companyDisplayAbout — read-only "About Company" block.
+             #dCompanyDesc is populated from Companies.description by loadCompanyProfile().
+             Hidden in edit mode; restored by toggleCompanyEdit(false).
+         FI: #companyDisplayAbout — vain luku -"Yritystietoja"-blokki.
+             #dCompanyDesc täytetään Companies.description-kentästä loadCompanyProfile():n avulla.
+             Piilotetaan muokkaustilassa; palautetaan toggleCompanyEdit(false):n avulla. -->
     <div id="companyDisplayAbout">
       <div class="company-section-title">About Company</div>
       <p id="dCompanyDesc">Describe your company mission...</p>
     </div>
 
+    <!-- ── COMPANY EDIT MODE ─────────────────────────────────
+         EN: #companyEditMode — EDIT form, hidden by default (display:none).
+             Shown when toggleCompanyEdit(true) is called. Fields:
+             • #eCompanyName   — Companies.name
+             • #eCompanyEmail  — Companies.company_email
+             • #eCompanyDesc   — Companies.description (textarea)
+             • #eHeadquarters  — Companies.headquarters with city autocomplete:
+                                 oninput="handleCityInput(this.value)" fills <datalist #citySuggestions>
+                                 using Finnish city data from script.js / i18n.js.
+             • #eTeamSize      — Companies.business_id (Y-Tunnus, Finnish Business Registry ID).
+                                 list="prhSuggestions": as the user types a Y-Tunnus (format: XXXXXXX-X),
+                                 profile.js queries the PRH (Patentti- ja rekisterihallitus) open API
+                                 to autocomplete the company name, and #prhStatus shows a status message.
+             • #eWebsite       — Companies.website
+
+             saveCompanyProfile() in profile.js executes:
+               UPDATE Companies SET name, company_email, description, headquarters,
+               business_id, website WHERE id = <currentCompanyId>
+         FI: #companyEditMode — MUOKKAUSLOMAKE, oletuksena piilotettu (display:none).
+             Näytetään kun toggleCompanyEdit(true) kutsutaan. Kentät:
+             • #eCompanyName   — Companies.name
+             • #eCompanyEmail  — Companies.company_email
+             • #eCompanyDesc   — Companies.description (tekstialue)
+             • #eHeadquarters  — Companies.headquarters kaupungin automaattitäydennyksellä:
+                                 oninput="handleCityInput(this.value)" täyttää <datalist #citySuggestions>:n
+                                 suomalaisilla kaupunkitiedoilla script.js / i18n.js -tiedostosta.
+             • #eTeamSize      — Companies.business_id (Y-tunnus).
+                                 list="prhSuggestions": kun käyttäjä kirjoittaa Y-tunnuksen (muoto: XXXXXXX-X),
+                                 profile.js kyselee PRH:n (Patentti- ja rekisterihallitus) avointa API:a
+                                 yrityksen nimen automaattitäydennystä varten, ja #prhStatus näyttää tilaviestin.
+             • #eWebsite       — Companies.website
+
+             saveCompanyProfile() profile.js:ssä suorittaa:
+               UPDATE Companies SET name, company_email, description, headquarters,
+               business_id, website WHERE id = <currentCompanyId>
+         ──────────────────────────────────────────────────────── -->
     <div id="companyEditMode" style="display: none; margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
       <div class="company-section-title">Edit Company Details</div>
 <div class="form-group">
@@ -234,6 +420,34 @@
           <label>Website</label>
           <input type="text" id="eWebsite" class="edit-input" placeholder="www.company.com">
         </div>
+        <!-- ── TEAM EDIT SECTION ─────────────────────────────
+             EN: Inline team management widget shown inside #companyEditMode (edit mode only).
+                 • "Add New Member" button (#addMemberToggleBtn) calls showAddMemberForm()
+                   which sets #newMemberForm display from none → block.
+                 • #newMemberForm — two-column grid with four inputs:
+                   #nmName (full name), #nmTitle (job title e.g. "CEO"),
+                   #nmEmail (contact email), #nmPhone (phone number).
+                   "Confirm Add" → saveNewTeamMember() in profile.js:
+                     INSERT INTO company_team (company_id, name, title, email, phone)
+                   "Cancel" → hideAddMemberForm() sets display back to none.
+                 • #teamMembersList — dynamically populated list of existing team members
+                   rendered by profile.js; each row has Edit / Delete buttons.
+                   editTeamMember(id) → UPDATE company_team SET ...
+                   togglePostEdit(1, false) → cancel inline edit
+             FI: Tiimin hallintawidget näytetään #companyEditMode:n sisällä (vain muokkaustila).
+                 • "Add New Member" -painike (#addMemberToggleBtn) kutsuu showAddMemberForm():ia
+                   joka asettaa #newMemberForm:n näkymäksi none → block.
+                 • #newMemberForm — kaksipalstainen ruudukko neljällä syöttökentällä:
+                   #nmName (koko nimi), #nmTitle (tehtävänimike esim. "CEO"),
+                   #nmEmail (yhteystietosähköposti), #nmPhone (puhelinnumero).
+                   "Confirm Add" → saveNewTeamMember() profile.js:ssä:
+                     INSERT INTO company_team (company_id, name, title, email, phone)
+                   "Cancel" → hideAddMemberForm() asettaa näkyvyyden takaisin none:ksi.
+                 • #teamMembersList — dynaamisesti täytetty lista olemassa olevista tiimijäsenistä
+                   jotka renderöidään profile.js:n avulla; jokaisessa rivillä on Muokkaa / Poista -painikkeet.
+                   editTeamMember(id) → UPDATE company_team SET ...
+                   togglePostEdit(1, false) → peruuta sisäinen muokkaus
+             ──────────────────────────────────────────────────────── -->
         <!-- TEAM EDIT SECTION -->
         <div class="form-group" style="grid-column: 1 / -1; margin-top: 1rem;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
@@ -277,6 +491,24 @@
           </div>
         </div>
 
+        <!-- ── CURRENT POSTINGS CARD ──────────────────────────
+             EN: Displays all internship listings owned by this company.
+                 #companyPostingsList is populated by profile.js → loadCompanyPosts()
+                 which queries: SELECT * FROM positions WHERE company_id = <currentCompanyId>
+                 Each result is rendered as a .posting-item card showing title, dates,
+                 application count, status badge, and Edit / Delete / View Applications buttons.
+                 • "Edit" → openPostModal(positionId) pre-fills the Post Job Modal for updating
+                 • "Delete" → deletePosition(positionId) removes the row from Supabase
+                 • "View Applications" → loads the applicant list for that position inline
+             FI: Näyttää kaikki tähän yritykseen kuuluvat harjoitteluilmoitukset.
+                 #companyPostingsList täytetään profile.js → loadCompanyPosts():lla
+                 joka kyselee: SELECT * FROM positions WHERE company_id = <currentCompanyId>
+                 Jokainen tulos renderöidään .posting-item-korttina joka näyttää nimikkeen, päivämäärät,
+                 hakemusten määrän, tilapitkeen ja Muokkaa / Poista / Näytä hakemukset -painikkeet.
+                 • "Muokkaa" → openPostModal(positionId) esitäyttää Post Job -modalin päivitystä varten
+                 • "Poista" → deletePosition(positionId) poistaa rivin Supabasesta
+                 • "Näytä hakemukset" → lataa kyseisen position hakijalistausta inline-tilassa
+             ──────────────────────────────────────────────────────── -->
         <!-- Current Postings Card -->
         <div class="card" style="margin-top: 1rem;">
           <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
@@ -287,12 +519,34 @@
           </div>
         </div>
 
+        <!-- EN: #companyApplicationsContainer — legacy placeholder; kept so that any
+                 existing profile.js references do not throw a null error. The actual
+                 application review flow now uses #companyAppModal (below).
+             FI: #companyApplicationsContainer — vanha paikkamerkki; pidetään jotta
+                 profile.js:n mahdolliset viitteet eivät aiheuta null-virhettä. Varsinainen
+                 hakemusten tarkastelu tapahtuu nyt #companyAppModal:in kautta (alla). -->
         <!-- companyApplicationsContainer kept for JS compatibility, hidden -->
         <div id="companyApplicationsContainer" style="display:none;"></div>
         </div><!-- end main col -->
 
         <!-- Sidebar -->
         <div class="sidebar">
+          <!-- ── SIDEBAR: POST NEW JOB CARD ────────────────────
+               EN: Sticky sidebar card (top:80px so it stays below the fixed navbar).
+                   A simple prompt card with a single CTA button.
+                   "Post New Position" → openPostModal() in profile.js:
+                     • Clears all form fields (#pTitle, #pDesc, etc.)
+                     • Sets #modalTitle to "Create New Internship"
+                     • Clears #editPositionId (empty string = INSERT mode)
+                     • Sets #postJobModal display to 'flex'
+               FI: Kiinteä sivupalkki-kortti (top:80px pysyy kiinteän navigointipalkin alapuolella).
+                   Yksinkertainen kehote-kortti yhdellä CTA-painikkeella.
+                   "Post New Position" → openPostModal() profile.js:ssä:
+                     • Tyhjentää kaikki lomakekentät (#pTitle, #pDesc jne.)
+                     • Asettaa #modalTitle:ksi "Create New Internship"
+                     • Tyhjentää #editPositionId:n (tyhjä merkkijono = INSERT-tila)
+                     • Asettaa #postJobModal display:ksi 'flex'
+               ──────────────────────────────────────────────────────── -->
           <!-- Post Job Card -->
 
           <div class="sidebar-card" style="position:sticky; top:80px;">
@@ -306,6 +560,54 @@
     </div>
   </section>
 
+  <!-- ── POST JOB MODAL ──────────────────────────────────────
+       EN: Full-screen overlay modal for creating OR editing an internship position.
+           • #editPositionId — hidden input; empty string means INSERT mode (new position),
+             non-empty value means UPDATE mode (editing existing position ID).
+           • #modalTitle — "Create New Internship" (new) or "Edit Position" (edit mode).
+           Form fields map directly to columns in the 'positions' Supabase table:
+             #pTitle    → positions.title (required *)
+             #pDesc     → positions.description (required *)
+             #pRespon   → positions.responsibilities
+             #pReqs     → positions.requirements
+             #pSalary   → positions.salary (free text, e.g. "2000€/month" or "Negotiable")
+             #pStart    → positions.start_date (date picker)
+             #pEnd      → positions.end_date (date picker, disabled when #pOpenEnded checked)
+             #pOpenEnded → positions.open_ended (boolean checkbox)
+                           onchange disables #pEnd when checked (no fixed end date)
+             #pCategory → positions.category (populated dynamically by profile.js
+                           from a predefined category list; required *)
+             #pStatus   → positions.status: 'active' (visible to students) or
+                           'draft' (hidden, company drafting)
+           submitPosition() in profile.js:
+             IF #editPositionId empty → INSERT INTO positions (...) VALUES (...)
+             ELSE                     → UPDATE positions SET ... WHERE id = <editPositionId>
+           After success: closePostModal() and reload the postings list.
+           #postError — inline red error message shown if required fields are missing.
+       FI: Koko näytön peitemodal harjoittelupaikan luomista TAI muokkaamista varten.
+           • #editPositionId — piilotettu syöte; tyhjä merkkijono tarkoittaa INSERT-tilaa (uusi paikka),
+             ei-tyhjä arvo tarkoittaa UPDATE-tilaa (olemassa olevan position ID:n muokkaus).
+           • #modalTitle — "Create New Internship" (uusi) tai "Edit Position" (muokkaustila).
+           Lomakekentät vastaavat suoraan 'positions' Supabase-taulun sarakkeita:
+             #pTitle    → positions.title (pakollinen *)
+             #pDesc     → positions.description (pakollinen *)
+             #pRespon   → positions.responsibilities
+             #pReqs     → positions.requirements
+             #pSalary   → positions.salary (vapaa teksti, esim. "2000€/kk" tai "Neuvoteltavissa")
+             #pStart    → positions.start_date (päivämäärävalitsin)
+             #pEnd      → positions.end_date (päivämäärävalitsin, poistettu käytöstä kun #pOpenEnded valittu)
+             #pOpenEnded → positions.open_ended (boolean-valintaruutu)
+                           onchange poistaa #pEnd:n käytöstä kun valittu (ei kiinteää päättymispäivää)
+             #pCategory → positions.category (täytetään dynaamisesti profile.js:n avulla
+                           ennalta määritellystä kategorialistasta; pakollinen *)
+             #pStatus   → positions.status: 'active' (opiskelijoille näkyvä) tai
+                           'draft' (piilotettu, yritys luonnostelee)
+           submitPosition() profile.js:ssä:
+             JOS #editPositionId tyhjä → INSERT INTO positions (...) VALUES (...)
+             MUUTEN                    → UPDATE positions SET ... WHERE id = <editPositionId>
+           Onnistumisen jälkeen: closePostModal() ja lataa ilmoituslista uudelleen.
+           #postError — punainen virheilmoitus inline-tilassa, näytetään jos pakolliset kentät puuttuvat.
+       ──────────────────────────────────────────────────────── -->
   <div id="postJobModal" class="modal-overlay">
     <div class="modal-content">
       <input type="hidden" id="editPositionId" value="">
@@ -380,6 +682,17 @@
     </div>
 </div>
 
+  <!-- ── FOOTER ────────────────────────────────────────────
+       EN: Shared site footer with four link columns and a copyright bar.
+           All link text uses data-i18n attributes translated by applyTranslations() from i18n.js.
+           Columns: About InternHub | For Students | For Employers | Legal
+           footer.copyright key renders the full copyright line (© 2026 InternHub...).
+       FI: Yhteinen sivuston alatunniste neljällä linkkisarakkeella ja tekijänoikeuspalkilla.
+           Kaikki linkkitekstit käyttävät data-i18n-attribuutteja jotka applyTranslations()
+           kääntää i18n.js:n avulla.
+           Sarakkeet: Tietoa InternHubista | Opiskelijoille | Työnantajille | Juridiikka
+           footer.copyright-avain renderöi koko tekijänoikeusrivin (© 2026 InternHub...).
+       ──────────────────────────────────────────────────────── -->
   <!-- Footer -->
   <footer>
     <div class="footer-content">
@@ -425,6 +738,40 @@
     </div>
   </footer>
 
+  <!-- ── SCRIPTS ──────────────────────────────────────────
+       EN: 1. supabase-js CDN  — Supabase client library (must load first)
+           2. js/supabase.js   — initialises the global supabaseClient object
+           3. js/auth.js       — session guard; redirects to auth.html if no active session;
+                                 also populates the nav bar with the logged-in user's avatar
+           4. js/profile.js    — MAIN page script: loadCompanyProfile(), toggleCompanyEdit(),
+                                 saveCompanyProfile(), uploadLogo(), loadCompanyPosts(),
+                                 openPostModal(), closePostModal(), submitPosition(),
+                                 deletePosition(), saveNewTeamMember(), showAddMemberForm(),
+                                 hideAddMemberForm(), editTeamMember(), handleCityInput(),
+                                 openStudentProfileModal(), saveCompanyApplicationStatus()
+           5. js/i18n.js       — translation engine; applyTranslations() maps data-i18n keys
+                                 to locale strings for EN/FI/SV
+           6. js/script.js     — shared utilities: showToast(), hamburger menu toggle
+           7. js/cookie-consent.js — GDPR cookie consent banner (loads last, lowest priority)
+           Inline DOMContentLoaded: calls loadCompanyProfile() after a 200 ms delay to allow
+           supabaseClient to fully initialise before the first Supabase query is made.
+       FI: 1. supabase-js CDN  — Supabase-asiakaskirjasto (ladataan ensin)
+           2. js/supabase.js   — alustaa globaalin supabaseClient-objektin
+           3. js/auth.js       — istuntovahti; ohjaa auth.html:ään jos aktiivista istuntoa ei ole;
+                                 täyttää myös navigointipalkin kirjautuneen käyttäjän kuvakkeella
+           4. js/profile.js    — PÄÄSIVUSKRIPTI: loadCompanyProfile(), toggleCompanyEdit(),
+                                 saveCompanyProfile(), uploadLogo(), loadCompanyPosts(),
+                                 openPostModal(), closePostModal(), submitPosition(),
+                                 deletePosition(), saveNewTeamMember(), showAddMemberForm(),
+                                 hideAddMemberForm(), editTeamMember(), handleCityInput(),
+                                 openStudentProfileModal(), saveCompanyApplicationStatus()
+           5. js/i18n.js       — käännösmoottori; applyTranslations() yhdistää data-i18n-avaimet
+                                 lokalisoituihin merkkijonoihin EN/FI/SV-kielille
+           6. js/script.js     — yhteiset apuohjelmat: showToast(), hampurilaisvalikko-toggle
+           7. js/cookie-consent.js — GDPR-evästesuostumusbanneri (ladataan viimeisenä, alin prioriteetti)
+           Inline DOMContentLoaded: kutsuu loadCompanyProfile():ia 200 ms:n viiveellä antaakseen
+           supabaseClient:lle aikaa alustua täysin ennen ensimmäistä Supabase-kyselyä.
+       ──────────────────────────────────────────────────────── -->
   <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js"></script>
   <script src="js/auth.js"></script>
@@ -438,6 +785,44 @@
     });
   </script>
 
+  <!-- ── STUDENT PROFILE MODAL ────────────────────────────
+       EN: Read-only modal shown when a company user clicks "View Student Profile"
+           on any applicant in the Company Application Review Modal (#companyAppModal).
+           Triggered by: openStudentProfileModal(studentId) in profile.js.
+           Three state divs manage the loading lifecycle:
+           • #spLoading — spinner/message shown while Supabase query is in flight
+           • #spError   — error state shown if the query fails or profile not found
+           • #spContent — actual profile content shown on success; populated fields:
+               #spAvatar    — avatar circle (initials or uploaded photo from Storage)
+               #spFullName  — student_profiles.full_name
+               #spCity      — student_profiles.city
+               #spPhone     — student_profiles.phone
+               #spAbout     — student_profiles.about (pre-wrap preserves line breaks)
+               #spEdu       — education entries rendered as HTML by profile.js
+               #spPractice  — practice period dates from student_profiles
+               #spOpen      — "open to offers" indicator
+               #spCats      — desired job category tags (flex-wrap pill badges)
+               #spLinks     — portfolio / LinkedIn / GitHub links
+               #spCv        — CV download link from Supabase Storage (student_profiles.cv_url)
+       FI: Vain luku -modal joka näytetään kun yrityksen käyttäjä klikkaa "View Student Profile"
+           minkä tahansa hakijan kohdalla Yrityksen hakemusten tarkastelumoodissa (#companyAppModal).
+           Käynnistetään: openStudentProfileModal(studentId) profile.js:ssä.
+           Kolme tiladiviä hallitsee latauksen elinkaarta:
+           • #spLoading — pyörä/viesti näytetään Supabase-kyselyn ollessa käynnissä
+           • #spError   — virhetila näytetään jos kysely epäonnistuu tai profiilia ei löydy
+           • #spContent — varsinainen profiilisisältö näytetään onnistumisen jälkeen; täytetyt kentät:
+               #spAvatar    — avatar-ympyrä (nimikirjaimet tai ladattu kuva Storagesta)
+               #spFullName  — student_profiles.full_name
+               #spCity      — student_profiles.city
+               #spPhone     — student_profiles.phone
+               #spAbout     — student_profiles.about (pre-wrap säilyttää rivinvaihdot)
+               #spEdu       — koulutustiedot renderöity HTML:ksi profile.js:n avulla
+               #spPractice  — harjoittelujakson päivämäärät student_profiles-taulusta
+               #spOpen      — "avoin tarjouksille" -indikaattori
+               #spCats      — toivotut työkategoriat pillimerkkeinä (flex-wrap)
+               #spLinks     — portfolio / LinkedIn / GitHub -linkit
+               #spCv        — CV-latauslinkki Supabase Storagesta (student_profiles.cv_url)
+       ──────────────────────────────────────────────────────── -->
   <!-- Student Profile Modal -->
   <div id="studentProfileModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:11000; overflow-y:auto;">
     <div style="background:#fff; margin:3% auto 5%; padding:2rem; width:95%; max-width:640px; border-radius:14px; box-shadow:0 10px 40px rgba(0,0,0,0.25); position:relative;">
@@ -509,6 +894,48 @@
     </div>
   </div>
 
+  <!-- ── COMPANY APPLICATION REVIEW MODAL ─────────────────
+       EN: Modal used by the company to review a specific application in detail.
+           Triggered by profile.js when the user clicks a "Review" button on any
+           application row in the Current Postings applicant list.
+           Hidden inputs carry the context:
+           • #companyAppId        — applications.id (primary key of the application row)
+           • #companyAppStudentId — applications.student_id (FK to Users / student_profiles)
+           Display spans show the application's metadata:
+           • #companyAppPosition  — position title
+           • #companyAppName      — applicant's full name
+           • #companyAppEmail     — applicant's email
+           • #companyAppPhone     — applicant's phone
+           • #companyAppStatus    — current status badge (pending / viewed / accepted / rejected)
+           • #companyAppCoverLetter — the cover letter text (white-space:pre-wrap)
+           • #companyAppCvLink    — CV download link rendered by profile.js (from Supabase Storage)
+           • #companyAppResponse  — textarea for the company's response message
+           Action buttons all call saveCompanyApplicationStatus(status) in profile.js:
+             UPDATE applications SET status = <status>, company_response = <textarea>
+             WHERE id = #companyAppId
+           "View Student Profile" button passes #companyAppStudentId to
+           openStudentProfileModal() which opens #studentProfileModal above.
+       FI: Yrityksen käyttämä modal yksittäisen hakemuksen yksityiskohtaiseen tarkasteluun.
+           Käynnistetään profile.js:n toimesta kun käyttäjä klikkaa "Review"-painiketta
+           minkä tahansa hakemuksen kohdalla Nykyiset ilmoitukset -hakijalistassa.
+           Piilotetut syötteet kuljettavat kontekstin:
+           • #companyAppId        — applications.id (hakemuksen ensisijainen avain)
+           • #companyAppStudentId — applications.student_id (FK viittaa Users / student_profiles -tauluihin)
+           Näyttöjännitykset näyttävät hakemuksen metatiedot:
+           • #companyAppPosition  — position-nimike
+           • #companyAppName      — hakijan koko nimi
+           • #companyAppEmail     — hakijan sähköposti
+           • #companyAppPhone     — hakijan puhelin
+           • #companyAppStatus    — nykyinen tilapitkö (pending / viewed / accepted / rejected)
+           • #companyAppCoverLetter — saatekirjeen teksti (white-space:pre-wrap)
+           • #companyAppCvLink    — CV-latauslinkki renderöity profile.js:n avulla (Supabase Storagesta)
+           • #companyAppResponse  — tekstialue yrityksen vastausviestiä varten
+           Toimintopainikkeet kutsuvat kaikki saveCompanyApplicationStatus(status):ia profile.js:ssä:
+             UPDATE applications SET status = <status>, company_response = <textarea>
+             WHERE id = #companyAppId
+           "View Student Profile" -painike välittää #companyAppStudentId:n
+           openStudentProfileModal():lle joka avaa #studentProfileModal:in yllä.
+       ──────────────────────────────────────────────────────── -->
   <!-- Company Application Review Modal -->
   <div id="companyAppModal" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:10000; overflow-y:auto;">
     <div class="modal-content" style="background:#fff; margin:4% auto; padding:2rem; width:95%; max-width:700px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.2); position:relative;">

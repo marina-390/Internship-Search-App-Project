@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+  ============================================================
+  internships.html — Internship listings browse and filter page
+  Harjoittelupaikkoja listaava ja suodattava sivu
+  ============================================================
+-->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -6,6 +12,12 @@
   <link rel="icon" type="image/png" href="icon.png">
   <title>Browse Internships - InternHub</title>
   <link rel="stylesheet" href="css/style.css">
+  <!-- EN: Inline styles for the filter panel layout: 5-column .filter-grid that collapses
+           responsively at 1024px (2 cols) and 720px (1 col). .sort-control is a custom
+           CSS-only select widget that hides the native arrow.
+       FI: Inline-tyylit suodatinpaneelin asettelulle: 5-sarakkeinen .filter-grid joka pienenee
+           responsiivisesti 1024px:ssä (2 saraketta) ja 720px:ssä (1 sarake).
+           .sort-control on CSS-vain valitsinelementti, joka piilottaa natiivin nuolen. -->
   <style>
     .sort-control {
       display: inline-flex;
@@ -132,7 +144,10 @@
   </style>
 </head>
 <body>
-  <!-- Navigation Bar -->
+  <!-- ── NAVIGATION ──────────────────────────────────────────
+       EN: Standard site nav. The "Internships" link has class="active" on this page.
+       FI: Vakio sivustonavigaatio. "Internships"-linkillä on class="active" tällä sivulla.
+       ──────────────────────────────────────────────────────── -->
   <nav>
     <div class="nav-container">
       <a href="index.html" class="logo"><img src="logo-hub.svg" alt="InternHub" class="logo-img"></a>
@@ -162,6 +177,26 @@
     </div>
   </nav>
 
+  <!-- ── FILTER PANEL ──────────────────────────────────────────
+       EN: Sticky filter bar containing 5 search/filter inputs and action controls.
+           Filters are applied by filterJobs() in script.js (triggered by the Apply button or checkbox).
+           Sorting is done by sortJobs() in script.js (triggered by the sort dropdown's onchange).
+           #searchInput   — free-text search for position title or company name
+           #filterLocation — location filter (partial match against job.location)
+           #filterCategory — select populated dynamically with categories from Supabase
+           #filterDateStart / #filterDateEnd — date range filters for internship start/end dates
+           #favoritesOnly — checkbox; when checked, filterJobs() shows only favorited jobs
+           #sortOrder — newest/oldest sort order
+       FI: Pysyvä suodatinpalkki, jossa on 5 haku-/suodatinkenttää ja toimintopainikkeet.
+           Suodattimet sovelletaan filterJobs()-funktiolla script.js:ssä (painike tai valintaruutu).
+           Lajittelu tapahtuu sortJobs()-funktiolla script.js:ssä (lajitteluvalitsimen onchange).
+           #searchInput   — vapaan tekstin haku paikan nimelle tai yrityksen nimelle
+           #filterLocation — sijaintisuodatin (osittainen vastaavuus job.location-kenttään)
+           #filterCategory — valitsin täytetty dynaamisesti kategorioilla Supabasesta
+           #filterDateStart / #filterDateEnd — päivämääräaluesuodattimet alkamis-/päättymispäiville
+           #favoritesOnly — valintaruutu; checked-tilassa filterJobs() näyttää vain suosikit
+           #sortOrder — uusin/vanhin lajittelujärjestys
+       ──────────────────────────────────────────────────────── -->
   <section class="section internship-filter-panel" style="padding: 1.5rem 0; border-bottom: 1px solid var(--border-color); background: #f9f9f9;">
     <div class="container">
       <!-- Row 1: main search fields -->
@@ -209,14 +244,32 @@
     </div>
   </section>
 
-  <!-- Internships List -->
+  <!-- ── INTERNSHIPS LIST SECTION ──────────────────────────────────────────
+       EN: Main content area where job cards are rendered.
+           id="jobsList" is an empty container populated dynamically by loadInternships()
+           in script.js, which fetches position records from Supabase 'positions' table
+           with status='active' and joins with 'Companies' table for company name.
+           Each rendered card contains data-job-id for favorites tracking and onclick linking
+           to internship-detail.html?id=<position_id>.
+           id="noResults" is shown when filterJobs() returns an empty result set.
+       FI: Pääsisältöalue, johon työkortit renderöidään.
+           id="jobsList" on tyhjä säiliö, johon loadInternships() (script.js) täyttää dynaamisesti
+           hakemalla positions-taulusta status='active' -merkinnät yhdistettynä Companies-tauluun.
+           Jokainen renderöity kortti sisältää data-job-id:n suosikkien seuraamista varten ja
+           onclick-linkin internship-detail.html?id=<position_id>-osoitteeseen.
+           id="noResults" näytetään kun filterJobs() palauttaa tyhjän tulosjoukon.
+       ──────────────────────────────────────────────────────── -->
   <section class="section">
     <div class="container">
+      <!-- EN: Populated dynamically by loadInternships() in script.js.
+               Each card has data-job-id for client-side favorites tracking. -->
+      <!-- FI: Täytetään dynaamisesti loadInternships()-funktiolla script.js:ssä.
+               Jokaisella kortilla on data-job-id asiakaspuolen suosikkiseurantaan. -->
       <div id="jobsList" class="grid" style="grid-template-columns: 1fr;">
-        <!-- Dynamic job cards will be loaded here -->
       </div>
 
-      <!-- No Results Message -->
+      <!-- EN: #noResults shown by filterJobs() when no positions match the active filters -->
+      <!-- FI: #noResults näytetään filterJobs()-funktiolla kun mitkään paikat eivät vastaa suodattimia -->
       <div id="noResults" class="text-center" style="padding: 4rem 2rem; display: none;">
         <h3 data-i18n="internships.noResultsTitle">No internships found</h3>
         <p class="text-muted" data-i18n="internships.noResultsDesc">Try adjusting your search filters</p>
@@ -269,6 +322,24 @@
     </div>
   </footer>
 
+  <!-- ── SCRIPTS ──────────────────────────────────────────
+       EN: 1. supabase-js CDN  — Supabase client library
+           2. js/supabase.js   — initialises supabaseClient
+           3. js/auth.js       — session helpers; loadInternships() checks auth state
+           4. js/i18n.js       — translation system for filter labels and buttons
+           5. js/script.js     — loadInternships(), filterJobs(), sortJobs(), carousel helpers
+           6. js/favorites.js  — toggleFavorite(), loadFavorites(); reads/writes to Supabase
+                                  'favorites' table using the logged-in user's ID
+           7. js/cookie-consent.js — GDPR cookie banner
+       FI: 1. supabase-js CDN  — Supabase-asiakaskirjasto
+           2. js/supabase.js   — alustaa supabaseClient:n
+           3. js/auth.js       — istunnon apufunktiot; loadInternships() tarkistaa autentikoinnin
+           4. js/i18n.js       — käännösjärjestelmä suodatinmerkintöjä ja painikkeita varten
+           5. js/script.js     — loadInternships(), filterJobs(), sortJobs(), karusellin apufunktiot
+           6. js/favorites.js  — toggleFavorite(), loadFavorites(); lukee/kirjoittaa Supabasen
+                                  'favorites'-tauluun kirjautuneen käyttäjän ID:llä
+           7. js/cookie-consent.js — GDPR-evästeikkuna
+       ──────────────────────────────────────────────────────── -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js"></script>
   <script src="js/auth.js"></script>

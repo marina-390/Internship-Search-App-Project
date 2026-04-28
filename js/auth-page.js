@@ -3,7 +3,80 @@
    Kirjautumis-/rekisteröintisivun käyttöliittymälogiikka
    ========================================================== */
 
-console.log('[auth-page.js] loaded');
+console.log('[auth-page.js] loaded')
+
+var BUSINESS_ID_CONFIG = {
+  FI:    { label: 'Y-Tunnus (Finnish Business ID, required)',  placeholder: '1234567-8',           hint: 'Format: 6-7 digits, dash, 1 digit (e.g. 1234567-8)', regex: /^\d{6,7}-\d$/,     filter: /[^\d-]/g,      autoDash: null },
+  EE:    { label: 'Registry Code (required)',                  placeholder: '12345678',             hint: 'Format: 8 digits',                                    regex: /^\d{8}$/,          filter: /[^\d]/g,       autoDash: null },
+  SE:    { label: 'Organisationsnummer (required)',            placeholder: '123456-7890',          hint: 'Format: 6 digits, dash, 4 digits',                    regex: /^\d{6}-\d{4}$/,    filter: /[^\d-]/g,      autoDash: 6    },
+  NO:    { label: 'Organisasjonsnummer (required)',            placeholder: '123456789',            hint: 'Format: 9 digits',                                    regex: /^\d{9}$/,          filter: /[^\d]/g,       autoDash: null },
+  DE:    { label: 'Handelsregisternummer (required)',          placeholder: 'HRB 12345',            hint: 'e.g. HRA 12345 or HRB 12345',                         regex: /^HR[AB]\s*\d+$/i,  filter: /[^A-Za-z\d ]/g, autoDash: null },
+  LV:    { label: 'Registration Number (required)',            placeholder: '40000000000',          hint: 'Format: 11 digits',                                   regex: /^\d{11}$/,         filter: /[^\d]/g,       autoDash: null },
+  LT:    { label: 'Registration Number (required)',            placeholder: '123456789',            hint: 'Format: 9 digits',                                    regex: /^\d{9}$/,          filter: /[^\d]/g,       autoDash: null },
+  OTHER: { label: 'Business Registration Number',             placeholder: 'Enter registration number', hint: 'Official business ID from your country',         regex: null,               filter: null,           autoDash: null }
+};
+
+function updateBusinessIdField() {
+  var country = document.getElementById('companyCountry').value;
+  var config = BUSINESS_ID_CONFIG[country] || BUSINESS_ID_CONFIG['OTHER'];
+  var lbl = document.getElementById('businessIdLabel');
+  lbl.textContent = config.label;
+  lbl.classList.toggle('req', config.regex !== null);
+  var input = document.getElementById('businessId');
+  input.placeholder = config.placeholder;
+  input.maxLength = config.regex ? config.placeholder.length + 5 : 50;
+  input.value = '';
+  input.style.borderColor = '';
+  document.getElementById('businessIdHint').textContent = config.hint;
+  var errEl = document.getElementById('businessIdError');
+  if (errEl) errEl.style.display = 'none';
+};
+
+function onBusinessIdInput() {
+  var country = document.getElementById('companyCountry').value;
+  var config = BUSINESS_ID_CONFIG[country] || BUSINESS_ID_CONFIG['OTHER'];
+  var input = document.getElementById('businessId');
+  var errEl = document.getElementById('businessIdError');
+
+  // Filter disallowed characters
+  if (config.filter) {
+    var pos = input.selectionStart;
+    var before = input.value;
+    input.value = before.replace(config.filter, '');
+    if (input.value.length < before.length) {
+      input.setSelectionRange(Math.max(0, pos - (before.length - input.value.length)), Math.max(0, pos - (before.length - input.value.length)));
+    }
+  }
+
+  // Auto-dash for SE: XXXXXX-XXXX
+  if (config.autoDash !== null) {
+    var digits = input.value.replace(/\D/g, '');
+    input.value = digits.length > config.autoDash
+      ? digits.slice(0, config.autoDash) + '-' + digits.slice(config.autoDash)
+      : digits;
+  }
+
+  // Live format validation
+  var val = input.value.trim();
+  if (!val) {
+    input.style.borderColor = '';
+    errEl.style.display = 'none';
+    return;
+  }
+  if (config.regex) {
+    if (config.regex.test(val)) {
+      input.style.borderColor = '#22c55e';
+      errEl.style.display = 'none';
+    } else {
+      input.style.borderColor = '#ef4444';
+      errEl.textContent = config.hint;
+      errEl.style.display = 'block';
+    }
+  } else {
+    input.style.borderColor = '';
+    errEl.style.display = 'none';
+  }
+}
 
 /**
  * EN: Displays a temporary toast notification on the auth page.
@@ -275,33 +348,54 @@ async function handleRegister(event) {
 
     var companyMeta = null;
     if (role === 2) {
-      // EN: Validate Finnish Business ID (Y-tunnus) format before checking the DB.
-      //     Format: 1234567-8 (6-7 digits, dash, 1 check digit).
-      // FI: Validoidaan suomalaisen Y-tunnuksen muoto ennen tietokantahakua.
-      //     Muoto: 1234567-8 (6-7 numeroa, väliviiva, 1 tarkistusnumero).
-      var yTunnus = document.getElementById('yTunnus').value.trim();
-      if (!/^\d{6,7}-\d$/.test(yTunnus)) {
-        showToast('Invalid Y-Tunnus format. Use: 1234567-8', 'error');
+      var country    = document.getElementById('companyCountry').value;
+      var businessId = document.getElementById('businessId').value.trim();
+      var bidConfig  = BUSINESS_ID_CONFIG[country] || BUSINESS_ID_CONFIG['OTHER'];
+
+      if (bidConfig.regex && !bidConfig.regex.test(businessId)) {
+        showToast('Invalid format for ' + bidConfig.label.replace(' (required)', '') + '.', 'error');
         return;
       }
 
-      var ytRes = await supabaseClient
-        .from('Companies')
-        .select('company_id')
-        .eq('y_tunnus', yTunnus)
-        .maybeSingle();
+      if (businessId) {
+        var dupBizRes = await supabaseClient
+          .from('Companies')
+          .select('company_id')
+          .eq('business_id', businessId)
+          .eq('country', country)
+          .maybeSingle();
 
-      if (ytRes.error) throw ytRes.error;
-      if (ytRes.data) {
-        showToast('This Y-Tunnus is already registered. Only one account per company.', 'error');
-        return;
+        if (dupBizRes.error) throw dupBizRes.error;
+        if (dupBizRes.data) {
+          showToast('This business ID is already registered. Only one account per company.', 'error');
+          return;
+        }
+      }
+
+      if (country === 'FI' && businessId) {
+        try {
+          submitBtn.textContent = 'Verifying with business registry...';
+          var prhUrl   = 'https://avoindata.prh.fi/bis/v1?businessId=' + encodeURIComponent(businessId);
+          var proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(prhUrl);
+          var prhRes   = await fetch(proxyUrl);
+          var prhProxy = await prhRes.json();
+          var prhData  = JSON.parse(prhProxy.contents);
+          if (!prhData.results || prhData.results.length === 0) {
+            showToast('Y-Tunnus not found in Finnish Business Registry.', 'error');
+            return;
+          }
+        } catch (e) {
+          console.warn('PRH API check failed, skipping:', e);
+        }
+        submitBtn.textContent = 'Creating account...';
       }
 
       companyMeta = {
         company_name: document.getElementById('companyName').value.trim() || (firstName + ' ' + lastName),
         job_title:    document.getElementById('jobTitle').value.trim() || 'Administrator',
         website:      document.getElementById('companyWebsite').value.trim() || null,
-        y_tunnus:     yTunnus
+        country:      country,
+        business_id:  businessId || null
       };
     }
 
@@ -374,7 +468,7 @@ async function handleRegister(event) {
       } else if (metadata.role === 2) {
         var compRes = await supabaseClient
           .from('Companies')
-          .insert({ user_id: newUser.user_id, company_name: metadata.company_name, website: metadata.website || null, y_tunnus: metadata.y_tunnus })
+          .insert({ user_id: newUser.user_id, company_name: metadata.company_name, website: metadata.website || null, country: metadata.country, business_id: metadata.business_id })
           .select('company_id')
           .single();
         if (compRes.data) {

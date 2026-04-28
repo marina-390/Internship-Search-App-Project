@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+  ============================================================
+  internship-detail.html — Detailed view of a single internship position
+  Yksittäisen harjoittelupaikan yksityiskohtainen näkymä
+  ============================================================
+-->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -8,7 +14,10 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <!-- Navigation Bar -->
+  <!-- ── NAVIGATION ──────────────────────────────────────────
+       EN: Standard site navigation bar. No page-specific differences.
+       FI: Vakio sivustonavigaatiopalkki. Ei sivukohtaisia eroja.
+       ──────────────────────────────────────────────────────── -->
   <nav>
     <div class="nav-container">
       <a href="index.html" class="logo"><img src="logo-hub.svg" alt="InternHub" class="logo-img"></a>
@@ -38,14 +47,33 @@
     </div>
   </nav>
 
-  <!-- Back Button -->
+  <!-- EN: Back button — navigates to internships.html without a page reload -->
+  <!-- FI: Takaisin-painike — siirtyy internships.html:ään ilman sivun uudelleenlatausta -->
   <section class="section" style="padding: 1rem 0;">
     <div class="container">
       <a href="internships.html" class="text-primary" style="font-weight: 500;">← Back to Internships</a>
     </div>
   </section>
 
-  <!-- Internship Details -->
+  <!-- ── INTERNSHIP DETAILS SECTION ──────────────────────────────────────────
+       EN: Main two-column layout (.profile-page-layout): left is the main content card,
+           right sidebar is hidden on this page (intentionally empty).
+           All content elements (#displaySalary, #displayDuration, #displayLocation,
+           #displayDescription, #displayResponsibilities, #pReqs, #pDesc) are populated
+           by the inline <script> in script.js which reads the position_id from the URL
+           query string (?id=<position_id>) and fetches the record from Supabase 'positions'.
+           id="applicationCountBadge" shows how many applications this position has received.
+           id="favBtnContainer" contains the favorite button; data-job-id is set by script.js
+           so favorites.js can track this position.
+       FI: Pääkaksisarakeasettelu (.profile-page-layout): vasen on pääsisältökortti,
+           oikea sivupalkki on tällä sivulla tarkoituksella tyhjä.
+           Kaikki sisältöelementit (#displaySalary, #displayDuration, #displayLocation,
+           #displayDescription, #displayResponsibilities, #pReqs, #pDesc) täytetään
+           script.js:n inline-skriptillä, joka lukee position_id:n URL-kyselymerkkijonosta
+           (?id=<position_id>) ja hakee tietueen Supabasen 'positions'-taulusta.
+           id="applicationCountBadge" näyttää hakemusten lukumäärän tälle paikalle.
+           id="favBtnContainer":ssa on suosikkipainike; data-job-id asetetaan script.js:llä.
+       ──────────────────────────────────────────────────────── -->
   <section class="section">
     <div class="container">
       <div class="profile-page-layout">
@@ -123,7 +151,20 @@
             </div>
           </div>
 
-          <!-- Company Info Card -->
+          <!-- ── COMPANY INFO CARD ──────────────────────────────────────────
+               EN: Displays company profile details for the posting company.
+                   In display mode (#companyDisplayMode), shows read-only company info.
+                   In edit mode (#companyEditMode, toggled by toggleCompanyEdit()), shows
+                   editable fields. Edit controls (#editActionButtons) are only shown to
+                   the authenticated company user that owns this position.
+                   saveCompanyProfile() writes changes back to the 'Companies' Supabase table.
+               FI: Näyttää ilmoittavan yrityksen profiilitiedot.
+                   Näyttötilassa (#companyDisplayMode) näytetään vain luku -yritystiedot.
+                   Muokkaustilassa (#companyEditMode, vaihdetaan toggleCompanyEdit():lla) näytetään
+                   muokattavat kentät. Muokkauksen hallintaelementit (#editActionButtons) näytetään
+                   vain todennetulle yrityksen käyttäjälle, joka omistaa tämän paikan.
+                   saveCompanyProfile() kirjoittaa muutokset takaisin 'Companies'-tauluun Supabasessa.
+               ──────────────────────────────────────────────────────── -->
 <div class="card" style="margin-top: 2rem;">
   <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
     <h3 class="card-title">Company Profile</h3>
@@ -179,9 +220,53 @@
     </div>
   </section>
 
-  <!-- Applicants Section — full width, visible only to company owners -->
+  <!-- ── APPLICANTS SECTION ──────────────────────────────────────────
+       EN: Full-width section visible ONLY to the company that owns this position.
+           id="applicantsSection" is hidden by default (display:none) and shown by script.js
+           after verifying that the logged-in user's company owns this position.
+           id="companyApplicationsContainer" is populated dynamically with application cards,
+           each showing the applicant's name, email, CV link, and status controls.
+           id="applicantsCount" is updated to reflect the number of received applications.
+       FI: Koko leveyden osio, joka näkyy VAIN tälle paikalle ilmoituksen tehneelle yritykselle.
+           id="applicantsSection" on oletuksena piilotettu (display:none) ja script.js näyttää
+           sen tarkistettuaan, että kirjautunut käyttäjä omistaa tämän paikan.
+           id="companyApplicationsContainer" täytetään dynaamisesti hakemuskorteilla,
+           jotka näyttävät hakijan nimen, sähköpostin, CV-linkin ja tilaohjaimet.
+       ──────────────────────────────────────────────────────── -->
+  <section class="section" style="padding-top:0;">
+    <div class="container">
+      <div id="applicantsSection" style="display: none;">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">📋 Received Applications <span id="applicantsCount" style="font-size: 0.9rem; color: #666; font-weight:400;">(0)</span></h3>
+          </div>
+          <div class="card-content" id="companyApplicationsContainer">
+            <p>No applications yet.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-
+  <!-- MODAL: Apply for Internship
+       EN: Opened by openApplyModal() when the "Apply Now" button is clicked.
+           If the user is not logged in, they are redirected to auth.html.
+           If logged in as a student, the form is pre-filled with their profile data
+           (#applyFirstName, #applyLastName, #applyEmail, #applyPhone — all readonly).
+           The CV section (#cvFileInfo) shows the student's uploaded CV with an option to
+           submit a different file (handleCVSelection(this) validates file type and size).
+           #companyFormControls — visible only to company admins, allows adding custom
+           question fields via addNewLine() to collect extra applicant information.
+           Form submission is handled by script.js which inserts into Supabase 'applications'.
+       FI: Avataan openApplyModal()-funktiolla kun "Apply Now" -painiketta napsautetaan.
+           Jos käyttäjä ei ole kirjautunut, hänet ohjataan auth.html:ään.
+           Jos kirjautunut opiskelijana, lomake täytetään profiilidatalla
+           (#applyFirstName, #applyLastName, #applyEmail, #applyPhone — kaikki vain luku).
+           CV-osio (#cvFileInfo) näyttää opiskelijan ladatun CV:n vaihtoehdolla eri tiedostoon
+           (handleCVSelection(this) vahvistaa tiedostotyypin ja koon).
+           #companyFormControls — näkyy vain yritysadministraattoreille, mahdollistaa
+           mukautettujen kysymyskenttien lisäämisen addNewLine()-funktiolla.
+           Lomakkeen lähetystä käsittelee script.js joka lisää 'applications'-tauluun Supabasessa. -->
   <div id="applyModal" class="modal" style="display:none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); overflow-y: auto;">
   
     <div class="modal-content" style="background-color: white; margin: 5% auto; padding: 30px; border-radius: 12px; width: 90%; max-width: 550px; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">

@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+  ============================================================
+  index.html — Main landing page of the InternHub application
+  InternHub-sovelluksen pääsivu — ensimmäinen sivu, jonka käyttäjä näkee
+  ============================================================
+-->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -6,6 +12,12 @@
   <link rel="icon" type="image/png" href="icon.png">
   <title>InternHub - Find Your Dream Internship</title>
   <link rel="stylesheet" href="css/style.css">
+  <!-- EN: Inline <style> contains page-specific styles for hero, testimonials,
+           carousels, CTA section, and share-experience modal. Kept inline because
+           these rules are unique to this page and would pollute the global style.css.
+       FI: Inline <style> sisältää sivukohtaiset tyylit: hero, suositukset,
+           karusellit, CTA-osio ja kokemuksen jakamisen modaali. Pidetään inline-tyylinä
+           koska nämä säännöt ovat sivukohtaisia eivätkä kuulu globaaliin style.css:ään. -->
   <style>
     /* ── HERO ── */
     .hero {
@@ -777,13 +789,26 @@
 </head>
 <body>
 
-  <!-- Navigation -->
+  <!-- ── NAVIGATION ──────────────────────────────────────────
+       EN: Sticky top navigation bar shared across all pages. Contains the logo,
+           internships link, language switcher dropdown, and login/register link.
+           The .hamburger three-bar icon is toggled by script.js on mobile screens.
+           data-i18n attributes are translated by applyTranslations() in i18n.js.
+           toggleLangDropdown(event) opens/closes the language dropdown.
+           setLanguage('xx') writes 'lang' to localStorage and re-calls applyTranslations().
+       FI: Pysyvä ylänavigaatiopalkki kaikilla sivuilla. Sisältää logon,
+           harjoittelulinkin, kielivalitsimen ja kirjautumislinkin.
+           .hamburger-kolmipalkki aktivoituu script.js:n kautta mobiilissa.
+           data-i18n-attribuutit käännetään applyTranslations()-funktiolla (i18n.js).
+       ──────────────────────────────────────────────────────── -->
   <nav>
     <div class="nav-container">
       <a href="index.html" class="logo"><img src="logo-hub.svg" alt="InternHub" class="logo-img"></a>
       <ul class="nav-menu">
         <li class="nav-item"><a href="internships.html" class="nav-link" data-i18n="nav.internships">Internships</a></li>
         <li class="nav-item">
+          <!-- EN: Language switcher — data-lang attribute on each button is read by setLanguage() -->
+          <!-- FI: Kielivalitsin — jokaisen painikkeen data-lang-attribuutin lukee setLanguage() -->
           <div class="lang-switcher">
             <button class="lang-toggle" onclick="toggleLangDropdown(event)">🌐 <span class="lang-current">EN</span> <span class="lang-caret">▾</span></button>
             <ul class="lang-dropdown">
@@ -795,22 +820,42 @@
         </li>
         <li class="nav-item"><a href="auth.html" class="nav-link" data-i18n="nav.loginRegister">Login/Register</a></li>
       </ul>
+      <!-- EN: Three <span> bars form the hamburger icon; toggled by script.js on small screens -->
+      <!-- FI: Kolme <span>-palkkia muodostavat hampurilaisvalikon, jota script.js hallinnoi mobiilinäytöillä -->
       <div class="hamburger"><span></span><span></span><span></span></div>
     </div>
   </nav>
 
-  <!-- Hero -->
+  <!-- ── HERO SECTION ──────────────────────────────────────────
+       EN: Full-width banner with gradient background, headline, subtitle, and
+           two call-to-action buttons. "Browse Internships" goes to internships.html.
+           "Post Internship" calls checkCompanyAuth() in script.js — unauthenticated
+           users are redirected to auth.html; company users go to company-profile.html.
+           The animated SVG wave layers create a smooth visual blend into white content below.
+       FI: Koko leveyden banneri liukuvärillä, otsikolla, alaotsikolla ja kahdella painikkeella.
+           "Browse Internships" siirtyy internships.html:ään.
+           "Post Internship" kutsuu checkCompanyAuth() (script.js) — kirjautumattomat
+           ohjataan auth.html:ään, yritykset company-profile.html:ään.
+       ──────────────────────────────────────────────────────── -->
   <section class="hero" id="heroSection">
     <div class="hero-content" id="heroContent">
+      <!-- EN: data-i18n keys resolved by applyTranslations() in i18n.js -->
+      <!-- FI: data-i18n-avaimet ratkaisee applyTranslations() i18n.js:ssä -->
       <h1 data-i18n="hero.title">Find Your Perfect Internship</h1>
       <p data-i18n="hero.subtitle">Discover exciting internship opportunities with leading companies and launch your career</p>
       <div class="hero-buttons">
         <a href="internships.html" class="btn btn-primary btn-large" data-i18n="hero.btnBrowse">Browse Internships</a>
+        <!-- EN: javascript:void(0) prevents default navigation; checkCompanyAuth() handles routing -->
+        <!-- FI: javascript:void(0) estää oletusnavigaation; checkCompanyAuth() hoitaa reitityksen -->
         <a href="javascript:void(0)" onclick="checkCompanyAuth()" class="btn btn-secondary btn-large" data-i18n="hero.btnPost">Post Internship</a>
       </div>
     </div>
 
-    <!-- Wave SVG layers -->
+    <!-- EN: Three SVG wave paths layered at the bottom of the hero. Each path animates
+             independently (waveAnim1/2/3 keyframes defined in <style>) for an organic flow.
+             The front layer (wave-layer-1) is solid white to blend into the page below.
+         FI: Kolme SVG-aaltopolkua päällekkäin hero-osion alaosassa. Jokainen polku animoituu
+             itsenäisesti (waveAnim1/2/3). Etummainen kerros on valkoinen sulautuakseen sisältöön. -->
     <div class="hero-waves" id="heroWaves">
       <svg viewBox="0 0 1440 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="height:100px;">
         <!-- back wave -->
@@ -829,10 +874,23 @@
     </div>
   </section>
 
-  <!-- Logo marquee strip -->
+  <!-- ── LOGO MARQUEE STRIP ──────────────────────────────────────────
+       EN: Auto-scrolling strip with logos of Finnish educational institutions.
+           The .logo-track contains all logos twice — the duplicate set allows the
+           CSS animation (logoScroll: translateX(-50%), 24s linear infinite) to loop
+           seamlessly. Hovering over the track pauses the scroll. The mask-image on
+           .logo-track-wrap produces soft fade-out on left and right edges.
+       FI: Automaattisesti vierittyvä nauha suomalaisten oppilaitosten logoilla.
+           .logo-track sisältää logot kahdennettuna — kaksoisjoukko mahdollistaa
+           saumattoman CSS-animaation (logoScroll: translateX(-50%), 24 s lineaarinen).
+           Hiiren vieminen nauhalle pysäyttää vierityksen. mask-image luo pehmeän
+           häivytyksen vasemmalla ja oikealla reunalla.
+       ──────────────────────────────────────────────────────── -->
   <div class="logo-strip">
     <p class="logo-strip-label" data-i18n="logoStrip.label">Trusted by interns from the leading educational institutions</p>
     <div class="logo-track-wrap">
+      <!-- EN: Logos duplicated below for seamless infinite scroll animation -->
+      <!-- FI: Logot kaksoiskopioitu alla saumatonta looppausta varten -->
       <div class="logo-track">
         <div class="logo-item"><img src="pics/aalto.jpg"    alt="Aalto" /></div>
         <div class="logo-item"><img src="pics/metropolia.jpg"    alt="Metropolia" /></div>
@@ -862,7 +920,17 @@
     </div>
   </div>
 
-  <!-- Journey Carousel -->
+  <!-- ── JOURNEY CAROUSEL ──────────────────────────────────────────
+       EN: Full-width three-step image carousel illustrating the internship journey:
+           Apply → Interview → Get Hired. Slides fade via CSS opacity transition (0.9s).
+           Navigation functions prevSlide() / nextSlide() / goToSlide(index) live in script.js.
+           Dot indicators reflect the current slide index; clicking a dot jumps to that slide.
+           Auto-advance timing (if any) is also managed by script.js.
+       FI: Koko leveyden kolmivaiheinen kuvakaruselli harjoittelupolun havainnollistamiseksi:
+           Hae → Haastattelu → Tule palkatuksi. Diat häivytetään CSS opacity-siirtymällä (0,9 s).
+           Navigointifunktiot prevSlide() / nextSlide() / goToSlide(index) sijaitsevat script.js:ssä.
+           Pistenäyttimet heijastava nykyistä dian hakemistoa; pisteen napsauttaminen hyppää dialle.
+       ──────────────────────────────────────────────────────── -->
   <div class="journey-carousel">
     <div class="carousel-track" id="carouselTrack">
       <div class="carousel-slide active">
@@ -899,7 +967,19 @@
     <button class="carousel-arrow carousel-next" onclick="nextSlide()">&#8594;</button>
   </div>
 
-  <!-- Share Experience -->
+  <!-- ── SHARE EXPERIENCE SECTION ──────────────────────────────────────────
+       EN: Three-column layout: [← nav | left card] [center CTA card] [right card | nav →].
+           Testimonial cards (#testimonialLeft, #testimonialRight) are populated dynamically
+           by share-experience.js, which fetches approved reviews from Supabase 'internship_reviews'.
+           The center "Write your story" button calls openExperienceModal() in share-experience.js,
+           which checks that the user is a logged-in student with an accepted application before opening.
+           On screens < 980px, only the right panel and center card are shown (left panel: display:none).
+       FI: Kolmisarakeasettelu: [← navigointi | vasen kortti] [CTA-kortti] [oikea kortti | navigointi →].
+           Suosituskortit (#testimonialLeft, #testimonialRight) täytetään dynaamisesti
+           share-experience.js:llä, joka hakee hyväksytyt arvostelut Supabasen 'internship_reviews'-taulusta.
+           Keskimmäinen "Write your story" -painike kutsuu openExperienceModal() -funktiota,
+           joka tarkistaa kirjautumisen ja hyväksytyn hakemuksen olemassaolon ennen avaamista.
+       ──────────────────────────────────────────────────────── -->
   <section id="share-experience-section">
     <div class="share-experience-inner">
       <div class="section-header">
@@ -908,13 +988,21 @@
         <p data-i18n="shareExperience.sectionDesc">Join thousands of successful interns in helping the next generation. Your advice can launch a career.</p>
       </div>
       <div class="share-grid">
-        <!-- Left panel: [←] [card] -->
+        <!-- EN: Left testimonial panel. Arrow is left of card (flex row-direction).
+                 id="testimonialLeft" is injected by renderTestimonial() in share-experience.js.
+                 prevShareTestimonial() decrements the testimonial index and re-renders cards. -->
+        <!-- FI: Vasen suosituspaneeli. Nuoli on kortin vasemmalla puolella (flex-suunta: row).
+                 id="testimonialLeft" lisätään renderTestimonial()-funktiolla share-experience.js:ssä.
+                 prevShareTestimonial() pienentää suositushakemistoa ja piirtää kortit uudelleen. -->
         <div class="testimonial-panel panel-left">
           <button type="button" class="testimonial-nav testimonial-prev" onclick="prevShareTestimonial()" aria-label="Previous testimonial">←</button>
           <article class="testimonial-card" id="testimonialLeft"></article>
         </div>
 
-        <!-- Center — fixed, never navigates -->
+        <!-- EN: Center card — fixed, non-navigable. Holds CTA to open the share modal.
+                 id="writeStoryBtn" is disabled by share-experience.js when the user lacks eligibility. -->
+        <!-- FI: Keskikortti — paikallaan, ei navigoi. Sisältää CTA modaalin avaamiseksi.
+                 share-experience.js poistaa id="writeStoryBtn" käytöstä, jos käyttäjällä ei ole oikeutta. -->
         <article class="journey-card">
           <div class="journey-card-inner">
             <span class="journey-label" data-i18n="shareExperience.journeyLabel">Share Your Journey</span>
@@ -926,7 +1014,10 @@
           </div>
         </article>
 
-        <!-- Right panel: [card] [→] — arrow AFTER card in DOM = appears on the right -->
+        <!-- EN: Right testimonial panel. Arrow is AFTER the card in DOM, so it appears on the right
+                 in the flex row layout. nextShareTestimonial() increments the testimonial index. -->
+        <!-- FI: Oikea suosituspaneeli. Nuoli tulee korttiElementin JÄLKEEN DOM:ssa, joten se
+                 näkyy oikealla flex-rivissä. nextShareTestimonial() kasvattaa hakemistoa. -->
         <div class="testimonial-panel panel-right">
           <article class="testimonial-card" id="testimonialRight"></article>
           <button type="button" class="testimonial-nav testimonial-next" onclick="nextShareTestimonial()" aria-label="Next testimonial">→</button>
@@ -935,6 +1026,23 @@
     </div>
   </section>
 
+  <!-- MODAL: Share Experience Form
+       EN: Opened by openExperienceModal() in share-experience.js. Only students with at
+           least one accepted application can submit. The script validates session and
+           accepted-application status before displaying this modal.
+           id="shareStudentName" — displays the logged-in student's full name (read-only).
+           id="sharePositionSelect" — dynamically populated with the student's accepted positions.
+           Character counters (#surpriseCount, #tipCount) are updated via updateCharCounter()
+           called from oninput on each textarea (maxlength 200 chars each).
+           Form submission is handled by submitExperienceForm(event) in share-experience.js,
+           which inserts a row into the 'internship_reviews' Supabase table.
+       FI: Avataan openExperienceModal()-funktiolla share-experience.js:ssä. Vain opiskelijat,
+           joilla on hyväksytty hakemus, voivat lähettää. Skripti tarkistaa istunnon ja
+           hyväksytyn hakemuksen ennen tämän modaalin näyttämistä.
+           id="shareStudentName" — näyttää kirjautuneen opiskelijan koko nimen (vain luku).
+           id="sharePositionSelect" — täytetään dynaamisesti opiskelijan hyväksytyillä paikoilla.
+           Merkkienlaskurit (#surpriseCount, #tipCount) päivitetään updateCharCounter()-funktiolla
+           jokaisella oninput-tapahtumalla (max 200 merkkiä kummallakin). -->
   <div id="shareModal" class="share-modal" style="display:none;">
     <div class="share-modal-panel">
       <button type="button" class="share-modal-close" onclick="closeExperienceModal()" aria-label="Close form">×</button>
@@ -970,7 +1078,14 @@
   </div>
 
 
-  <!-- Footer -->
+  <!-- ── FOOTER ──────────────────────────────────────────
+       EN: Site-wide footer with four link groups: About InternHub, For Students,
+           For Employers, Legal. All link text is translatable via data-i18n attributes.
+           The footer-bottom strip holds the copyright notice.
+       FI: Sivuston alatunniste neljällä linkkiryhmällä: Tietoa InternHubista,
+           Opiskelijoille, Työnantajille, Lakiasiat. Kaikki linkkitekstit käännetään
+           data-i18n-attribuuttien avulla. footer-bottom sisältää tekijänoikeusilmoituksen.
+       ──────────────────────────────────────────────────────── -->
   <footer>
     <div class="footer-content">
       <div class="footer-section">
@@ -1011,6 +1126,22 @@
     </div>
   </footer>
 
+  <!-- ── SCRIPTS — load order is dependency-driven ──────────────────────────────────────────
+       EN: 1. supabase-js CDN    — provides the global Supabase library
+           2. js/supabase.js     — initialises supabaseClient (URL + anon key)
+           3. js/auth.js         — getCurrentSession(), checkCompanyAuth(); needs supabase.js
+           4. js/i18n.js         — applyTranslations(), setLanguage(); reads localStorage 'lang'
+           5. js/script.js       — carousel, nav hamburger toggle, shared UI helpers
+           6. js/share-experience.js — loads testimonials, manages share modal and form submit
+           7. js/cookie-consent.js   — injects GDPR cookie banner if consent not yet given
+       FI: 1. supabase-js CDN    — tarjoaa globaalin Supabase-kirjaston
+           2. js/supabase.js     — alustaa supabaseClient:n (URL + anon-avain)
+           3. js/auth.js         — getCurrentSession(), checkCompanyAuth(); tarvitsee supabase.js:n
+           4. js/i18n.js         — applyTranslations(), setLanguage(); lukee localStorage 'lang'
+           5. js/script.js       — karuselli, hampurilaisvalikko, yhteiset UI-apufunktiot
+           6. js/share-experience.js — lataa suositukset, hallitsee modaalin ja lomakkeen lähetyksen
+           7. js/cookie-consent.js   — lisää GDPR-evästebannerin jos suostumusta ei ole annettu
+       ──────────────────────────────────────────────────────── -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js"></script>
   <script src="js/auth.js"></script>
