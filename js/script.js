@@ -1,7 +1,18 @@
-/* ==========================================
-   INTERNSHIP SEARCH APP - NAVIGATION & UI
-   ========================================== */
+/* ==========================================================
+   script.js — Global navigation, UI utilities & internship listing
+   Globaali navigaatio, UI-apuvälineet ja harjoittelulistaus
+   ========================================================== */
 
+/**
+ * EN: Appends a red asterisk (*) to every label that corresponds to a required
+ *     input/select/textarea within the given root element.
+ *     Called once on DOMContentLoaded so required fields are always visually marked.
+ * FI: Lisää punaisen asteriskin (*) jokaiseen pakollista kenttää vastaavaan
+ *     label-elementtiin annetussa juuri-elementissä.
+ *     Kutsutaan kerran DOMContentLoaded-tapahtumassa, jotta pakolliset kentät
+ *     ovat aina visuaalisesti merkittyjä.
+ * @param {Document|Element} root - EN: scope to search in / FI: hakualue
+ */
 function markRequiredFields(root = document) {
   root.querySelectorAll('input[required], select[required], textarea[required]').forEach(input => {
     const label = input.id
@@ -18,6 +29,21 @@ function markRequiredFields(root = document) {
 
 document.addEventListener('DOMContentLoaded', () => markRequiredFields());
 
+/**
+ * EN: Displays a stacking toast notification at the bottom of the viewport.
+ *     Creates a shared #toast-container on first use so multiple toasts can
+ *     queue without overlapping. Each toast auto-removes after 4 seconds.
+ *     Defined in script.js (globally) so every page loaded with this script
+ *     can call showToast() without needing its own implementation.
+ * FI: Näyttää pinoavan ponnahdusviesti-ilmoituksen näkymän alareunassa.
+ *     Luo jaetun #toast-container-elementin ensimmäisellä käytöllä, jotta
+ *     useita toasteja voidaan asettaa jonoon ilman päällekkäisyyttä.
+ *     Jokainen toast poistuu automaattisesti 4 sekunnin kuluttua.
+ *     Määritelty script.js:ssä (globaalisti), joten jokainen tällä skriptillä
+ *     ladattu sivu voi kutsua showToast()-funktiota omatta toteutuksetta.
+ * @param {string} message - EN: text to display / FI: näytettävä teksti
+ * @param {'info'|'success'|'error'|'warning'} type - EN: severity level / FI: vakavuustaso
+ */
 function showToast(message, type = 'info') {
   let container = document.getElementById('toast-container');
   if (!container) {
@@ -36,6 +62,16 @@ function showToast(message, type = 'info') {
   }, 4000);
 }
 
+/* ----------------------------------------------------------
+   HAMBURGER NAVIGATION — mobile menu open/close
+   Hamburger-navigointi — mobiilivalikon avaus/sulkeminen
+   ---------------------------------------------------------- */
+// EN: Toggle the mobile nav menu when the hamburger icon is clicked.
+//     Clicking any nav link also closes the menu so users aren't left with
+//     an open overlay after navigating.
+// FI: Vaihdetaan mobiilinavigointivalikon tila, kun hamburger-kuvaketta klikataan.
+//     Navigointilinkin klikkaus sulkee myös valikon, jotta käyttäjille ei jää
+//     avoin peite navigoinnin jälkeen.
 // Hamburger Menu Toggle
 const hamburger = document.querySelector('.hamburger');
 const navMenu = document.querySelector('.nav-menu');
@@ -55,6 +91,13 @@ if (hamburger) {
   });
 }
 
+/**
+ * EN: Guards the "Post Internship" button on pages that include script.js
+ *     (index, internships list, etc.). Duplicate of the version in auth.js
+ *     but reads role as a string from localStorage (auth.js parses to int).
+ * FI: Suojaa "Julkaise harjoittelu" -painikkeen sivuilla, jotka lataavat script.js:n.
+ *     Sama logiikka kuin auth.js:ssä, mutta lukee roolin merkkijonona localStorage:sta.
+ */
 function checkCompanyAuth() {
     const isLoggedIn = localStorage.getItem('isLoggedIn');
     const userRole = localStorage.getItem('userRole');
@@ -70,6 +113,18 @@ function checkCompanyAuth() {
         window.location.href = 'auth.html?mode=login';
     }
 }
+/**
+ * EN: Builds and injects the user-avatar dropdown into the navigation bar.
+ *     If no session exists, the plain "Login" link is shown instead.
+ *     The user name/avatar are fetched asynchronously to avoid blocking the
+ *     initial render; stale menus are cleaned up before and after the fetch
+ *     to prevent the "empty flash" of a menu without a name.
+ * FI: Rakentaa ja lisää käyttäjän avatar-pudotusvalikon navigointipalkkiin.
+ *     Jos istuntoa ei ole, sen sijaan näytetään tavallinen "Kirjaudu"-linkki.
+ *     Käyttäjänimi/avatar haetaan asynkronisesti, jotta alkuperäinen renderöinti
+ *     ei estyisi; vanhentuneet valikot siivotaan ennen hakua ja sen jälkeen,
+ *     jotta vältetään "tyhjä välähdys" ilman nimeä olevasta valikosta.
+ */
 function initUserMenu() {
   const navMenu = document.querySelector('.nav-menu');
   if (!navMenu) return;
@@ -86,6 +141,12 @@ function initUserMenu() {
   if (session) {
     if (loginLi) loginLi.style.display = 'none';
 
+    // EN: Build the nav item only after data resolves, then append it.
+    //     This prevents an empty-name flash that would appear if we inserted
+    //     the element before the async fetch completed.
+    // FI: Rakennetaan nav-elementti vasta datan latauduttua ja lisätään se.
+    //     Tämä estää tyhjän nimen välähdyksen, joka ilmenisi, jos elementti
+    //     lisättäisiin ennen asynkronisen haun valmistumista.
     // Build nav item AFTER data loads, then append — prevents empty flash
     getUserData(session.userId).then(userData => {
       // Remove any stale menu that crept in during the async wait
@@ -148,6 +209,13 @@ function initUserMenu() {
   }
 }
 
+/**
+ * EN: Toggles the user dropdown menu open/closed. stopPropagation prevents
+ *     the global document click listener from immediately closing it.
+ * FI: Avaa/sulkee käyttäjän pudotusvalikon. stopPropagation estää globaalin
+ *     document-klikkikuuntelijan sulkemasta sitä välittömästi.
+ * @param {MouseEvent} event - EN: click event on the avatar / FI: klikkaustapahtuma avatarissa
+ */
 function toggleUserDropdown(event) {
   event.stopPropagation();
   const dropdown = document.getElementById('userDropdown');
@@ -165,6 +233,16 @@ document.addEventListener('click', function(event) {
   }
 });
 
+/**
+ * EN: Returns the correct profile page URL for the given role, taking into
+ *     account whether the current page lives inside the /footer_info/ subfolder
+ *     (which requires a "../" prefix to navigate back to the root).
+ * FI: Palauttaa oikean profiilisivun URL:n annetulle roolille ottaen huomioon,
+ *     onko nykyinen sivu /footer_info/-alikansiossa (joka vaatii "../"-etuliitteen
+ *     juureen navigoimiseksi).
+ * @param {number} role - EN: user role number / FI: käyttäjän roolinumero
+ * @returns {string} EN: relative URL / FI: suhteellinen URL
+ */
 // Get profile URL based on role
 function getProfileUrl(role) {
   // Detect if we're in footer_info subfolder
@@ -176,6 +254,18 @@ function getProfileUrl(role) {
   return isFooterPage ? '../student-profile.html' : 'student-profile.html';
 }
 
+/**
+ * EN: Fetches the display name and avatar URL for the current user from
+ *     the appropriate Supabase table (student_profiles or Companies).
+ *     Admins use their login email as the display name and have no avatar.
+ *     Returns safe fallbacks so the UI never breaks on a failed fetch.
+ * FI: Hakee nykyisen käyttäjän näyttönimen ja avatar-URL:n sopivasta
+ *     Supabase-taulukosta (student_profiles tai Companies).
+ *     Ylläpitäjät käyttävät kirjautumissähköpostiaan näyttönimenä eikä heillä ole avataria.
+ *     Palauttaa turvalliset varavaihtoehdot, jotta UI ei hajoa epäonnistuneen haun vuoksi.
+ * @param {number} userId - EN: app-level user ID / FI: sovellustason käyttäjä-ID
+ * @returns {{name: string|null, avatar_url: string|null}}
+ */
 // Get user data (photo/logo, name) - supports both students/companies
 async function getUserData(userId) {
   const session = getCurrentSession();
@@ -218,6 +308,16 @@ async function getUserData(userId) {
     return { name: null, avatar_url: null };
   }
 }
+/**
+ * EN: Highlights the nav link that matches the current page filename.
+ *     Compares the last segment of the pathname to each link's href attribute.
+ *     Falls back to 'index.html' for the root path ('/') so the Home link
+ *     is always highlighted on the landing page.
+ * FI: Korostaa navigointilinkin, joka vastaa nykyisen sivun tiedostonimeä.
+ *     Vertaa polun viimeistä osaa kunkin linkin href-attribuuttiin.
+ *     Käyttää 'index.html'-oletusta juuripolulle ('/'), jotta Etusivu-linkki
+ *     on aina korostettu aloitussivulla.
+ */
 // Set Active Nav Link
 function setActiveNavLink() {
   const currentPage = window.location.pathname.split('/').pop() || 'index.html';
@@ -233,6 +333,17 @@ function setActiveNavLink() {
   });
 }
 
+/**
+ * EN: Generic client-side form validator. Highlights empty required fields
+ *     in red, validates email format, and checks minimum password length.
+ *     Returns false to prevent form submission when validation fails.
+ * FI: Yleinen asiakaspuolen lomakevalidaattori. Korostaa tyhjät pakolliset
+ *     kentät punaisella, validoi sähköpostimuodon ja tarkistaa salasanan
+ *     vähimmäispituuden. Palauttaa false estääkseen lomakkeen lähetyksen
+ *     validoinnin epäonnistuessa.
+ * @param {string} formId - EN: ID of the form element to validate / FI: validoitavan lomake-elementin ID
+ * @returns {boolean} EN: true if all checks pass / FI: true jos kaikki tarkistukset läpäistään
+ */
 // Form Validation
 function validateForm(formId) {
   const form = document.getElementById(formId);
@@ -274,6 +385,14 @@ function validateForm(formId) {
   return isValid;
 }
 
+/**
+ * EN: Reads a single query-string parameter by name from the current URL.
+ *     Handles URL-encoding and + → space conversion.
+ * FI: Lukee yksittäisen kyselymerkkijono-parametrin nimeltä nykyisestä URL:sta.
+ *     Käsittelee URL-koodauksen ja + → välilyönti -muunnoksen.
+ * @param {string} name - EN: parameter name / FI: parametrin nimi
+ * @returns {string} EN: decoded value or empty string / FI: dekoodattu arvo tai tyhjä merkkijono
+ */
 // Get URL Parameters
 function getUrlParameter(name) {
   name = name.replace(/[[]/, '\\[').replace(/[\]]/, '\\]');
@@ -282,6 +401,14 @@ function getUrlParameter(name) {
   return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
 }
 
+/**
+ * EN: Formats an ISO date string into European DD.MM.YYYY format used
+ *     throughout the Finnish UI. Returns 'N/A' for falsy input.
+ * FI: Muotoilee ISO-päivämäärämerkkijonon eurooppalaiseen DD.MM.YYYY-muotoon,
+ *     jota käytetään koko suomalaisessa käyttöliittymässä. Palauttaa 'N/A' tyhjälle syötteelle.
+ * @param {string} dateString - EN: ISO date string / FI: ISO-päivämäärämerkkijono
+ * @returns {string}
+ */
 // Format date to European format DD.MM.YYYY
 function formatDateEuropean(dateString) {
   if (!dateString) return 'N/A';
@@ -292,6 +419,21 @@ function formatDateEuropean(dateString) {
   return `${day}.${month}.${year}`;
 }
 
+/* ----------------------------------------------------------
+   FILTERING & SORTING — internships listing page
+   Suodatus ja lajittelu — harjoittelusivun listaus
+   ---------------------------------------------------------- */
+
+/**
+ * EN: Filters the visible job cards based on all active filter inputs simultaneously.
+ *     Reads search text, location, category, date range, and favorites-only toggle,
+ *     then shows/hides each .job-card accordingly. Displays the #noResults message
+ *     when no cards survive the combined filters.
+ * FI: Suodattaa näkyvät työkortit kaikkien aktiivisten suodatinsyötteiden perusteella samanaikaisesti.
+ *     Lukee hakutekstin, sijainnin, kategorian, päivämäärävälin ja vain-suosikit-valitsimen,
+ *     sitten näyttää/piilottaa jokaisen .job-card-elementin vastaavasti.
+ *     Näyttää #noResults-viestin, kun yksikään kortti ei läpäise yhdistettyjä suodattimia.
+ */
 // Search/Filter functionality - now handled by attachFilterListeners on internships page
 
 function filterJobs() {
@@ -342,6 +484,14 @@ function filterJobs() {
   }
 }
 
+/**
+ * EN: Re-orders job cards in the DOM by their data-created-at attribute.
+ *     Uses appendChild to move nodes — this is non-destructive (no innerHTML wipe)
+ *     so event listeners attached to the cards are preserved.
+ * FI: Järjestää työkortit DOM:ssa uudelleen data-created-at-attribuutin mukaan.
+ *     Käyttää appendChild-metodia solmujen siirtämiseen — tämä on ei-tuhoava
+ *     (ei innerHTML-tyhjennystä), joten kortteihin liitetyt tapahtumakuuntelijat säilyvät.
+ */
 // ==========================================
 // SORT JOBS
 // ==========================================
@@ -360,6 +510,14 @@ function sortJobs() {
   cards.forEach(card => jobsList.appendChild(card));
 }
 
+/**
+ * EN: Fetches all job categories (joined with their parent group title) from
+ *     Supabase and populates the #filterCategory select element.
+ *     Uses a JOIN so the option labels read "Group: Category" for clarity.
+ * FI: Hakee kaikki työkategoriat (yhdistettynä emoryhmän otsikkoon) Supabasesta
+ *     ja täyttää #filterCategory-valintaelementin.
+ *     Käyttää JOIN-kyselyä, joten vaihtoehtojen nimet ovat "Ryhmä: Kategoria" selkeyden vuoksi.
+ */
 // ==========================================
 // LOAD CATEGORIES FOR FILTER
 // ==========================================
@@ -394,6 +552,17 @@ async function loadCategoriesForFilter() {
   }
 }
 
+/**
+ * EN: Main data-loading function for the internships listing page.
+ *     Orchestrates three parallel Supabase queries (positions, companies, categories)
+ *     to avoid N+1 queries, builds company/category lookup maps, then renders all
+ *     job cards into #jobsList. Also initialises filters and favorites state.
+ * FI: Pääasiallinen datan latausfunktio harjoittelusivuston listaussivulle.
+ *     Järjestää kolme rinnakkaista Supabase-kyselyä (positiot, yritykset, kategoriat)
+ *     N+1-kyselyjen välttämiseksi, rakentaa yritys/kategoria-hakukartat, sitten
+ *     renderöi kaikki työkortit #jobsList-elementtiin.
+ *     Alustaa myös suodattimet ja suosikkitilan.
+ */
 // ==========================================
 // LOAD INTERNSHIPS
 // ==========================================
@@ -431,6 +600,14 @@ async function loadInternships() {
       throw error;
     }
 
+    // EN: Collect unique company and category IDs from positions so we can
+    //     fetch their details in two bulk queries instead of one per position.
+    //     Building in-memory maps (companyMap, categoryMap) avoids O(n²) lookups
+    //     when rendering each card.
+    // FI: Kerätään ainutlaatuiset yritys- ja kategoria-ID:t positioista, jotta
+    //     niiden tiedot voidaan hakea kahdella bulk-kyselyllä yhden position kohti sijaan.
+    //     Muistinsisäisten karttojen (companyMap, categoryMap) rakentaminen välttää
+    //     O(n²)-hakuja jokaista korttia renderöitäessä.
     // Load company and category names for the list (less relational dependency)
     const companyIds = [...new Set((positions || []).map(p => p.company_id).filter(Boolean))];
     let companyMap = {};
@@ -547,6 +724,16 @@ async function loadInternships() {
   }
 }
 
+/**
+ * EN: Attaches click listeners to all job cards after they are rendered.
+ *     Clicking anywhere on a card navigates to the detail page, EXCEPT when
+ *     clicking the heart (.favorite-btn) which only toggles the favorite state.
+ *     Must be called after loadInternships() re-renders the card HTML.
+ * FI: Liittää klikkikuuntelijat kaikkiin työkortteihin niiden renderöinnin jälkeen.
+ *     Kortin mille tahansa kohdalle klikkaaminen navigoi yksityiskohtasivulle,
+ *     PAITSI sydän-painikkeelle (.favorite-btn) klikkaaminen, joka vaihtaa vain suosikkitilan.
+ *     Täytyy kutsua loadInternships()-funktion jälkeen, joka uudelleen renderöi korttien HTML:n.
+ */
 // ==========================================
 // ATTACH JOB CARD LISTENERS
 // ==========================================
@@ -575,6 +762,13 @@ function attachJobCardListeners() {
   });
 }
 
+/**
+ * EN: Persists the favorites array to localStorage. Guards against non-array
+ *     input to prevent corrupted JSON from breaking getFavorites().
+ * FI: Tallentaa suosikki-taulukon localStorageen. Suojaa ei-taulukko-syötteeltä
+ *     estääkseen vioittuneen JSON:n rikkimastamasta getFavorites()-funktiota.
+ * @param {string[]} favorites - EN: array of position ID strings / FI: positio-ID-merkkijonotaulukko
+ */
 function saveFavorites(favorites) {
   if (!Array.isArray(favorites)) {
     favorites = [];
@@ -582,6 +776,19 @@ function saveFavorites(favorites) {
   localStorage.setItem('favorites', JSON.stringify(favorites));
 }
 
+/**
+ * EN: Returns the current favorites list from localStorage as an array of
+ *     ID strings. Handles JSON parse errors gracefully by clearing the key
+ *     and returning [] so the rest of the UI degrades cleanly.
+ *     The authoritative list is in Supabase; this cache makes heart-icon
+ *     state available synchronously without an async DB call on every render.
+ * FI: Palauttaa nykyisen suosikkilistan localStoragesta ID-merkkijonotaulukkona.
+ *     Käsittelee JSON-jäsennysvirheet tyylikkäästi tyhjentämällä avaimen
+ *     ja palauttamalla [], jotta muu UI hajoaa siististi.
+ *     Auktoritatiivinen lista on Supabasessa; tämä välimuisti tekee sydänkuvakkeen
+ *     tilan saataville synkronisesti ilman asynkronista DB-kutsua jokaisella renderöinnillä.
+ * @returns {string[]}
+ */
 // ── FAVORITES (localStorage only — syncs with Supabase via favorites.js) ──
 function getFavorites() {
   const raw = localStorage.getItem('favorites');
@@ -595,6 +802,14 @@ function getFavorites() {
   }
 }
 
+/**
+ * EN: Synchronises all heart buttons on the page with the current localStorage
+ *     favorites list. Works on both the listing page (buttons inside .job-card)
+ *     and the detail page (button inside #favBtnContainer via window.currentPosition).
+ * FI: Synkronoi kaikki sydänpainikkeet sivulla nykyisen localStorage-suosikkilistan kanssa.
+ *     Toimii sekä listaussivulla (painikkeet .job-card-elementin sisällä)
+ *     että yksityiskohtasivulla (painike #favBtnContainer-elementin sisällä window.currentPosition-muuttujan kautta).
+ */
 function updateFavoriteStates() {
   const favorites = getFavorites();
   document.querySelectorAll('.favorite-btn').forEach(btn => {
@@ -608,6 +823,20 @@ function updateFavoriteStates() {
   });
 }
 
+/**
+ * EN: Adds or removes a job ID from the localStorage favorites list and
+ *     updates the heart icon emoji immediately. Also fires a custom
+ *     'favoritesUpdated' window event so other UI components (profile panel,
+ *     etc.) can react without polling. Delegates the Supabase write to
+ *     syncFavoriteToSupabase() if favorites.js is loaded.
+ * FI: Lisää tai poistaa työ-ID:n localStorage-suosikkilistasta ja päivittää
+ *     sydänkuvakeemoijin välittömästi. Laukaisee myös mukautetun
+ *     'favoritesUpdated'-ikkunatapahtuman, jotta muut UI-komponentit voivat
+ *     reagoida ilman kyselyä. Delegoi Supabase-kirjoituksen
+ *     syncFavoriteToSupabase()-funktiolle, jos favorites.js on ladattu.
+ * @param {string|number} jobId - EN: position ID / FI: position ID
+ * @param {HTMLButtonElement} btn - EN: the heart button element / FI: sydänpainikeelemetti
+ */
 function toggleFavoriteBtn(jobId, btn) {
   if (!jobId) return;
   const favorites = getFavorites();
@@ -622,6 +851,10 @@ function toggleFavoriteBtn(jobId, btn) {
   }
   localStorage.setItem('favorites', JSON.stringify(favorites));
 
+  // EN: Supabase sync is optional — favorites.js may not be loaded on every page.
+  //     The localStorage write above is the immediate source of truth for the UI.
+  // FI: Supabase-synkronointi on valinnainen — favorites.js ei välttämättä ole ladattu jokaisella sivulla.
+  //     Yllä oleva localStorage-kirjoitus on UI:n välitön totuuden lähde.
   // Also sync to Supabase if favorites.js is loaded
   if (typeof syncFavoriteToSupabase === 'function') {
     syncFavoriteToSupabase(jobIdStr, btn.innerHTML === '❤️');
@@ -695,6 +928,15 @@ async function highlightSavedFavorites() {
 }
 document.addEventListener('DOMContentLoaded', highlightSavedFavorites);
 
+/**
+ * EN: Wires up all filter controls on the internships listing page.
+ *     Keyup on the search field triggers immediate filtering for responsive feel.
+ *     Category and date changes also re-filter. Sort order change re-sorts in-place.
+ * FI: Yhdistää kaikki suodatinsäätimet harjoittelulistaussivulle.
+ *     Keyup-tapahtuma hakukentässä käynnistää välittömän suodatuksen reagoivan tunteen vuoksi.
+ *     Kategoria- ja päivämäärämuutokset myös suodattavat uudelleen.
+ *     Lajittelujärjestyksen muutos lajittelee paikallaan.
+ */
 // ==========================================
 // ATTACH FILTER LISTENERS
 // ==========================================
@@ -720,6 +962,22 @@ function attachFilterListeners() {
   }
 }
 
+/* ----------------------------------------------------------
+   INITIALIZATION — runs on every page that loads script.js
+   Alustus — suoritetaan jokaisella sivulla, joka lataa script.js:n
+   ---------------------------------------------------------- */
+
+/**
+ * EN: Global DOMContentLoaded handler. Runs on every page that includes
+ *     script.js. Sets the active nav link, builds the user menu if logged in,
+ *     hides the CTA section for authenticated users, and triggers page-specific
+ *     loaders (student profile, internships list) based on the current pathname.
+ * FI: Globaali DOMContentLoaded-käsittelijä. Suoritetaan jokaisella sivulla,
+ *     joka sisältää script.js:n. Asettaa aktiivisen navigointilinkin, rakentaa
+ *     käyttäjävalikon kirjautuneille käyttäjille, piilottaa CTA-osion todennetuille
+ *     käyttäjille ja käynnistää sivukohtaiset lataajat (opiskelijan profiili,
+ *     harjoittelulistaus) nykyisen polun perusteella.
+ */
 // ==========================================
 // INITIALIZATION
 // ==========================================
@@ -747,7 +1005,11 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-    /* ── Hide CTA when logged in ── */
+    /* ── Hide CTA when logged in ──
+       EN: Second DOMContentLoaded listener — kept separate from the main one
+           above because it was added independently for the landing page hero.
+       FI: Toinen DOMContentLoaded-kuuntelija — pidetään erillään yllä olevasta
+           pääkuuntelijasta, koska se lisättiin erikseen aloitussivun hero-osiolle. ── */
     document.addEventListener('DOMContentLoaded', function () {
       const loggedIn = localStorage.getItem('isLoggedIn') === 'true' && localStorage.getItem('userId');
       if (loggedIn) {
@@ -756,7 +1018,13 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
 
-    /* ── Hero parallax on scroll ── */
+    /* ── Hero parallax on scroll ──
+       EN: Uses requestAnimationFrame + ticking flag to throttle scroll events.
+           Without throttling, the transform calculations would fire dozens of times
+           per scroll frame, causing noticeable jank on low-end devices.
+       FI: Käyttää requestAnimationFrame + ticking-lippua scroll-tapahtumien rajoittamiseen.
+           Ilman rajoittamista transform-laskut käynnistyisivät kymmeniä kertoja
+           per scroll-ruutu, aiheuttaen havaittavaa nykimistä heikotehoisilla laitteilla. ── */
     const heroEl      = document.getElementById('heroSection');
     const heroWaves   = document.getElementById('heroWaves');
     const heroContent = document.getElementById('heroContent');
@@ -778,7 +1046,16 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }, { passive: true });
 
-    /* ── Carousel ── */
+    /* ── Carousel ──
+       EN: Simple index-based carousel with autoplay. goToSlide wraps the index
+           modulo totalSlides so next/prev always stay in bounds. Touch events
+           are used for swipe support on mobile — a 40px threshold prevents
+           accidental swipes during normal scrolling.
+       FI: Yksinkertainen indeksipohjainen karuselli autosoitolla. goToSlide
+           käyttää indeksin modulo-laskua totalSlides:llä, joten seuraava/edellinen
+           pysyy aina rajoissa. Kosketustapahtumia käytetään pyyhkäisytukeen
+           mobiilissa — 40 px kynnys estää vahingolliset pyyhkäisyt normaalin
+           vierittämisen aikana. ── */
     let currentSlide = 0;
     const totalSlides = 3;
     let autoplayTimer;
@@ -815,6 +1092,21 @@ document.addEventListener('DOMContentLoaded', function() {
       }, { passive: true });
     });
 
+/**
+ * EN: Programmatic confirmation dialog that returns a Promise<boolean>.
+ *     Replaces the native window.confirm() which is blocked in some browsers
+ *     and cannot be styled. The overlay is removed from the DOM on any close
+ *     action (confirm, cancel, or backdrop click) to keep the DOM clean.
+ * FI: Ohjelmallinen vahvistusikkuna, joka palauttaa Promise<boolean>-arvon.
+ *     Korvaa natiivin window.confirm()-funktion, joka on estetty joissakin
+ *     selaimissa eikä sitä voi tyylitellä. Peite poistetaan DOM:sta
+ *     missä tahansa sulkemistoiminnossa (vahvista, peruuta tai taustan klikkaus)
+ *     DOM:n pitämiseksi siistinä.
+ * @param {string} message - EN: confirmation question / FI: vahvistuskysymys
+ * @param {string} confirmText - EN: confirm button label / FI: vahvistuspainikkeen teksti
+ * @param {string} cancelText - EN: cancel button label / FI: peruutuspainikkeen teksti
+ * @returns {Promise<boolean>}
+ */
 function showConfirm(message, confirmText = 'Confirm', cancelText = 'Cancel') {
   return new Promise(resolve => {
     const overlay = document.createElement('div');

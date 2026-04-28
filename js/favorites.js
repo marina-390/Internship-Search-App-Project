@@ -1,3 +1,22 @@
+/* ==========================================================
+   favorites.js — Supabase favorites sync & profile panel rendering
+   Supabase-suosikkien synkronointi ja profiilipaneelin renderöinti
+   ========================================================== */
+
+/**
+ * EN: Loads the current user's saved favorites from Supabase and renders them
+ *     in the #favoritesContainer (student profile sidebar). After fetching,
+ *     it also back-fills localStorage so heart icons on the same page reflect
+ *     the Supabase state immediately. Period dates are fetched in a second
+ *     query so each card can display start/end without storing them in the
+ *     favorites table itself.
+ * FI: Lataa nykyisen käyttäjän tallennetut suosikit Supabasesta ja renderöi ne
+ *     #favoritesContainer-elementtiin (opiskelijan profiilipalkki). Haun jälkeen
+ *     täyttää myös localStoragen, jotta sydänkuvakkeet samalla sivulla heijastavat
+ *     Supabasen tilaa välittömästi. Jaksojen päivämäärät haetaan toisella kyselyllä,
+ *     jotta jokainen kortti voi näyttää alku/loppu ilman niiden tallentamista
+ *     suosikki-taulukkoon itsessään.
+ */
 // ── FAVORITES — Supabase sync + profile panel ──
 
 async function loadFavorites() {
@@ -21,6 +40,12 @@ async function loadFavorites() {
     return;
   }
 
+  // EN: Write fetched IDs to localStorage so that heart icons rendered by
+  //     script.js (which reads localStorage synchronously) are already correct
+  //     before updateFavoriteStates() is called.
+  // FI: Kirjoitetaan haetut ID:t localStorageen, jotta script.js:n renderöimät
+  //     sydänkuvakkeet (jotka lukevat localStoragen synkronisesti) ovat jo oikein
+  //     ennen updateFavoriteStates()-funktion kutsumista.
   // Also sync to localStorage so heart icons are correct
   const ids = data.map(f => f.internship_id.toString());
   localStorage.setItem('favorites', JSON.stringify(ids));
@@ -74,6 +99,16 @@ async function loadFavorites() {
   }).join('');
 }
 
+/**
+ * EN: Removes a single favorite by its favorites table row ID (not the internship ID).
+ *     Also removes it from localStorage and fires the 'favoritesUpdated' event so
+ *     heart buttons on the same page update immediately.
+ * FI: Poistaa yksittäisen suosikin sen suosikki-taulukon rivin ID:n perusteella
+ *     (ei harjoittelu-ID:n). Poistaa sen myös localStoragesta ja laukaisee
+ *     'favoritesUpdated'-tapahtuman, jotta sydänpainikkeet päivittyvät välittömästi.
+ * @param {string} favId - EN: favorites table row ID / FI: suosikki-taulukon rivin ID
+ * @param {string} internshipId - EN: position ID for localStorage cleanup / FI: positio-ID localStorage-siivousta varten
+ */
 async function removeFavorite(favId, internshipId) {
   const { error } = await supabaseClient.from('favorites').delete().eq('id', favId);
   if (!error) {
@@ -97,6 +132,18 @@ async function removeFavorite(favId, internshipId) {
   }
 }
 
+/**
+ * EN: Removes a favorite by internship position ID rather than the row ID.
+ *     Used by internship-detail.js after a student submits an application —
+ *     applying to a position should automatically un-save it from favorites.
+ *     Returns false on any error so the caller can continue gracefully.
+ * FI: Poistaa suosikin harjoittelun positio-ID:n perusteella eikä rivin ID:n.
+ *     Käytetään internship-detail.js:ssä sen jälkeen, kun opiskelija lähettää
+ *     hakemuksen — paikkaan hakemisen pitäisi automaattisesti poistaa se suosikeista.
+ *     Palauttaa false virheen yhteydessä, jotta kutsuja voi jatkaa siististi.
+ * @param {string|number} internshipId - EN: position ID / FI: positio-ID
+ * @returns {Promise<boolean>}
+ */
 async function removeFavoriteByInternshipId(internshipId) {
   if (!internshipId) return false;
 
@@ -128,6 +175,20 @@ async function removeFavoriteByInternshipId(internshipId) {
   return true;
 }
 
+/**
+ * EN: Writes a favorite add/remove to Supabase when the user clicks a heart
+ *     button on the internships listing or detail page. Uses upsert with a
+ *     unique constraint on (user_id, internship_id) so accidental double-clicks
+ *     don't create duplicate rows. Title/company/location are denormalised into
+ *     the favorites row so the profile panel can render without a JOIN.
+ * FI: Kirjoittaa suosikin lisäyksen/poiston Supabaseen, kun käyttäjä klikkaa
+ *     sydänpainiketta harjoittelulistaus- tai yksityiskohtasivulla. Käyttää upsertiä
+ *     ainutlaatuisella rajoitteella (user_id, internship_id), jotta vahingolliset
+ *     kaksoisklikkaamiset eivät luo päällekkäisiä rivejä. Otsikko/yritys/sijainti
+ *     on denormalisoitu suosikkiriviin, jotta profiilipaneeli voi renderöidä ilman JOIN-kyselyä.
+ * @param {string} internshipId - EN: position ID / FI: positio-ID
+ * @param {boolean} isAdding - EN: true = add, false = remove / FI: true = lisää, false = poista
+ */
 // Called from script.js when a heart button is clicked on internships page
 async function syncFavoriteToSupabase(internshipId, isAdding) {
   const { data: { user } } = await supabaseClient.auth.getUser();
@@ -165,6 +226,16 @@ async function syncFavoriteToSupabase(internshipId, isAdding) {
   }
 }
 
+/**
+ * EN: Fetches all saved favorites for the logged-in user and highlights the
+ *     corresponding heart buttons on the page. Also syncs the IDs to
+ *     localStorage so subsequent synchronous reads (getFavorites) stay accurate.
+ *     Called on page load of the internships listing page.
+ * FI: Hakee kirjautuneen käyttäjän kaikki tallennetut suosikit ja korostaa
+ *     vastaavat sydänpainikkeet sivulla. Synkronoi myös ID:t localStorageen,
+ *     jotta myöhemmät synkroniset luennat (getFavorites) pysyvät tarkkoina.
+ *     Kutsutaan harjoittelulistaussivun sivun latauksessa.
+ */
 // On internships page — highlight hearts based on Supabase data
 async function highlightSavedFavorites() {
   const { data: { user } } = await supabaseClient.auth.getUser();
@@ -189,6 +260,22 @@ async function highlightSavedFavorites() {
   });
 }
 
+/**
+ * EN: Bootstraps the favorites module on page load:
+ *     - Loads and renders the favorites panel (student profile page).
+ *     - Highlights saved hearts on the internships listing page.
+ *     - Listens for 'favoritesUpdated' custom events to re-render without
+ *       a full page reload (fired by toggleFavoriteBtn in script.js).
+ *     - Listens for localStorage 'storage' events from other browser tabs
+ *       so favorites stay in sync across tabs.
+ * FI: Alustaa suosikkimoduulin sivun latauksessa:
+ *     - Lataa ja renderöi suosikkipaneelin (opiskelijan profiilisivu).
+ *     - Korostaa tallennetut sydämet harjoittelulistaussivulla.
+ *     - Kuuntelee 'favoritesUpdated'-mukautettuja tapahtumia uudelleenrenderöintiä
+ *       varten ilman täyttä sivun uudelleenlatausta (laukaisee toggleFavoriteBtn script.js:ssä).
+ *     - Kuuntelee localStorage 'storage'-tapahtumia muista selainvälilehdistä,
+ *       jotta suosikit pysyvät synkronoituina välilehtien välillä.
+ */
 document.addEventListener('DOMContentLoaded', () => {
   // Wait for supabase to be initialized
   if (typeof supabase === 'undefined') {
