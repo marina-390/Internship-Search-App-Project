@@ -51,12 +51,12 @@
         // Idempotency: if user already exists (double-click on link), just log them in
         const { data: existing } = await supabaseClient
           .from('Users')
-          .select('user_id, role')
+          .select('user_id, role, preferred_lang')
           .eq('user_login', user.email)
           .maybeSingle();
 
         if (existing) {
-          await finishSession(existing.user_id, existing.role, user.email);
+          await finishSession(existing.user_id, existing.role, user.email, existing.preferred_lang);
           return;
         }
 
@@ -68,7 +68,8 @@
           .insert({
             user_login: user.email,
             user_password: meta.hashed_password,
-            role: meta.role
+            role: meta.role,
+            preferred_lang: meta.preferred_lang || 'en'
           })
           .select('user_id')
           .single();
@@ -115,7 +116,7 @@
           if (teamError) console.error('Team auto-add failed:', teamError);
         }
 
-        await finishSession(newUser.user_id, meta.role, user.email);
+        await finishSession(newUser.user_id, meta.role, user.email, meta.preferred_lang || 'en');
 
       } catch (err) {
         console.error('Registration completion error:', err);
@@ -123,11 +124,12 @@
       }
     }
 
-    async function finishSession(userId, role, email) {
+    async function finishSession(userId, role, email, lang) {
       localStorage.setItem('isLoggedIn', 'true');
       localStorage.setItem('userId', userId);
       localStorage.setItem('userRole', role);
       localStorage.setItem('userLogin', email);
+      if (lang) localStorage.setItem('lang', lang);
 
       document.getElementById('stateLoading').style.display = 'none';
       document.getElementById('stateSuccess').style.display = 'block';

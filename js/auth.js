@@ -153,7 +153,7 @@ async function _handleOAuthUser(session) {
 
   const { data: existingUser } = await supabaseClient
     .from('Users')
-    .select('user_id, role')
+    .select('user_id, role, preferred_lang')
     .eq('user_login', email)
     .maybeSingle();
 
@@ -162,6 +162,7 @@ async function _handleOAuthUser(session) {
     localStorage.setItem('userId',    existingUser.user_id);
     localStorage.setItem('userRole',  existingUser.role);
     localStorage.setItem('userLogin', email);
+    if (existingUser.preferred_lang) localStorage.setItem('lang', existingUser.preferred_lang);
     _redirectByRole(existingUser.role);
     return;
   }
@@ -173,7 +174,7 @@ async function _handleOAuthUser(session) {
 
   const { data: newUser, error: userError } = await supabaseClient
     .from('Users')
-    .insert({ user_login: email, user_password: 'oauth', role: 1 })
+    .insert({ user_login: email, user_password: 'oauth', role: 1, preferred_lang: localStorage.getItem('lang') || 'en' })
     .select('user_id')
     .single();
 

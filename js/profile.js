@@ -13,6 +13,17 @@ function formatDateEuropean(dateString) {
   return `${day}.${month}.${year}`;
 }
 
+async function savePreferredLang(lang) {
+  const session = getCurrentSession();
+  if (!session) return;
+  setLanguage(lang);
+  const { error } = await supabaseClient
+    .from('Users')
+    .update({ preferred_lang: lang })
+    .eq('user_id', session.userId);
+  if (error) console.error('Failed to save language preference:', error);
+}
+
 // Current profile data & categories & links
 let currentProfile = null;
 let currentTeam = []; 

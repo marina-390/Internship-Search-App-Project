@@ -85,7 +85,7 @@ async function handleLogin(event) {
   try {
     var res = await supabaseClient
       .from('Users')
-      .select('user_id, user_password, role')
+      .select('user_id, user_password, role, preferred_lang')
       .eq('user_login', email)
       .single();
 
@@ -110,6 +110,7 @@ async function handleLogin(event) {
     localStorage.setItem('userId',   user.user_id);
     localStorage.setItem('userRole', user.role);
     localStorage.setItem('userLogin', email);
+    if (user.preferred_lang) localStorage.setItem('lang', user.preferred_lang);
 
     if      (user.role === 0) window.location.href = 'admin.html';
     else if (user.role === 1) window.location.href = 'student-profile.html';
@@ -220,7 +221,8 @@ async function handleRegister(event) {
       role:            role,
       first_name:      firstName,
       last_name:       lastName,
-      hashed_password: hashedPassword
+      hashed_password: hashedPassword,
+      preferred_lang:  localStorage.getItem('lang') || 'en'
     };
     if (role === 1) {
       metadata.edu_level = document.getElementById('eduType').value;
@@ -246,7 +248,7 @@ async function handleRegister(event) {
       var authUser = signUpRes.data.user;
       var newUserRes = await supabaseClient
         .from('Users')
-        .insert({ user_login: authUser.email, user_password: metadata.hashed_password, role: metadata.role })
+        .insert({ user_login: authUser.email, user_password: metadata.hashed_password, role: metadata.role, preferred_lang: metadata.preferred_lang })
         .select('user_id')
         .single();
 
