@@ -579,7 +579,15 @@ nav {
 }
 
 .grid-2 {
-  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+}
+
+.container-flex {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
 }
 
 /* ==========================================
@@ -1007,6 +1015,45 @@ footer {
     align-items: flex-start;
     gap: 1rem;
   }
+
+  /* Mobile responsive footer links */
+  .footer-section a {
+    font-size: 1.1rem;
+    padding: 0.75rem 0;
+    display: block;
+    min-height: 44px; /* Ensure touch targets are at least 44px */
+    line-height: 1.4;
+  }
+
+  .footer-section .mobile-responsive-link {
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .footer-section .mobile-responsive-link:hover {
+    color: white;
+  }
+
+  .footer-section ul li {
+    margin-bottom: 0.25rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  .footer-content {
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+  }
+
+  .container-flex {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer-content {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1070,14 +1117,14 @@ footer {
   min-height: 48px;
 }
 
-/* Force grid-2 to always show 2 columns */
+/* Responsive grid-2 layout for pages with two-column panels */
 .grid-2 {
   display: grid !important;
-  grid-template-columns: 1fr 300px !important;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;
   gap: 2rem;
 }
 
-/* Ensure sidebar always visible in grid - with text visible */
+/* Ensure sidebar content remains visible and stacks cleanly on narrow screens */
 .grid-2 .sidebar {
   display: block !important;
   grid-row: 1 / -1 !important;
@@ -1085,6 +1132,7 @@ footer {
   background: #f8f9fa;
   border: 1px solid #dee2e6;
   padding: 1.5rem;
+
   border-radius: 0.5rem;
   overflow: visible;
 }
