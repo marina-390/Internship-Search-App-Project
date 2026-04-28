@@ -1,13 +1,45 @@
+/* ==========================================================
+   share-experience.js — Student experience testimonials
+   Opiskelijakokemustodistukset (arvostelut / "Jaa kokemus")
+   ========================================================== */
+
+// EN: In-memory array holding all loaded testimonial objects.
+//     Populated by loadExperiencesFromDB() and appended to by submitExperienceForm().
+// FI: Muistinsisäinen taulukko, joka sisältää kaikki ladatut todistusobjektit.
+//     Täytetään loadExperiencesFromDB()-funktiolla ja siihen lisätään submitExperienceForm()-funktiolla.
 const shareTestimonials = [];
+
+// EN: Current display index — points to the leftmost visible testimonial card.
+// FI: Nykyinen näyttöindeksi — osoittaa vasemmanpuolisimpaan näkyvään todistuskorttiin.
 let shareIndex = 0;
+
+// EN: Character limit for the "preview" snippet shown before "Show more".
+// FI: Merkkiraja "esikatselu"-katkelmalle, joka näytetään ennen "Näytä lisää" -painiketta.
 const PREVIEW_LENGTH = 100;
 
+/**
+ * EN: Formats a student name for public display — last name is abbreviated
+ *     to initial + period for privacy (e.g. "Anna K.").
+ * FI: Muotoilee opiskelijan nimen julkista näyttöä varten — sukunimi lyhennetään
+ *     alkukirjaimeksi + pisteeksi yksityisyyden vuoksi (esim. "Anna K.").
+ * @param {string} firstName - EN: first name / FI: etunimi
+ * @param {string} lastName - EN: last name / FI: sukunimi
+ * @returns {string}
+ */
 function formatStudentName(firstName, lastName) {
   if (!firstName && !lastName) return 'Anonymous';
   if (!lastName) return firstName;
   return `${firstName} ${lastName[0].toUpperCase()}.`;
 }
 
+/**
+ * EN: Escapes HTML special characters to prevent XSS when inserting
+ *     user-submitted text via innerHTML. Used for all testimonial content.
+ * FI: Pakottaa HTML-erikoismerkit XSS:n estämiseksi, kun käyttäjän lähettämää
+ *     tekstiä lisätään innerHTML-ominaisuuden kautta. Käytetään kaikelle todistussisällölle.
+ * @param {string} str - EN: raw user text / FI: raaka käyttäjäteksti
+ * @returns {string} EN: escaped HTML-safe string / FI: pakotettu HTML-turvallinen merkkijono
+ */
 function escHtml(str) {
   return String(str)
     .replace(/&/g, '&amp;')
@@ -17,6 +49,16 @@ function escHtml(str) {
     .replace(/'/g, '&#39;');
 }
 
+/**
+ * EN: Renders review text with an optional "Show more / Show less" toggle if
+ *     the text exceeds PREVIEW_LENGTH characters. Short texts are returned as
+ *     plain escaped HTML. This keeps cards compact without losing content.
+ * FI: Renderöi arvostelutekstin valinnaisella "Näytä lisää / Näytä vähemmän"
+ *     vaihdolla, jos teksti ylittää PREVIEW_LENGTH-merkkimäärän. Lyhyet tekstit
+ *     palautetaan pelkkänä pakotettuina HTML:nä. Pitää kortit kompakteina menettämättä sisältöä.
+ * @param {string} text - EN: review text / FI: arvosteluteteksti
+ * @returns {string} EN: HTML string / FI: HTML-merkkijono
+ */
 function renderText(text) {
   const safe = escHtml(text || '');
   if (!text || text.length <= PREVIEW_LENGTH) return safe;
@@ -24,6 +66,13 @@ function renderText(text) {
   return `<span class="review-text"><span class="review-short">${short}</span><span class="review-full" hidden>${safe}</span></span><button type="button" class="show-more-btn" onclick="toggleReviewText(this)">${t('shareExperience.showMore')}</button>`;
 }
 
+/**
+ * EN: Toggles the visibility of the short/full review text spans
+ *     and updates the button label accordingly.
+ * FI: Vaihtaa lyhyen/täyden arvostelutekstin span-elementtien näkyvyyttä
+ *     ja päivittää painikkeen tekstin vastaavasti.
+ * @param {HTMLButtonElement} btn - EN: the "Show more/less" button / FI: "Näytä lisää/vähemmän" -painike
+ */
 function toggleReviewText(btn) {
   const container = btn.previousElementSibling;
   const short = container.querySelector('.review-short');
@@ -34,6 +83,16 @@ function toggleReviewText(btn) {
   btn.textContent = expanding ? t('shareExperience.showLess') : t('shareExperience.showMore');
 }
 
+/**
+ * EN: Updates the character counter display for a textarea.
+ *     Adds the 'char-limit' CSS class when the user reaches the max
+ *     to visually warn them before hitting the hard database limit.
+ * FI: Päivittää merkkilaskurin näytön tekstialueelle.
+ *     Lisää 'char-limit'-CSS-luokan, kun käyttäjä saavuttaa maksimin,
+ *     varoittaakseen visuaalisesti ennen kovaa tietokantarajaa.
+ * @param {HTMLTextAreaElement} textarea - EN: the input element / FI: syöteelementti
+ * @param {string} counterId - EN: ID of the counter display element / FI: laskurin näyttöelementin ID
+ */
 function updateCharCounter(textarea, counterId) {
   const counter = document.getElementById(counterId);
   if (!counter) return;
@@ -42,6 +101,14 @@ function updateCharCounter(textarea, counterId) {
   counter.classList.toggle('char-limit', len >= 200);
 }
 
+/**
+ * EN: Returns the inner HTML for a single testimonial card given a data object.
+ *     All user-provided strings are run through escHtml to prevent XSS.
+ * FI: Palauttaa yksittäisen todistuskortin sisäisen HTML:n dataobjektista.
+ *     Kaikki käyttäjän antamat merkkijonot käytetään escHtml:n läpi XSS:n estämiseksi.
+ * @param {object} data - EN: testimonial data object / FI: todistusdataobjekti
+ * @returns {string} EN: HTML string / FI: HTML-merkkijono
+ */
 function createTestimonialHtml(data) {
   return `
     <div class="testimonial-avatar">
@@ -55,6 +122,12 @@ function createTestimonialHtml(data) {
   `;
 }
 
+/**
+ * EN: Renders the two visible testimonial cards (left = current index,
+ *     right = next index wrapped). Clears both if the array is empty.
+ * FI: Renderöi kaksi näkyvää todistuskorttia (vasen = nykyinen indeksi,
+ *     oikea = seuraava indeksi kierrätettyä). Tyhjentää molemmat, jos taulukko on tyhjä.
+ */
 function updateShareCards() {
   const left = document.getElementById('testimonialLeft');
   const right = document.getElementById('testimonialRight');
@@ -72,16 +145,34 @@ function updateShareCards() {
   }
 }
 
+/**
+ * EN: Navigates to the previous testimonial (wraps around when at index 0).
+ * FI: Navigoi edelliseen todistukseen (kiertyy, kun indeksi on 0).
+ */
 function prevShareTestimonial() {
   shareIndex = (shareIndex - 1 + shareTestimonials.length) % shareTestimonials.length;
   updateShareCards();
 }
 
+/**
+ * EN: Navigates to the next testimonial (wraps around to index 0 at the end).
+ * FI: Navigoi seuraavaan todistukseen (kiertyy indeksiin 0 lopussa).
+ */
 function nextShareTestimonial() {
   shareIndex = (shareIndex + 1) % shareTestimonials.length;
   updateShareCards();
 }
 
+/**
+ * EN: Fetches approved testimonials from the 'feedbacks' table (joined with
+ *     student profile and position/company data) and populates shareTestimonials.
+ *     Called on DOMContentLoaded so cards are visible on page load.
+ *     Errors are silently swallowed so the rest of the page still loads.
+ * FI: Hakee hyväksytyt todistukset 'feedbacks'-taulukosta (yhdistettynä
+ *     opiskelijan profiiliin ja positio/yritystietoihin) ja täyttää shareTestimonials.
+ *     Kutsutaan DOMContentLoaded-tapahtumassa, jotta kortit näkyvät sivun latauksessa.
+ *     Virheet nielataan hiljaa, jotta muu sivu latautuu silti.
+ */
 async function loadExperiencesFromDB() {
   try {
     const { data } = await supabaseClient
@@ -125,6 +216,18 @@ async function loadExperiencesFromDB() {
   }
 }
 
+/**
+ * EN: Opens the "Share Your Experience" modal. Enforces eligibility rules:
+ *     - Must be logged in as a student (role 1).
+ *     - Must have at least one accepted application.
+ *     - Cannot re-review a position that already has feedback.
+ *     Populates the position select with eligible (accepted, not yet reviewed) positions.
+ * FI: Avaa "Jaa kokemuksesi" -modaalin. Pakottaa kelpoisuussäännöt:
+ *     - Täytyy olla kirjautunut opiskelijana (rooli 1).
+ *     - Täytyy olla vähintään yksi hyväksytty hakemus.
+ *     - Ei voi arvostella uudelleen positiota, jolla on jo palaute.
+ *     Täyttää positio-valinnan kelpoisilla (hyväksytyillä, ei vielä arvioituilla) positioilla.
+ */
 async function openExperienceModal() {
   const session = typeof getCurrentSession === 'function' ? getCurrentSession() : null;
   if (!session || session.role !== 1) {
@@ -154,6 +257,10 @@ async function openExperienceModal() {
     return;
   }
 
+  // EN: Filter out applications that already have feedback so the student
+  //     cannot submit duplicate reviews for the same internship.
+  // FI: Suodatetaan pois hakemukset, joilla on jo palaute, jotta opiskelija
+  //     ei voi lähettää päällekkäisiä arvosteluja samasta harjoittelusta.
   const appIds = acceptedApps.map(a => a.application_id);
   const { data: existing } = await supabaseClient
     .from('feedbacks')
@@ -186,6 +293,12 @@ async function openExperienceModal() {
   document.getElementById('shareModal').style.display = 'flex';
 }
 
+/**
+ * EN: Closes the share-experience modal and resets all form fields and
+ *     character counters so the next open starts with a clean state.
+ * FI: Sulkee jakamistoiminnon modaalin ja nollaa kaikki lomakekentät ja
+ *     merkkilaskurit, jotta seuraava avaus alkaa puhtaalta tilalta.
+ */
 function closeExperienceModal() {
   const modal = document.getElementById('shareModal');
   if (modal) modal.style.display = 'none';
@@ -197,6 +310,17 @@ function closeExperienceModal() {
   });
 }
 
+/**
+ * EN: Submits a new testimonial to the 'feedbacks' table. The insert uses
+ *     .select() with a full JOIN so the newly inserted row's related data is
+ *     returned immediately — this lets us append the new testimonial card
+ *     to shareTestimonials without a separate re-fetch.
+ * FI: Lähettää uuden todistuksen 'feedbacks'-taulukkoon. Lisäys käyttää
+ *     .select()-metodia täydellä JOIN-kyselyllä, joten juuri lisätyn rivin
+ *     liittyvä data palautetaan välittömästi — tämä mahdollistaa uuden
+ *     todistuskortin lisäämisen shareTestimonials-taulukkoon ilman erillistä uudelleenhakua.
+ * @param {Event} event - EN: form submit event / FI: lomakkeen lähetystapahtuma
+ */
 async function submitExperienceForm(event) {
   event.preventDefault();
   const form = event.target;

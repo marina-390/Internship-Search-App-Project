@@ -1,3 +1,21 @@
+/* ==========================================================
+   internship-detail.js — Internship detail page logic
+   Harjoittelun yksityiskohtasivun logiikka
+   ========================================================== */
+
+/**
+ * EN: Wraps a long text string in a two-span "Show more / Show less" pattern.
+ *     Returns plain text if the string is within the 200-character limit.
+ *     The key parameter ensures unique element IDs on pages where multiple
+ *     expandable blocks exist (description, responsibilities, requirements).
+ * FI: Käärii pitkän tekstimerkkijonon kahden span-elementin "Näytä lisää / Näytä vähemmän" -kuviolle.
+ *     Palauttaa pelkkää tekstiä, jos merkkijono on 200 merkin rajan sisällä.
+ *     key-parametri varmistaa ainutlaatuiset elementti-ID:t sivuilla, joilla on
+ *     useita laajennettavia lohkoja (kuvaus, vastuualueet, vaatimukset).
+ * @param {string} text - EN: text to wrap / FI: käärittävä teksti
+ * @param {string} key - EN: unique identifier for DOM IDs / FI: ainutlaatuinen tunniste DOM-ID:tä varten
+ * @returns {string} EN: HTML string / FI: HTML-merkkijono
+ */
 function buildExpandable(text, key) {
   const LIMIT = 200;
   if (text.length <= LIMIT) return text;
@@ -5,6 +23,11 @@ function buildExpandable(text, key) {
          `<span id="exp-full-${key}" style="display:none;">${text} <a href="javascript:void(0)" onclick="toggleExpand('${key}')">Show less</a></span>`;
 }
 
+/**
+ * EN: Toggles between the short and full text spans built by buildExpandable.
+ * FI: Vaihtaa buildExpandable-funktion rakentamien lyhyen ja täyden tekstin span-elementtien välillä.
+ * @param {string} key - EN: the same key used in buildExpandable / FI: sama avain kuin buildExpandable-funktiossa
+ */
 function toggleExpand(key) {
   const s = document.getElementById('exp-short-' + key);
   const f = document.getElementById('exp-full-'  + key);
@@ -13,8 +36,31 @@ function toggleExpand(key) {
   f.style.display = expanded ? 'none'   : 'inline';
 }
 
+/**
+ * EN: Main data-loading function for the internship detail page.
+ *     Fetches the position record and its parent company in two separate queries
+ *     (rather than a JOIN) because the company lookup is non-fatal — missing
+ *     company data shows a placeholder instead of breaking the whole page.
+ *     After populating all display fields, it also:
+ *       - Shows/hides the Apply button based on whether the user already applied.
+ *       - Controls sidebar visibility (shown only to the company owner).
+ *       - Loads the applicant list if the current user is the position's owner.
+ * FI: Harjoittelun yksityiskohtasivun pääasiallinen datan latausfunktio.
+ *     Hakee positiotietueen ja sen emoyrityksen kahdessa erillisessä kyselyssä
+ *     (ei JOIN-kyselyllä), koska yrityksen haku ei ole kohtalokas —
+ *     puuttuvat yritystiedot näyttävät paikkamerkin eikä hajota koko sivua.
+ *     Kaikkien näyttökenttien täyttämisen jälkeen myös:
+ *       - Näyttää/piilottaa Hae-painikkeen sen perusteella, onko käyttäjä jo hakenut.
+ *       - Ohjaa sivupalkin näkyvyyttä (näkyy vain yrityksen omistajalle).
+ *       - Lataa hakijalistauksen, jos nykyinen käyttäjä on position omistaja.
+ * @param {string|number} positionId - EN: position ID from URL / FI: positio-ID URL:sta
+ */
 async function loadInternshipDetail(positionId) {
     try {
+        // EN: Normalise the ID to an integer if it looks numeric — Supabase needs
+        //     the correct type to match the bigint primary key column.
+        // FI: Normalisoidaan ID kokonaisluvuksi, jos se näyttää numeeriselta —
+        //     Supabase tarvitsee oikean tyypin vastatakseen bigint-pääavainkolumnia.
         const normalizedPositionId = /^\d+$/.test(String(positionId))
             ? parseInt(positionId, 10)
             : positionId;
@@ -43,6 +89,10 @@ async function loadInternshipDetail(positionId) {
         const companyNameEl = document.querySelector('.card-header .text-muted');
         if (companyNameEl) companyNameEl.textContent = company?.company_name || 'Unknown Company';
 
+        // EN: Applicant count is a nice-to-have badge — use a nested try so a
+        //     count query failure never prevents the rest of the page from rendering.
+        // FI: Hakijoiden määrä on mukava lisä-badge — käytetään sisäkkäistä try-lohkoa,
+        //     jotta laskentakyselyn epäonnistuminen ei estä muun sivun renderöintiä.
         // Load and show application count on the detail page (non-fatal if it fails)
         try {
             const { count: appCount, error: appError } = await supabaseClient
@@ -163,6 +213,12 @@ async function loadInternshipDetail(positionId) {
             favContainer.setAttribute('data-job-id', position.position_id);
         }
 
+        // EN: Store position and company on window so other functions on this page
+        //     (apply modal, favorites, email notification) can access them without
+        //     passing them as arguments through every call chain.
+        // FI: Tallennetaan positio ja yritys window-objektiin, jotta muut funktiot
+        //     tällä sivulla (hakumodaali, suosikit, sähköposti-ilmoitus) voivat
+        //     käyttää niitä ilman, että ne välitetään argumentteina jokaisessa kutsuketjussa.
         window.currentPosition = position;
         window.currentCompany = company;
 
@@ -173,6 +229,12 @@ async function loadInternshipDetail(positionId) {
             updateFavoriteStates();
         }
 
+        // EN: Clone the heart button before re-attaching the listener to remove any
+        //     stale listeners added in previous loadInternshipDetail calls.
+        //     Without cloning, multiple listeners would stack on the same element.
+        // FI: Kloonataan sydänpainike ennen kuuntelijan uudelleenliittämistä
+        //     aiempien loadInternshipDetail-kutsujen lisäämien vanhtuneiden kuuntelijoiden poistamiseksi.
+        //     Ilman kloonausta useita kuuntelijoita kasautuisi samaan elementtiin.
         // Attach listener specifically to the heart on the detail page
         const detailFavBtn = document.querySelector('#favBtnContainer .favorite-btn');
         if (detailFavBtn) {
@@ -215,6 +277,12 @@ async function loadInternshipDetail(positionId) {
 
   // --- MODAL LOGIC ---
 
+/**
+ * EN: Hides the Apply and Save buttons for company accounts so they cannot
+ *     accidentally apply to a position they posted or one from another company.
+ * FI: Piilottaa Hae- ja Tallenna-painikkeet yritystileiltä, jotta he eivät
+ *     vahingossa hae positioon, jonka he itse julkaisivat tai joka on toiselta yritykseltä.
+ */
 function hideApplyButtonForCompanies() {
   const session = getCurrentSession ? getCurrentSession() : null;
   if (session && session.role === 2) {
@@ -225,6 +293,16 @@ function hideApplyButtonForCompanies() {
   }
 }
 
+/**
+ * EN: Opens the application modal pre-filled with the student's profile data
+ *     (name, phone, email, existing CV). Requires student authentication.
+ *     If no CV exists in the profile, a warning link to profile setup is shown
+ *     so the student can add one before submitting.
+ * FI: Avaa hakumodaalin täytettyä opiskelijan profiilitiedot etukäteen
+ *     (nimi, puhelin, sähköposti, olemassa oleva CV). Vaatii opiskelijan tunnistautumisen.
+ *     Jos profiilissa ei ole CV:tä, näytetään varoituslinkki profiiliasetuksiin,
+ *     jotta opiskelija voi lisätä sen ennen lähettämistä.
+ */
 async function openApplyModal() {
   const session = requireAuth();
   if (!session || session.role !== 1) {
@@ -272,6 +350,15 @@ async function openApplyModal() {
   document.getElementById('applyModal').style.display = "block";
 }
 
+/**
+ * EN: Checks whether the current student has already applied to this position
+ *     and disables the Apply button if so. Prevents duplicate applications
+ *     at the UI level (the database has a unique constraint as well).
+ * FI: Tarkistaa, onko nykyinen opiskelija jo hakenut tähän positioon,
+ *     ja poistaa Hae-painikkeen käytöstä, jos on. Estää päällekkäiset hakemukset
+ *     UI-tasolla (tietokannassa on myös ainutlaatuisuusrajoite).
+ * @param {number} positionId - EN: position to check / FI: tarkistettava positio
+ */
 async function checkAlreadyApplied(positionId) {
   const session = typeof getCurrentSession === 'function' ? getCurrentSession() : null;
   if (!session || session.role !== 1) return;
@@ -303,6 +390,15 @@ async function checkAlreadyApplied(positionId) {
   }
 }
 
+/**
+ * EN: Shows the company edit controls (companyFormControls) only if the
+ *     logged-in user is the owner of the given company. Falls back to
+ *     Supabase Auth session if the custom-session getUserId returns nothing.
+ * FI: Näyttää yrityksen muokkaussäätimet (companyFormControls) vain, jos
+ *     kirjautunut käyttäjä on annetun yrityksen omistaja. Käyttää Supabase Auth
+ *     -istuntoa varavaihtoehtonaan, jos mukautettu istunnon getUserId ei palauta mitään.
+ * @param {number} companyId - EN: company to check ownership of / FI: yritys, jonka omistajuus tarkistetaan
+ */
 async function enableCompanyEditFeatures(companyId) {
     const adminPanel = document.getElementById('companyFormControls');
     if (!adminPanel) return;
@@ -338,6 +434,15 @@ function closeApplyModal() {
     document.body.style.overflow = "auto";
 }
 
+/**
+ * EN: Shows or hides the #companyFormControls element depending on whether
+ *     the logged-in user is the company owner. Very similar to
+ *     enableCompanyEditFeatures but is called from a different entry point.
+ * FI: Näyttää tai piilottaa #companyFormControls-elementin sen mukaan, onko
+ *     kirjautunut käyttäjä yrityksen omistaja. Hyvin samankaltainen kuin
+ *     enableCompanyEditFeatures, mutta kutsutaan eri sisäänkäyntipisteestä.
+ * @param {number} companyId - EN: company ID to check / FI: tarkistettava yritys-ID
+ */
 async function checkOwnershipAndShowControls(companyId) {
     const controls = document.getElementById('companyFormControls');
     if (!controls) return;
@@ -441,9 +546,25 @@ function resetCVUpload() {
 
 (function() { if (typeof emailjs !== 'undefined') emailjs.init("JI1iX7kMcKuHQBrGW"); })();
 
+/**
+ * EN: Handles the application form submit inside the modal.
+ *     Steps:
+ *       1. If a new CV file is selected, upload it to the 'resumes' storage bucket.
+ *       2. Fall back to the CV already stored in the student's profile if none uploaded.
+ *       3. Insert the application row into 'applications' table.
+ *       4. Send an email notification to the company via EmailJS (non-blocking).
+ *       5. Disable the Apply button and auto-remove the internship from favorites.
+ * FI: Käsittelee sovelluksen hakemuksen lähetyksen modaalin sisällä.
+ *     Vaiheet:
+ *       1. Jos uusi CV-tiedosto on valittu, ladataan se 'resumes'-tallennusämpäriin.
+ *       2. Käytetään opiskelijan profiilissa olevaa CV:tä, jos mitään ei ole ladattu.
+ *       3. Lisätään hakemuksen rivi 'applications'-taulukkoon.
+ *       4. Lähetetään sähköposti-ilmoitus yritykselle EmailJS:n kautta (ei-estävä).
+ *       5. Poistetaan Hae-painike käytöstä ja poistetaan harjoittelu automaattisesti suosikeista.
+ */
 document.getElementById('modalApplyForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
+
     // 1. Get the current user
     // Custom auth already checked by requireAuth()
 
@@ -535,6 +656,16 @@ document.getElementById('modalApplyForm').addEventListener('submit', async funct
     }
 });
 
+/**
+ * EN: Verifies company ownership and, if confirmed, shows the applicants section
+ *     and renders the full list of applications for this position. This function
+ *     is the entry point for the owner-only sidebar on the detail page.
+ * FI: Tarkistaa yrityksen omistajuuden ja, jos vahvistettu, näyttää hakijat-osion
+ *     ja renderöi täydellisen listauksen tämän position hakemuksista. Tämä funktio
+ *     on omistajalle tarkoitetun sivupalkin sisäänkäyntipiste yksityiskohtasivulla.
+ * @param {number} companyId - EN: company to verify ownership of / FI: yritys, jonka omistajuus vahvistetaan
+ * @param {number} positionId - EN: position to load applications for / FI: positio, jonka hakemukset ladataan
+ */
 async function checkOwnerAndLoadApplicants(companyId, positionId) {
   try {
       let userId = null;
@@ -590,6 +721,22 @@ async function checkOwnerAndLoadApplicants(companyId, positionId) {
   }
 }
 
+/**
+ * EN: Determines whether the owner sidebar should be shown and hides it by
+ *     default first. Only returns true (sidebar shown) if:
+ *       - A session exists, is role 2, AND
+ *       - The session user ID matches the company's user_id in Supabase.
+ *     Called before checkOwnerAndLoadApplicants so the sidebar is never
+ *     briefly visible to non-owners while the DB query is in flight.
+ * FI: Määrittää, pitäisikö omistajan sivupalkki näyttää, ja piilottaa sen
+ *     oletusarvoisesti ensin. Palauttaa true (sivupalkki näytetään) vain jos:
+ *       - Istunto on olemassa, on rooli 2, JA
+ *       - Istunnon käyttäjä-ID vastaa yrityksen user_id:tä Supabasessa.
+ *     Kutsutaan ennen checkOwnerAndLoadApplicants-funktiota, jotta sivupalkki
+ *     ei ole hetkellisesti näkyvissä ei-omistajille DB-kyselyn ollessa käynnissä.
+ * @param {number} companyId - EN: company whose ownership to verify / FI: yritys, jonka omistajuus tarkistetaan
+ * @returns {Promise<boolean>}
+ */
 async function updateSidebarVisibility(companyId) {
   const sidebar = document.querySelector('.sidebar');
   const section = document.getElementById('applicantsSection');
@@ -638,6 +785,16 @@ function formatDateEuropean(dateString) {
   return `${day}.${month}.${year}`;
 }
 
+/**
+ * EN: Renders the list of applicants in the owner sidebar. Each card shows the
+ *     student's name, email, applied date, current status badge, and scheduled
+ *     interview date if one exists. Provides "View" and "Schedule Interview" buttons.
+ * FI: Renderöi hakijoiden listan omistajan sivupalkissa. Jokainen kortti näyttää
+ *     opiskelijan nimen, sähköpostin, haettuspäivämäärän, nykyisen tila-merkin ja
+ *     aikataulutetun haastattelupäivän, jos sellainen on. Tarjoaa "Näytä" ja
+ *     "Aikatauluta haastattelu" -painikkeet.
+ * @param {object[]} apps - EN: array of application records / FI: hakemusrekisterien taulukko
+ */
 function renderSidebarApplicants(apps) {
   const container = document.getElementById('companyApplicationsContainer');
   const countEl = document.getElementById('applicantsCount');
@@ -714,6 +871,15 @@ function showFullApplication(app) {
 }
 
 // View student profile
+/**
+ * EN: Opens a read-only modal showing the student's profile details.
+ *     Creates the modal element dynamically on first call and reuses it
+ *     on subsequent calls, just replacing the body content.
+ * FI: Avaa vain luku -modaalin, joka näyttää opiskelijan profiilitiedot.
+ *     Luo modaalielementin dynaamisesti ensimmäisellä kutsulla ja käyttää
+ *     sitä uudelleen seuraavilla kutsuilla, korvaten vain runkosisällön.
+ * @param {number} studentId - EN: student profile ID / FI: opiskelijan profiili-ID
+ */
 async function viewStudentProfile(studentId) {
   try {
     const { data: student, error } = await supabaseClient
@@ -757,6 +923,16 @@ async function viewStudentProfile(studentId) {
   }
 }
 
+/**
+ * EN: Marks an application as 'viewed' (i.e. the company has opened it).
+ *     Refreshes the sidebar list after the update so the status badge
+ *     reflects the change immediately.
+ * FI: Merkitsee hakemuksen 'viewed'-tilaan (eli yritys on avannut sen).
+ *     Päivittää sivupalkin listan päivityksen jälkeen, jotta tila-merkki
+ *     heijastaa muutosta välittömästi.
+ * @param {number} applicationId - EN: application to update / FI: päivitettävä hakemus
+ * @param {string} studentName - EN: used in the success toast / FI: käytetään onnistumisponnahduksessa
+ */
 // Review application - update status to 'viewed'
 async function reviewApplication(applicationId, studentName) {
   try {
@@ -779,6 +955,21 @@ async function reviewApplication(applicationId, studentName) {
   }
 }
 
+/**
+ * EN: Opens the "Schedule Interview" modal, pre-filling it with any existing
+ *     interview date or defaulting to the next business day at 10:00.
+ *     Stores the context on modal._data so confirmInterviewScheduleDetail()
+ *     can access it without needing hidden inputs.
+ * FI: Avaa "Aikatauluta haastattelu" -modaalin, täyttäen sen etukäteen
+ *     mahdollisella olemassa olevalla haastattelupäivällä tai oletuksena
+ *     seuraavalle arkipäivälle klo 10:00.
+ *     Tallentaa kontekstin modal._data-ominaisuuteen, jotta confirmInterviewScheduleDetail()
+ *     voi käyttää sitä ilman piilotettuja syötteitä.
+ * @param {string} fullName - EN: applicant's full name / FI: hakijan koko nimi
+ * @param {string} email - EN: applicant's email for calendar invite / FI: hakijan sähköposti kalenterikutsua varten
+ * @param {number} applicationId - EN: application ID to update / FI: päivitettävä hakemus-ID
+ * @param {string} existingDate - EN: ISO date string if interview already scheduled / FI: ISO-päivämäärämerkkijono, jos haastattelu on jo aikataulutettu
+ */
 function scheduleInterview(fullName, email, applicationId, existingDate) {
   const positionTitle = window.currentPosition?.title || 'internship position';
   let modal = document.getElementById('interviewDateModal');
@@ -822,11 +1013,27 @@ function scheduleInterview(fullName, email, applicationId, existingDate) {
   modal.style.display = 'flex';
 }
 
+/**
+ * EN: Converts a Date object to the "YYYY-MM-DDTHH:MM" string format required
+ *     by datetime-local inputs. Uses local time (not UTC) so the displayed
+ *     time matches what the company user sees on their device.
+ * FI: Muuntaa Date-objektin "YYYY-MM-DDTHH:MM"-merkkijonomuotoon, jota
+ *     datetime-local-syötteet vaativat. Käyttää paikallista aikaa (ei UTC:tä),
+ *     jotta näytetty aika vastaa yrityksen käyttäjän laitteella näkemää aikaa.
+ * @param {Date} date
+ * @returns {string}
+ */
 function toLocalInputValue(date) {
   const pad = n => String(n).padStart(2, '0');
   return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
+/**
+ * EN: Cancels an already-scheduled interview by setting interview_date to null
+ *     and reverting the application status back to 'pending'.
+ * FI: Peruuttaa jo aikataulutetun haastattelun asettamalla interview_date:n
+ *     nulliksi ja palauttamalla hakemuksen tilan takaisin 'pending'-tilaan.
+ */
 async function cancelInterviewDetail() {
   const modal = document.getElementById('interviewDateModal');
   const { applicationId } = modal._data;
@@ -846,6 +1053,16 @@ async function cancelInterviewDetail() {
   }
 }
 
+/**
+ * EN: Confirms an interview schedule: saves the date to Supabase, updates
+ *     the application status to 'interview_scheduled', then opens Google
+ *     Calendar in a new tab with the event pre-filled (title, attendee, times).
+ *     The Google Calendar link uses UTC timestamps in the compact YYYYMMDDTHHMMSSz format.
+ * FI: Vahvistaa haastattelun aikataulun: tallentaa päivämäärän Supabaseen, päivittää
+ *     hakemuksen tilan 'interview_scheduled'-tilaan, sitten avaa Google Kalenterin
+ *     uudessa välilehdessä tapahtuma esitäytettynä (otsikko, osallistuja, ajat).
+ *     Google Kalenteri -linkki käyttää UTC-aikaleimoja kompaktissa YYYYMMDDTHHMMSSz-muodossa.
+ */
 async function confirmInterviewScheduleDetail() {
   const modal = document.getElementById('interviewDateModal');
   const { fullName, email, positionTitle, applicationId } = modal._data;
@@ -879,6 +1096,15 @@ async function confirmInterviewScheduleDetail() {
   window.open(url, '_blank');
 }
 
+/**
+ * EN: Permanently deletes an application from the database after a confirm dialog.
+ *     Used by company owners to remove spam or mistaken applications from their list.
+ * FI: Poistaa hakemuksen pysyvästi tietokannasta vahvistusikkunan jälkeen.
+ *     Yrityksen omistajat käyttävät tätä poistaakseen roskapostin tai virheelliset
+ *     hakemukset listaltaan.
+ * @param {number} applicationId - EN: application to delete / FI: poistettava hakemus
+ * @param {string} studentName - EN: used in confirm dialog and success toast / FI: käytetään vahvistusikkunassa ja onnistumisponnahduksessa
+ */
 // Delete application from sidebar
 async function deleteApplicationFromSidebar(applicationId, studentName) {
   if (!await showConfirm(`Delete application from ${studentName}?`, 'Delete')) return;

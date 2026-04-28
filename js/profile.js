@@ -1,8 +1,27 @@
+/* ==========================================================
+   profile.js — Student & Company profile page logic
+   Opiskelija- ja yritysprofiilisivun logiikka
+   ========================================================== */
+
+// EN: Digitransit API key for Finnish city autocomplete in the city input field.
+//     The free tier is sufficient; no server-side proxy is needed.
+// FI: Digitransit API-avain suomalaisen kaupunkiautomaattitäydennyksen kaupunki-syöttökenttää varten.
+//     Ilmainen taso riittää; palvelinpuolen välityspalvelinta ei tarvita.
 const DIGITRANSIT_API_KEY = '4346b471f4ea41cb923eb2b40556c495';
 /* ==========================================
    STUDENT PROFILE (Supabase)
    ========================================== */
 
+/**
+ * EN: Formats an ISO date string to DD.MM.YYYY for display in the Finnish UI.
+ *     Defined locally in profile.js because this file may be loaded on pages
+ *     that do not include script.js.
+ * FI: Muotoilee ISO-päivämäärämerkkijonon DD.MM.YYYY-muotoon suomalaista UI:ta varten.
+ *     Määritelty paikallisesti profile.js:ssä, koska tämä tiedosto voidaan ladata
+ *     sivuilla, jotka eivät sisällä script.js:ää.
+ * @param {string} dateString
+ * @returns {string}
+ */
 // Format date to European format DD.MM.YYYY
 function formatDateEuropean(dateString) {
   if (!dateString) return 'N/A';
@@ -13,6 +32,13 @@ function formatDateEuropean(dateString) {
   return `${day}.${month}.${year}`;
 }
 
+/**
+ * EN: Saves the user's preferred language both locally (localStorage via setLanguage)
+ *     and persistently in the Users table so the preference survives on other devices.
+ * FI: Tallentaa käyttäjän kieliasetuksen sekä paikallisesti (localStorage setLanguage-kautta)
+ *     että pysyvästi Users-taulukkoon, jotta asetus säilyy muilla laitteilla.
+ * @param {'en'|'fi'} lang - EN: language code / FI: kielikoodi
+ */
 async function savePreferredLang(lang) {
   const session = getCurrentSession();
   if (!session) return;
@@ -24,6 +50,10 @@ async function savePreferredLang(lang) {
   if (error) console.error('Failed to save language preference:', error);
 }
 
+// EN: Module-level state — populated by loadStudentProfile() or loadCompanyProfile()
+//     and referenced by all edit/save functions on this page.
+// FI: Moduulitason tila — täytetään loadStudentProfile()- tai loadCompanyProfile()-funktiolla
+//     ja viitataan kaikilla tämän sivun muokkaus/tallennusfunktioilla.
 // Current profile data & categories & links
 let currentProfile = null;
 let currentTeam = []; 
@@ -32,6 +62,20 @@ let allCategories = [];
 let selectedCategoryIds = [];
 let currentLinks = [];
 
+/**
+ * EN: Main loader for the student profile page. Fires four parallel Supabase
+ *     queries (profile, all categories, student's categories, applications) to
+ *     avoid waterfall latency. If no profile row exists yet (first-time login
+ *     via OAuth or before the trigger ran), it creates an empty one automatically.
+ *     After loading, sequentially fills the display, avatar, CV, links, applications
+ *     and practice requests.
+ * FI: Päälatausfunktio opiskelijan profiilisivulle. Käynnistää neljä rinnakkaista
+ *     Supabase-kyselyä (profiili, kaikki kategoriat, opiskelijan kategoriat, hakemukset)
+ *     vesiputouksen latenssin välttämiseksi. Jos profiiliriviä ei vielä ole
+ *     (ensimmäinen OAuth-kirjautuminen tai ennen triggerin suorittamista), luodaan
+ *     tyhjä profiili automaattisesti. Latauksen jälkeen täyttää vuorotellen näytön,
+ *     avatarin, CV:n, linkit, hakemukset ja harjoittelupyynnöt.
+ */
 // ==========================================
 // LOAD PROFILE
 // ==========================================
@@ -40,6 +84,14 @@ async function loadStudentProfile() {
   if (!session) return;
 
   try {
+    // EN: Parallel queries reduce load time. The placeholder eq('student_id', 0)
+    //     values in studentCatsRes and applicationsRes are overwritten below once
+    //     the real profile.id is available — Promise.all requires all queries to
+    //     be defined upfront, so placeholders are necessary here.
+    // FI: Rinnakkaiset kyselyt vähentävät lataustaikaa. Paikkamerkkinä olevat
+    //     eq('student_id', 0)-arvot studentCatsRes:ssä ja applicationsRes:ssä
+    //     korvataan alla, kun todellinen profile.id on saatavilla — Promise.all
+    //     vaatii kaikkien kyselyiden määrittelyä etukäteen, joten paikkamerkit ovat välttämättömiä.
     // Load profile, categories, and applications in parallel
     const [profileRes, categoriesRes, studentCatsRes, applicationsRes] = await Promise.all([
       supabaseClient
@@ -143,6 +195,18 @@ async function savePost(postId) {
     showToast("Position updated!", 'success');
 }
 
+/**
+ * EN: Populates all read-only display fields on the student profile page.
+ *     Uses helper functions setText/setField so each field handles the
+ *     "empty → show placeholder" logic in one place. Also renders the
+ *     education list and category tags.
+ * FI: Täyttää kaikki vain luku -näyttökentät opiskelijan profiilisivulla.
+ *     Käyttää setText/setField-apufunktioita, jotta jokaisella kentällä on
+ *     "tyhjä → näytä paikkamerkki" -logiikka yhdessä paikassa.
+ *     Renderöi myös koulutuksen listan ja kategoriatunnisteet.
+ * @param {object} profile - EN: student profile record / FI: opiskelijan profiiilitietue
+ * @param {{login: string}} session - EN: current session / FI: nykyinen istunto
+ */
 // ==========================================
 // FILL DISPLAY MODE
 // ==========================================
@@ -192,11 +256,29 @@ function fillDisplayMode(profile, session) {
   }
 }
 
+/**
+ * EN: Sets the textContent of a DOM element by ID. No-op if the element
+ *     doesn't exist (safe for pages that share this JS file).
+ * FI: Asettaa DOM-elementin textContent-ominaisuuden ID:n perusteella.
+ *     Ei-operaatio, jos elementtiä ei ole (turvallinen sivuilla, jotka jakavat tämän JS-tiedoston).
+ * @param {string} id
+ * @param {string|null} value
+ */
 function setText(id, value) {
   const el = document.getElementById(id);
   if (el) el.textContent = value || '';
 }
 
+/**
+ * EN: Sets a profile field element text. When value is falsy the element
+ *     gets the 'empty' CSS class and displays "Not specified" so the user
+ *     always sees a clear indicator that a field needs to be filled in.
+ * FI: Asettaa profiilikenttäelementin tekstin. Kun arvo on tyhjä, elementti
+ *     saa 'empty'-CSS-luokan ja näyttää "Ei määritelty", jotta käyttäjä näkee
+ *     aina selkeän indikaattorin, että kenttä pitää täyttää.
+ * @param {string} id
+ * @param {string|null} value
+ */
 function setField(id, value) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -209,6 +291,15 @@ function setField(id, value) {
   }
 }
 
+/**
+ * EN: Appends a new education input row to the edit-mode education container.
+ *     Pre-fills the fields from the data parameter so the same function serves
+ *     both "add empty row" (no args) and "edit existing row" (data from profile).
+ * FI: Lisää uuden koulutussyöttörivin muokkaustilan koulutuskonttiin.
+ *     Täyttää kentät data-parametrista etukäteen, joten sama funktio palvelee
+ *     sekä "lisää tyhjä rivi" (ei args) että "muokkaa olemassa olevaa riviä" (data profiilista).
+ * @param {{type: string, name: string, year: string}} data
+ */
 // Function to add a new education input row
 function addEducationRow(data = { type: '', name: '', year: '' }) {
   const container = document.getElementById('eEducationContainer');
@@ -266,10 +357,17 @@ function updateEducationDisplay(eduData) {
   `).join('');
 }
 
-// ==========================================
-// COMPANY PROFILE LOGIC
-// ==========================================
+/* ----------------------------------------------------------
+   COMPANY PROFILE LOGIC
+   Yritysprofiililogiikka
+   ---------------------------------------------------------- */
 
+/**
+ * EN: Fetches the company's team members from 'company_team' and stores them
+ *     in the currentTeam array. Called from loadCompanyProfile().
+ * FI: Hakee yrityksen tiimin jäsenet 'company_team'-taulukosta ja tallentaa
+ *     ne currentTeam-taulukkoon. Kutsutaan loadCompanyProfile()-funktiosta.
+ */
 async function loadCompanyTeam() {
   if (!currentProfile) return;
 
@@ -513,8 +611,25 @@ if (!profile.contact_email) {
     console.error('Error loading company:', err.message);
   }
 }
+// EN: Debounce timer handle for the Finnish Business Registry (PRH) search.
+//     Using a timeout instead of immediate fetch prevents hammering the API
+//     on every keystroke during typing.
+// FI: Debounce-ajastin Suomen kaupparekisterin (PRH) haulle.
+//     Aikakatkaisun käyttäminen välittömän haun sijaan estää API:n ylikuormittamisen
+//     jokaisella näppäinpainalluksella kirjoittamisen aikana.
 let prhSearchTimeout;
 
+/**
+ * EN: Searches the Finnish Business Registry (PRH open data API) for company
+ *     names or Y-Tunnus numbers. Results populate a datalist for autocomplete.
+ *     Uses a proxy (allorigins.win) to bypass CORS since the PRH API doesn't
+ *     send Access-Control headers for browser requests.
+ * FI: Hakee yrityksen nimiä tai Y-tunnuksia Suomen kaupparekisteristä (PRH avoimen datan API).
+ *     Tulokset täyttävät datalist-elementin automaattitäydennystä varten.
+ *     Käyttää välityspalvelinta (allorigins.win) CORS:n ohittamiseksi, koska PRH-API
+ *     ei lähetä Access-Control-otsikoita selainpyyntöihin.
+ * @param {string} query - EN: company name or Y-Tunnus / FI: yrityksen nimi tai Y-tunnus
+ */
 async function handlePRHSearch(query) {
     const datalist = document.getElementById('prhSuggestions');
     const status = document.getElementById('prhStatus');
@@ -561,9 +676,23 @@ async function handlePRHSearch(query) {
         }
     }, 400);
 }
+/**
+ * EN: Populates the company profile read-only display fields from the profile
+ *     object. Uses innerText (not innerHTML) for all assignments to prevent XSS
+ *     if company names or descriptions contain HTML-special characters. Falls
+ *     back to session.login for the contact email when the profile doesn't have
+ *     one (mirrors the fallback in toggleCompanyEdit()).
+ * FI: Täyttää yrityksen profiilin vain-luku-näyttökentät profiiliobjektista.
+ *     Käyttää innerText:iä (ei innerHTML:ää) kaikissa määrityksissä XSS:n
+ *     estämiseksi, jos yrityksen nimet tai kuvaukset sisältävät HTML-erikoismerkkejä.
+ *     Palautuu session.login:iin yhteyssähköpostin kohdalla, kun profiilissa
+ *     ei ole sellaista (peilaa varavalintaa toggleCompanyEdit():ssä).
+ * @param {Object} profile - EN: company profile record / FI: yrityksen profiilitietue
+ * @param {Object} session - EN: current session from getCurrentSession() / FI: nykyinen istunto getCurrentSession():sta
+ */
 // Helper to fill the display text
 function fillCompanyDisplay(profile, session) {
-    if(document.getElementById('dCompanyName')) 
+    if(document.getElementById('dCompanyName'))
         document.getElementById('dCompanyName').innerText = profile.company_name || '';
     
     if(document.getElementById('dCompanyEmail')) 
@@ -585,7 +714,17 @@ function fillCompanyDisplay(profile, session) {
 
 
 
-async function saveCompanyProfile() { 
+/**
+ * EN: Saves edits to the company profile by updating the Companies table row.
+ *     After a successful save, updates the DOM display fields in-place (no reload)
+ *     and merges the changes into currentProfile so toggleCompanyEdit() pre-fills
+ *     the form correctly on the next edit.
+ * FI: Tallentaa muutokset yritysprofiiliin päivittämällä Companies-taulukon rivin.
+ *     Onnistuneen tallennuksen jälkeen päivittää DOM-näyttökentät paikallaan (ei uudelleenlatausta)
+ *     ja yhdistää muutokset currentProfile-objektiin, jotta toggleCompanyEdit()
+ *     täyttää lomakkeen oikein seuraavalla muokkauskerralla.
+ */
+async function saveCompanyProfile() {
     const session = getCurrentSession(); 
     if (!session) {
         showToast("You must be logged in to save.", 'warning');
@@ -642,6 +781,14 @@ async function saveCompanyProfile() {
     }
 }
 
+/**
+ * EN: Opens the "Post Internship" modal in CREATE mode — clears all fields,
+ *     sets the modal title to "Create New Internship", and loads the category
+ *     select options from the DB.
+ * FI: Avaa "Julkaise harjoittelu" -modaalin LUONTI-tilassa — tyhjentää kaikki kentät,
+ *     asettaa modaalin otsikon "Luo uusi harjoittelu" -tekstiksi ja lataa
+ *     kategoriavalinnat tietokannasta.
+ */
 // Opens the modal for a NEW position
 function openPostModal() {
   const modal = document.getElementById('postJobModal');
@@ -664,6 +811,20 @@ function openPostModal() {
   document.body.style.overflow = 'hidden';
 }
 
+/**
+ * EN: Opens the "Post Internship" modal in EDIT mode — fetches the existing
+ *     position data, pre-fills all form fields, and sets a hidden editPositionId
+ *     input so submitPosition() knows to UPDATE rather than INSERT.
+ *     A 100ms setTimeout is used after loading categories to ensure the select
+ *     has rendered its options before setting the selected value.
+ * FI: Avaa "Julkaise harjoittelu" -modaalin MUOKKAUS-tilassa — hakee olemassa
+ *     olevan position datan, täyttää kaikki lomakekentät etukäteen ja asettaa
+ *     piilotetun editPositionId-syötteen, jotta submitPosition() tietää
+ *     päivittävänsä eikä lisäävänsä. 100ms setTimeout käytetään kategorioiden
+ *     lataamisen jälkeen varmistaakseen, että valintaelementti on renderöinyt
+ *     vaihtoehdot ennen valitun arvon asettamista.
+ * @param {number} id - EN: position ID to edit / FI: muokattava positio-ID
+ */
 // Opens the modal to EDIT an existing position
 async function openEditModal(id) {
   const modal = document.getElementById('postJobModal');
@@ -706,6 +867,12 @@ async function openEditModal(id) {
   }
 }
 
+/**
+ * EN: Handles both INSERT and UPDATE for internship positions. Checks the
+ *     hidden editPositionId field — if set, runs an UPDATE; otherwise INSERT.
+ * FI: Käsittelee sekä harjoittelupositioiden INSERT:n että UPDATE:n. Tarkistaa
+ *     piilotetun editPositionId-kentän — jos asetettu, suorittaa UPDATE:n; muuten INSERT:n.
+ */
 // Handles both INSERT and UPDATE
 async function submitPosition() {
   const editId = document.getElementById('editPositionId').value;
@@ -770,6 +937,14 @@ window.onclick = function(event) {
   }
 }
 
+/**
+ * EN: Populates the category <select> in the post/edit modal with <optgroup>
+ *     elements grouped by job_groups. Fetching groups+categories in one query
+ *     avoids a second round trip.
+ * FI: Täyttää kategoria-<select>-elementin julkaisu/muokkausmodaalissa <optgroup>-elementeillä
+ *     ryhmiteltyinä job_groups:n mukaan. Ryhmien+kategorioiden hakeminen yhdellä kyselyllä
+ *     välttää toisen pyydöksen.
+ */
 async function loadCategoriesIntoSelect() {
   const select = document.getElementById('pCategory');
   if (!select) return;
@@ -840,6 +1015,16 @@ function toggleReqText(id) {
   btn.textContent       = isExpanded ? 'Show more' : 'Show less';
 }
 
+/**
+ * EN: Loads all internship postings for the current company, with the application
+ *     count aggregated in the same query to avoid a second fetch per position.
+ *     Each posting card has an expandable accordion for its applicants so the
+ *     company can review them inline without navigating away.
+ * FI: Lataa kaikki nykyisen yrityksen harjoittelupaikkailmoitukset, hakemuspisteet
+ *     koottuna samaan kyselyyn toisen haun välttämiseksi per positio.
+ *     Jokaisen ilmoituskortin alla on laajennettava alue hakijoille, jotta
+ *     yritys voi tarkastella niitä paikallaan ilman pois navigoimista.
+ */
 // --- Load and Display Postings ---
 async function loadCompanyPostings() {
   const container = document.getElementById('companyPostingsList');
@@ -909,6 +1094,22 @@ async function loadCompanyPostings() {
   }
 }
 
+/**
+ * EN: Fetches and renders all applicants for a single position into a given
+ *     container element. Joins student_profiles and Users to show name and email
+ *     without a separate query. Shows a loading placeholder immediately so the
+ *     user has visual feedback during the network request. Marks container.dataset.loaded
+ *     on success so togglePositionApplicants() can skip re-fetching on subsequent
+ *     accordion opens.
+ * FI: Hakee ja renderöi kaikki hakijat yksittäiselle positiolle annettuun
+ *     säiliöelementtiin. Liittää student_profiles- ja Users-taulukot nimen ja
+ *     sähköpostin näyttämiseksi ilman erillistä kyselyä. Näyttää latauspaikkamerkin
+ *     välittömästi, jotta käyttäjällä on visuaalinen palaute verkkopyynnön aikana.
+ *     Merkitsee container.dataset.loaded onnistumisen yhteydessä, jotta
+ *     togglePositionApplicants() voi ohittaa uudelleenhaun seuraavissa accordion-avauksissa.
+ * @param {number} positionId - EN: positions.position_id to fetch for / FI: positions.position_id, jolle haetaan
+ * @param {HTMLElement} container - EN: DOM element to render applicants into / FI: DOM-elementti, johon hakijat renderöidään
+ */
 async function fetchPositionApplicants(positionId, container) {
   container.innerHTML = '<p style="color:#888; font-size:0.85rem; padding:0.5rem 0;">Loading...</p>';
   try {
@@ -960,6 +1161,16 @@ async function fetchPositionApplicants(positionId, container) {
   }
 }
 
+/**
+ * EN: Toggles the accordion panel for a specific position's applicants.
+ *     On first open, fetches the data and caches it (dataset.loaded) so
+ *     subsequent toggles don't re-query the DB.
+ * FI: Vaihtaa tietyn position hakijoiden accordion-paneelin tilaa.
+ *     Ensimmäisellä avauksella hakee datan ja välimuistittaa sen (dataset.loaded),
+ *     jotta seuraavat vaihdot eivät kysy tietokantaa uudelleen.
+ * @param {number} positionId
+ * @param {number} appCount - EN: used to avoid fetch when 0 / FI: käytetään välttämään hakua, kun 0
+ */
 async function togglePositionApplicants(positionId, appCount) {
   const container = document.getElementById(`pos-apps-${positionId}`);
   const arrow     = document.getElementById(`pos-apps-arrow-${positionId}`);
@@ -982,6 +1193,18 @@ async function togglePositionApplicants(positionId, appCount) {
   await fetchPositionApplicants(positionId, container);
 }
 
+/**
+ * EN: Loads all applications for the logged-in company by first fetching its
+ *     position IDs, then querying applications filtered by those IDs. Uses a
+ *     two-step query rather than a JOIN because the company_id is not stored
+ *     directly on the applications table — only position_id is. Early-exits with
+ *     an empty-state message if the company has no positions at all.
+ * FI: Lataa kaikki kirjautuneen yrityksen hakemukset hakemalla ensin sen
+ *     positioiden ID:t, sitten kyselemällä hakemuksia suodatettuna niillä ID:illä.
+ *     Käyttää kaksivaiheista kyselyä JOIN:n sijaan, koska company_id:tä ei tallenneta
+ *     suoraan applications-taulukkoon — vain position_id on siellä. Palaa aikaisin
+ *     tyhjän tilan viestiin, jos yrityksellä ei ole lainkaan positioita.
+ */
 async function loadCompanyApplications() {
   const container = document.getElementById('companyApplicationsContainer');
   if (!container || !currentProfile) return;
@@ -1015,6 +1238,19 @@ async function loadCompanyApplications() {
   }
 }
 
+/**
+ * EN: Renders the company's received applications list into #companyApplicationsContainer.
+ *     Each card shows applicant name, email, position title, applied date, status badge,
+ *     and interview date if scheduled. The interview button switches between "Schedule"
+ *     and "Scheduled" based on whether interview_date is set, providing a clear CTA
+ *     without requiring a separate column or modal state check.
+ * FI: Renderöi yrityksen vastaanottamat hakemukset #companyApplicationsContainer-elementtiin.
+ *     Jokainen kortti näyttää hakijan nimen, sähköpostin, position otsikon, hakupäivän,
+ *     tilapalkin ja haastattelun päivämäärän jos aikataulutettu. Haastattelu-painike
+ *     vaihtuu "Aikatauluta":n ja "Aikataulutettu":n välillä sen mukaan, onko interview_date
+ *     asetettu, tarjoten selkeän CTA:n ilman erillistä saraketta tai modaalin tilatarkistusta.
+ * @param {Object[]} applications - EN: array of application records with joined student/position data / FI: hakemustietueiden taulukko liitetyillä opiskelija-/positiotiedoilla
+ */
 function fillCompanyApplications(applications) {
   const container = document.getElementById('companyApplicationsContainer');
   if (!container) return;
@@ -1059,11 +1295,48 @@ function fillCompanyApplications(applications) {
   }).join('');
 }
 
+/**
+ * EN: Converts a Date object to a string in the format required by
+ *     <input type="datetime-local"> (YYYY-MM-DDTHH:mm). Uses local time
+ *     components (getFullYear, getMonth, etc.) rather than UTC equivalents
+ *     so the displayed time matches the company's local timezone, which is
+ *     important for scheduling interviews with Finnish students/companies.
+ * FI: Muuntaa Date-objektin <input type="datetime-local"> -elementin vaatimaan
+ *     muotoon (YYYY-MM-DDTHH:mm). Käyttää paikallisia aikakomponentteja
+ *     (getFullYear, getMonth jne.) UTC-vastineiden sijaan, jotta näytetty
+ *     aika vastaa yrityksen paikallista aikavyöhykettä, mikä on tärkeää
+ *     haastattelujen aikatauluttamisessa suomalaisten opiskelijoiden/yritysten kanssa.
+ * @param {Date} date - EN: Date object to format / FI: muotoiltava Date-objekti
+ * @returns {string} EN: local datetime string for input value / FI: paikallinen datetime-merkkijono syötteen arvoksi
+ */
 function toLocalInputValue(date) {
   const pad = n => String(n).padStart(2, '0');
   return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
+/**
+ * EN: Opens (or lazily creates) the interview scheduling modal for a specific
+ *     application. The modal is created dynamically on first call and reused
+ *     thereafter to avoid duplicate DOM nodes. Attaches the application context
+ *     to modal._data so confirmInterviewSchedule() and cancelInterviewProfile()
+ *     can read it without needing it passed as function arguments. When
+ *     existingDate is provided (rescheduling), pre-fills the input with the
+ *     current date and shows the Cancel Interview button; otherwise defaults
+ *     to tomorrow at 10:00.
+ * FI: Avaa (tai luo laiskasti) haastattelun aikataulutusmodaalin tietylle
+ *     hakemukselle. Modaali luodaan dynaamisesti ensimmäisellä kutsulla ja
+ *     käytetään uudelleen sen jälkeen välttäen päällekkäisiä DOM-solmuja.
+ *     Liittää hakemuskontekstin modal._data-kenttään, jotta confirmInterviewSchedule()
+ *     ja cancelInterviewProfile() voivat lukea sen ilman, että se täytyy välittää
+ *     funktioargumentteina. Kun existingDate on annettu (uudelleenaikatauluttaminen),
+ *     esitäyttää syötteen nykyisellä päivämäärällä ja näyttää Peruuta haastattelu
+ *     -painikkeen; muuten oletuksena huomenna klo 10:00.
+ * @param {string} fullName - EN: applicant's full name for the modal description / FI: hakijan koko nimi modaalin kuvaukseen
+ * @param {string} email - EN: applicant's email for Calendar link generation / FI: hakijan sähköposti kalenterilinkin generointiin
+ * @param {string} positionTitle - EN: position title for the modal description / FI: position otsikko modaalin kuvaukseen
+ * @param {number} applicationId - EN: application_id to update on confirm / FI: application_id päivitettäväksi vahvistuksen yhteydessä
+ * @param {string} existingDate - EN: ISO date string if rescheduling, empty if new / FI: ISO-päivämäärämerkkijono uudelleenaikatauluttaessa, tyhjä uudelle
+ */
 function scheduleInterviewProfile(fullName, email, positionTitle, applicationId, existingDate) {
   let modal = document.getElementById('interviewDateModal');
   if (!modal) {
@@ -1106,6 +1379,17 @@ function scheduleInterviewProfile(fullName, email, positionTitle, applicationId,
   modal.style.display = 'flex';
 }
 
+/**
+ * EN: Cancels a previously scheduled interview by setting interview_date to null
+ *     and resetting the application status to 'pending'. Reads applicationId from
+ *     modal._data (set by scheduleInterviewProfile) so the function needs no
+ *     parameters. Reloads company applications after update to refresh all cards.
+ * FI: Peruuttaa aiemmin aikataulutetun haastattelun asettamalla interview_date:n
+ *     nulliksi ja palauttamalla hakemuksen statuksen 'pending'-tilaan. Lukee
+ *     applicationId:n modal._data-kentästä (asetettu scheduleInterviewProfile:lla),
+ *     joten funktio ei tarvitse parametreja. Lataa yrityksen hakemukset uudelleen
+ *     päivityksen jälkeen kaikkien korttien päivittämiseksi.
+ */
 async function cancelInterviewProfile() {
   const modal = document.getElementById('interviewDateModal');
   const { applicationId } = modal._data;
@@ -1123,6 +1407,21 @@ async function cancelInterviewProfile() {
   }
 }
 
+/**
+ * EN: Confirms the interview date, saves it to Supabase, and opens Google Calendar
+ *     with pre-filled event details. The date is stored as UTC ISO string
+ *     (date.toISOString()) so it is timezone-agnostic in the DB. The Calendar URL
+ *     uses the same UTC timestamp in the compact format (YYYYMMDDTHHmmssZ) required
+ *     by the Google Calendar API. A 60-minute duration is assumed for all interviews.
+ *     The Calendar link opens in a new tab so the profile page stays open.
+ * FI: Vahvistaa haastattelun päivämäärän, tallentaa sen Supabaseen ja avaa Google
+ *     Kalenterin esitäytetyillä tapahtumatiedoilla. Päivämäärä tallennetaan UTC
+ *     ISO-merkkijonona (date.toISOString()), jotta se on aikavyöhykkeistä riippumaton
+ *     DB:ssä. Kalenteri-URL käyttää samaa UTC-aikaleimaa kompaktissa muodossa
+ *     (YYYYMMDDTHHmmssZ), jonka Google Calendar API vaatii. Kaikille haastatteluille
+ *     oletetaan 60 minuutin kesto. Kalenteri-linkki avautuu uudessa välilehdessä,
+ *     jotta profiilisivu pysyy auki.
+ */
 async function confirmInterviewSchedule() {
   const modal = document.getElementById('interviewDateModal');
   const { fullName, email, positionTitle, applicationId } = modal._data;
@@ -1155,6 +1454,19 @@ async function confirmInterviewSchedule() {
   window.open(url, '_blank');
 }
 
+/**
+ * EN: Opens the company's view of a single application in a modal. Fills all
+ *     modal fields from the already-loaded application object (no extra DB query).
+ *     Stores application_id and student_id in hidden form fields so that the
+ *     "Save Status" and "View Student Profile" buttons can read them without
+ *     needing JS closure references or global variables.
+ * FI: Avaa yrityksen näkymän yksittäiseen hakemukseen modaalissa. Täyttää kaikki
+ *     modaalikentät jo ladatusta hakemuksesta (ei ylimääräistä DB-kyselyä).
+ *     Tallentaa application_id:n ja student_id:n piilotettuihin lomakekenttiin,
+ *     jotta "Tallenna tila"- ja "Näytä opiskelijan profiili" -painikkeet voivat
+ *     lukea ne ilman JS-sulkeuma-viittauksia tai globaaleja muuttujia.
+ * @param {Object} app - EN: application record with joined student/position data / FI: hakemustietue liitetyillä opiskelija-/positiotiedoilla
+ */
 function openCompanyAppModal(app) {
   const modal = document.getElementById('companyAppModal');
   if (!modal) return;
@@ -1183,6 +1495,17 @@ function openCompanyAppModal(app) {
   modal.style.display = 'block';
 }
 
+/**
+ * EN: Opens a read-only modal showing a student's full profile to a company
+ *     reviewer. Fetches profile, categories, and links in parallel. Displays
+ *     education, practice period, open-to-offers status, categories, links,
+ *     and CV download button.
+ * FI: Avaa vain luku -modaalin, joka näyttää opiskelijan täyden profiilin
+ *     yrityksen tarkastajalle. Hakee profiilin, kategoriat ja linkit rinnakkain.
+ *     Näyttää koulutuksen, harjoittelujakson, avoimuuden tarjouksille, kategoriat,
+ *     linkit ja CV-latauslinkin.
+ * @param {number} studentId - EN: student profile ID / FI: opiskelijan profiili-ID
+ */
 // ==========================================
 // STUDENT PROFILE MODAL (read-only, for company reviewers)
 // ==========================================
@@ -1309,6 +1632,17 @@ async function openStudentProfileModal(studentId) {
   }
 }
 
+/**
+ * EN: Updates an application's status and optional company_response from the
+ *     company application review modal. After saving, refreshes all open accordion
+ *     panels and the main applications container so the change is reflected
+ *     everywhere without a page reload.
+ * FI: Päivittää hakemuksen tilan ja valinnaisen company_response-kentän
+ *     yrityksen hakemuksen tarkistusmodaalista. Tallennuksen jälkeen päivittää
+ *     kaikki avoimet accordion-paneelit ja pääsovelluskontterin, jotta muutos
+ *     näkyy kaikkialla ilman sivun uudelleenlatausta.
+ * @param {string} newStatus - EN: new status value / FI: uusi tilanarvo
+ */
 async function saveCompanyApplicationStatus(newStatus) {
   const appId = document.getElementById('companyAppId').value;
   const response = document.getElementById('companyAppResponse').value;
@@ -1340,6 +1674,12 @@ async function saveCompanyApplicationStatus(newStatus) {
     showToast(newStatus === 'accepted' ? 'Application accepted.' : newStatus === 'rejected' ? 'Application declined.' : 'Application updated.', newStatus === 'accepted' ? 'success' : newStatus === 'rejected' ? 'success' : 'info');
     if (modal) modal.style.display = 'none';
 
+    // EN: Re-fetch only the currently open accordion panels so the status badge
+    //     updates immediately. Closed panels have their loaded cache cleared so
+    //     they re-fetch on next open.
+    // FI: Hakee uudelleen vain tällä hetkellä avoimet accordion-paneelit, jotta
+    //     tila-merkki päivittyy välittömästi. Suljetuilla paneeleilla tyhjennetään
+    //     ladattu välimuisti, jotta ne hakevat uudelleen seuraavalla avauksella.
     // Refresh open position-specific accordion panels
     const openPanels = document.querySelectorAll('[id^="pos-apps-"][data-open="true"]');
     openPanels.forEach(panel => {
@@ -1357,12 +1697,39 @@ async function saveCompanyApplicationStatus(newStatus) {
   }
 }
 
+/**
+ * EN: Switches a specific position card between view mode and inline-edit mode
+ *     using the position ID to find the corresponding view/edit DOM sections.
+ *     Note: this is a second definition — the first togglePostEdit (line ~172)
+ *     handles posting status. This variant handles the company postings list rows.
+ * FI: Vaihtaa tietyn position kortin näyttötilan ja inline-muokkaustilan välillä
+ *     käyttäen position ID:tä löytääkseen vastaavat näyttö/muokkaus-DOM-osiot.
+ *     Huomio: tämä on toinen määritelmä — ensimmäinen togglePostEdit (rivi ~172)
+ *     käsittelee julkaisun tilan. Tämä variantti käsittelee yrityksen postauslistauksen rivejä.
+ * @param {number} id - EN: position_id for the row to toggle / FI: rivin position_id, jota vaihdetaan
+ * @param {boolean} show - EN: true = show edit mode, false = show view mode / FI: true = näytä muokkaustila, false = näytä näyttötila
+ */
 // --- Toggle Edit for a specific job row ---
 function togglePostEdit(id, show) {
   document.getElementById(`view-mode-${id}`).style.display = show ? 'none' : 'block';
   document.getElementById(`edit-mode-${id}`).style.display = show ? 'block' : 'none';
 }
 
+/**
+ * EN: Handles the position form submission for both create (INSERT) and update
+ *     (UPDATE) operations from the post modal. Reads the editPositionId hidden
+ *     field to decide which operation to perform — empty string means INSERT,
+ *     a value means UPDATE. Disables the submit button during the async call to
+ *     prevent duplicate submissions, and re-enables it in the finally block
+ *     regardless of outcome.
+ * FI: Käsittelee position-lomakkeen lähetyksen sekä luonti- (INSERT) että
+ *     päivitys- (UPDATE) operaatioille postausmodaalista. Lukee editPositionId-
+ *     piilotetun kentän päättääkseen mitä operaatiota suoritetaan — tyhjä
+ *     merkkijono tarkoittaa INSERT:iä, arvo tarkoittaa UPDATE:a. Poistaa
+ *     lähetyspainikkeen käytöstä asynkronisen kutsun aikana päällekkäisten
+ *     lähetysten estämiseksi, ja ottaa sen uudelleen käyttöön finally-lohkossa
+ *     tuloksesta riippumatta.
+ */
 async function handleFormSubmit() {
   const editId = document.getElementById('editPositionId').value;
   const submitBtn = document.getElementById('submitPostBtn');
@@ -1408,6 +1775,15 @@ async function handleFormSubmit() {
   }
 }
 
+/**
+ * EN: Updates the company logo in the navigation bar after a logo upload.
+ *     Appends a cache-busting timestamp to the URL so the browser fetches the
+ *     new image rather than serving the old one from its HTTP cache.
+ * FI: Päivittää yrityksen logon navigointipalkkiin logon latauksen jälkeen.
+ *     Lisää välimuistin ohittavan aikaleiman URL:ään, jotta selain hakee
+ *     uuden kuvan palvelematta vanhaa HTTP-välimuististaan.
+ * @param {string} url - EN: public storage URL of the new logo / FI: uuden logon julkinen tallennuksen URL
+ */
 function updateNavLogo(url) {
   const navLogo = document.getElementById('navCompanyLogo'); // Ensure this ID is in your header
   if (navLogo) {
@@ -1417,6 +1793,22 @@ function updateNavLogo(url) {
   }
 }
 
+/**
+ * EN: Renders the company logo in all logo display locations on the profile page:
+ *     the main avatar image (#avatarImg), the company logo div (#companyLogoDiv),
+ *     and the nav bar (via initUserMenu). Strips existing cache-busting query
+ *     params from the stored URL before re-adding a fresh timestamp, preventing
+ *     query-string accumulation on repeated calls. Falls back to showing
+ *     placeholders (emoji icon + placeholder divs) when no logo URL is set.
+ * FI: Renderöi yrityksen logon kaikissa logon näyttöpaikoissa profiilisivulla:
+ *     pää-avatar-kuva (#avatarImg), yrityksen logo-div (#companyLogoDiv) ja
+ *     navigointipalkki (initUserMenu-kautta). Poistaa olemassa olevat
+ *     välimuistin ohittavat kyselyparametrit tallennetusta URL:sta ennen
+ *     uuden aikaleiman uudelleenlisäämistä, estäen kyselymerkkijonon kertymisen
+ *     toistuvilla kutsuilla. Palaa näyttämään paikkamerkit (emoji-kuvake +
+ *     placeholder-divit), kun logo-URL:tä ei ole asetettu.
+ * @param {Object} profile - EN: company profile object with optional logo_url / FI: yrityksen profiiliobjekti valinnaisella logo_url-kentällä
+ */
 function fillCompanyLogo(profile) {
   const avatarImg = document.getElementById('avatarImg');
   const avatarPlaceholder = document.getElementById('avatarPlaceholder');
@@ -1467,6 +1859,19 @@ function fillCompanyLogo(profile) {
 // APPLICATIONS MANAGEMENT
 // ==========================================
 
+/**
+ * EN: Renders the student's submitted applications list in #applicationsContainer.
+ *     Each card shows position title, status badge, and action buttons. The
+ *     full application object is JSON-serialized into an HTML attribute for the
+ *     Edit button's onclick — quotes are HTML-escaped (&quot;) to avoid breaking
+ *     the attribute string. The View button navigates to the position detail page.
+ * FI: Renderöi opiskelijan lähetettyjen hakemusten listan #applicationsContainer-elementtiin.
+ *     Jokainen kortti näyttää position otsikon, tilan palkin ja toimintopainikkeet.
+ *     Koko hakemuksesta on JSON-serialisoitu HTML-attribuuttiin Muokkaa-painikkeen
+ *     onclick-kutsua varten — lainaukset on HTML-paettu (&quot;) välttämään
+ *     attribuuttimerkkijonon rikkoutumisen. Näytä-painike siirtyy position yksityiskohtasivulle.
+ * @param {Object[]} applications - EN: array of application records with joined position data / FI: hakemustietueiden taulukko liitetyillä positiotiedoilla
+ */
 function fillApplications(applications) {
   const container = document.getElementById('applicationsContainer');
   if (!container) return;
@@ -1501,6 +1906,18 @@ function fillApplications(applications) {
 }
 
 
+/**
+ * EN: Opens the student application edit modal, pre-filling all fields with
+ *     the current application data. Calls renderCvEditSection() to show the
+ *     existing CV file (if any) or an upload prompt. isCvDeleted is reset
+ *     implicitly by renderCvEditSection since the CV data is re-provided.
+ * FI: Avaa opiskelijan hakemuksen muokkausmodaalin esitäyttäen kaikki kentät
+ *     nykyisillä hakemustiedoilla. Kutsuu renderCvEditSection():tä näyttääkseen
+ *     olemassa olevan CV-tiedoston (jos olemassa) tai latauskehotteen.
+ *     isCvDeleted nollataan implisiittisesti renderCvEditSection():lla, koska
+ *     CV-data toimitetaan uudelleen.
+ * @param {Object} app - EN: application record to edit / FI: muokattava hakemustietue
+ */
 // Function to open the modal and fill it with current data
 function openEditAppModal(app) {
   document.getElementById('editAppId').value = app.application_id;
@@ -1515,9 +1932,26 @@ function openEditAppModal(app) {
   document.getElementById('editAppModal').style.display = 'block';
 }
 
+/**
+ * EN: Renders the CV widget inside the application edit modal. Two states:
+ *     - File exists: shows the filename with a remove (×) button.
+ *     - No file: shows an upload prompt. Called both when the modal opens
+ *       (with existing data) and after removal/selection to update the UI.
+ *     "pending-upload" is used as a sentinel fileUrl value when handleEditCVSelection()
+ *     has a file queued but not yet uploaded — it signals that a file is ready.
+ * FI: Renderöi CV-widgetin hakemuksen muokkausmodaalissa. Kaksi tilaa:
+ *     - Tiedosto olemassa: näyttää tiedostonimen poista (×) -painikkeella.
+ *     - Ei tiedostoa: näyttää latauskehotteen. Kutsutaan sekä modaalin avautuessa
+ *       (olemassa olevilla tiedoilla) että poistamisen/valinnan jälkeen käyttöliittymän päivittämiseksi.
+ *     "pending-upload" käytetään sentinel-arvoona fileUrl-kentässä, kun
+ *     handleEditCVSelection():ssa on tiedosto jonossa mutta ei vielä ladattu —
+ *     se merkitsee, että tiedosto on valmis.
+ * @param {string|null} fileName - EN: original filename or null / FI: alkuperäinen tiedostonimi tai null
+ * @param {string|null} fileUrl - EN: public URL or null or "pending-upload" sentinel / FI: julkinen URL tai null tai "pending-upload" sentinel
+ */
 function renderCvEditSection(fileName, fileUrl) {
   const container = document.getElementById('editCvContainer');
-  
+
   if (fileName && fileUrl) {
       // CASE: File exists - show name and 'X' button
       container.innerHTML = `
@@ -1538,9 +1972,29 @@ function renderCvEditSection(fileName, fileUrl) {
   }
 }
 
+/**
+ * EN: Flag to track whether the user removed their CV in the current edit
+ *     session. Needed because the file can only be removed after the modal's
+ *     Save button is pressed — without this flag, updateApplication() would
+ *     not know whether to null-out cv_url or leave it unchanged.
+ * FI: Lippu sen seuraamiseen, onko käyttäjä poistanut CV:nsä nykyisessä
+ *     muokkaussessiossa. Tarvitaan, koska tiedosto voidaan poistaa vasta
+ *     modaalin Tallenna-painikkeen painamisen jälkeen — ilman tätä lippua
+ *     updateApplication() ei tietäisi, pitäisikö cv_url nollata vai jättää
+ *     muuttumattomaksi.
+ */
 // Variable to track if the user deleted their CV during this edit session
 let isCvDeleted = false;
 
+/**
+ * EN: Asks for confirmation before removing the CV reference from the edit session.
+ *     Sets isCvDeleted=true so updateApplication() knows to null-out the CV
+ *     columns on save. Re-renders the CV section to show the upload prompt.
+ * FI: Pyytää vahvistuksen ennen CV-viittauksen poistamista muokkaussessiosta.
+ *     Asettaa isCvDeleted=true, jotta updateApplication() tietää nollata
+ *     CV-sarakkeet tallennuksessa. Renderöi CV-osion uudelleen näyttääkseen
+ *     latauskehotteen.
+ */
 async function removeCvFromEdit() {
     if(await showConfirm("Remove this CV? You will need to upload a new one before saving.", "Remove")) {
         isCvDeleted = true;
@@ -1551,6 +2005,15 @@ async function removeCvFromEdit() {
     }
 }
 
+/**
+ * EN: Handles file selection in the edit modal's CV upload input. Updates the
+ *     CV section to show the selected filename as a "pending" state. Clears
+ *     isCvDeleted since the user is providing a replacement file.
+ * FI: Käsittelee tiedoston valinnan muokkausmodaalin CV-lataussyötteessä.
+ *     Päivittää CV-osion näyttämään valitun tiedostonimen "odottavana" tilana.
+ *     Tyhjentää isCvDeleted:n, koska käyttäjä toimittaa korvaavan tiedoston.
+ * @param {HTMLInputElement} input - EN: file input element after change event / FI: tiedostosyöttöelementti muutostapahtuman jälkeen
+ */
 function handleEditCVSelection(input) {
     if (input.files && input.files[0]) {
         isCvDeleted = false; // They uploaded a new one
@@ -1558,6 +2021,24 @@ function handleEditCVSelection(input) {
     }
 }
 
+/**
+ * EN: Saves changes to an existing application from the edit modal. Handles
+ *     three CV scenarios in sequence:
+ *       1. User deleted the CV (isCvDeleted=true): sets cv_url/cv_original_name to null.
+ *       2. User selected a new file: uploads it to 'resumes' bucket and updates URL.
+ *       3. No CV change: leaves CV fields unchanged (not included in updatedData).
+ *     Reloads the full student profile after save to reflect the updated status.
+ *     Resets isCvDeleted to false in the success path so the next modal open
+ *     starts with a clean state.
+ * FI: Tallentaa muutokset olemassa olevaan hakemukseen muokkausmodaalista.
+ *     Käsittelee kolme CV-skenaariota järjestyksessä:
+ *       1. Käyttäjä poisti CV:n (isCvDeleted=true): asettaa cv_url/cv_original_name:n nulliksi.
+ *       2. Käyttäjä valitsi uuden tiedoston: lataa sen 'resumes'-ämpäriin ja päivittää URL:n.
+ *       3. Ei CV-muutosta: jättää CV-kentät muuttumattomiksi (ei sisällytetty updatedData:han).
+ *     Lataa koko opiskelijan profiilin uudelleen tallennuksen jälkeen päivitetyn tilan heijastamiseksi.
+ *     Nollaa isCvDeleted:n false-arvoon onnistuneen polun yhteydessä, jotta seuraava
+ *     modaalin avaus alkaa puhtaalla tilalla.
+ */
 // Function to save the updated data
 async function updateApplication() {
   const appId = document.getElementById('editAppId').value;
@@ -1612,12 +2093,29 @@ async function updateApplication() {
 }
 
 /**
-* Redirects user to the internship detail page
-*/
+ * EN: Navigates to the internship detail page for the given position ID so the
+ *     student can review the full posting they applied to. Uses a direct
+ *     location.href assignment rather than window.open so the back button works.
+ * FI: Siirtyy harjoittelun yksityiskohtasivulle annetulle positio-ID:lle, jotta
+ *     opiskelija voi tarkistaa koko ilmoituksen, johon he hakivat. Käyttää suoraa
+ *     location.href-määritystä window.open:n sijaan, jotta taaksepäin-painike toimii.
+ * @param {number} positionId - EN: positions.position_id to navigate to / FI: positions.position_id, johon siirrytään
+ */
 function viewApplication(positionId) {
   window.location.href = `internship-detail.html?id=${positionId}`;
 }
 
+/**
+ * EN: Withdraws (deletes) a student's application after confirmation. Uses
+ *     showConfirm() with "Withdraw" as the action label to make the destructive
+ *     nature of the action clear in UX terms. Reloads the full student profile
+ *     after deletion so the application card disappears from the list.
+ * FI: Peruuttaa (poistaa) opiskelijan hakemuksen vahvistuksen jälkeen. Käyttää
+ *     showConfirm():tä "Withdraw"-toimintotunnisteella ilmaistakseen selkeästi
+ *     toiminnon tuhoavan luonteen UX:n näkökulmasta. Lataa koko opiskelijan
+ *     profiilin uudelleen poistamisen jälkeen, jotta hakemuskortti katoaa listalta.
+ * @param {number} applicationId - EN: applications.application_id to delete / FI: poistettava applications.application_id
+ */
 async function deleteApplication(applicationId) {
   if (!await showConfirm("Withdraw this application?", "Withdraw")) return;
 
@@ -1635,8 +2133,22 @@ async function deleteApplication(applicationId) {
   }
 }
 /**
- * Fetches city suggestions from Digitransit API
- * @param {string} query - The city name being typed
+ * EN: Provides real-time city name autocomplete using the Finnish Digitransit
+ *     geocoding API. Only fires when at least 2 characters are typed to avoid
+ *     flooding the API with single-char requests. The 'oa,osm' sources include
+ *     OpenAddresses and OpenStreetMap data for comprehensive Finnish coverage.
+ *     Deduplicates suggestions by locality name using a Set so the same city
+ *     doesn't appear multiple times (e.g. when multiple streets match). Results
+ *     are appended as <option> elements to a <datalist> linked to the city input.
+ * FI: Tarjoaa reaaliaikaisen kaupungin nimen automaattisen täydentämisen käyttäen
+ *     suomalaista Digitransit-geokoodaus-API:a. Käynnistyy vasta vähintään 2
+ *     merkin kirjoittamisen jälkeen välttääkseen API:n tulvittamisen yhden
+ *     merkin pyynnöillä. 'oa,osm'-lähteet sisältävät OpenAddresses- ja
+ *     OpenStreetMap-datan kattavaa suomalaista kattavuutta varten.
+ *     Deduplikoi ehdotukset paikkakuntanimen mukaan Set:llä, jotta sama kaupunki
+ *     ei ilmesty useita kertoja (esim. kun useita katuja vastaa). Tulokset
+ *     lisätään <option>-elementteinä kaupunkisyötteeseen linkitettyyn <datalist>:iin.
+ * @param {string} query - EN: city name being typed / FI: kirjoitettava kaupungin nimi
  */
 async function handleCityInput(query) {
   const datalist = document.getElementById('citySuggestions');
@@ -1676,6 +2188,19 @@ async function handleCityInput(query) {
       console.error("City Search Error:", err);
   }
 }
+/* ----------------------------------------------------------
+   EDIT MODE — toggle between display and edit views
+   Muokkaustila — vaihto näyttö- ja muokkausnäkymän välillä
+   ---------------------------------------------------------- */
+
+/**
+ * EN: Switches the student profile page from display mode to edit mode.
+ *     Pre-fills all form inputs from currentProfile and rebuilds the
+ *     category dropdown and link rows for editing.
+ * FI: Vaihtaa opiskelijan profiilisivun näyttötilasta muokkaustilaan.
+ *     Täyttää kaikki lomakesyötteet currentProfile-objektista etukäteen
+ *     ja rakentaa uudelleen kategorian pudotusvalikon ja linkkirivit muokkausta varten.
+ */
 // ==========================================
 // EDIT MODE
 // ==========================================
@@ -1716,6 +2241,17 @@ function enterEditMode() {
   fillEditLinks();
 }
 
+/**
+ * EN: Returns the student profile page from edit mode to display mode without
+ *     saving. Does not revert any UI state (form values, selected categories)
+ *     since those are re-populated fresh when enterEditMode() is called again.
+ *     Called by the Cancel button and by saveProfile() after a successful save.
+ * FI: Palauttaa opiskelijan profiilisivun muokkaustilasta näyttötilaan tallentamatta.
+ *     Ei palauta mitään UI-tilaa (lomaketunnukset, valitut kategoriat), koska ne
+ *     täytetään uudelleen kun enterEditMode() kutsutaan seuraavan kerran.
+ *     Kutsutaan Peruuta-painikkeella ja saveProfile():n toimesta onnistuneen
+ *     tallennuksen jälkeen.
+ */
 function cancelEditMode() {
   document.getElementById('displayMode').style.display = 'block';
   document.getElementById('editMode').style.display = 'none';
@@ -1725,6 +2261,21 @@ function cancelEditMode() {
 }
 
 // This function opens and closes the edit boxes
+/**
+ * EN: Switches the company profile between display mode and edit mode.
+ *     When entering edit mode (isEditing=true), it copies live DOM text into
+ *     the corresponding input fields so the user sees their current data —
+ *     not stale state from module variables. The header is dimmed to 50%
+ *     opacity as a visual cue that the form is active. When exiting, all
+ *     visibility is restored without touching the DB.
+ * FI: Vaihtaa yrityksen profiilin näyttötilan ja muokkaustilan välillä.
+ *     Muokkaustilaan siirryttäessä (isEditing=true) kopioi DOM-tekstin suoraan
+ *     vastaaviin syöttökenttiin, jotta käyttäjä näkee nykyiset tietonsa —
+ *     ei vanhentunutta tilaa moduulimuuttujista. Otsikko himmennetään 50%:n
+ *     läpinäkyvyydelle visuaaliseksi merkiksi siitä, että lomake on aktiivinen.
+ *     Poistuessa kaikki näkyvyys palautetaan ilman DB-kirjoitusta.
+ * @param {boolean} isEditing - EN: true = enter edit mode, false = return to display / FI: true = siirry muokkaustilaan, false = palaa näyttötilaan
+ */
 function toggleCompanyEdit(isEditing) {
     const editBtn = document.getElementById('editCompanyBtn');
     const actionBtns = document.getElementById('editActionButtons');
@@ -1758,6 +2309,21 @@ function toggleCompanyEdit(isEditing) {
 }
 
 
+/**
+ * EN: Saves the student profile after edit mode. Performs three Supabase writes
+ *     sequentially (not parallel) because each depends on the profile existing:
+ *       1. Update student_profiles row.
+ *       2. Delete + re-insert student_categories (simplest consistency strategy).
+ *       3. Save links (delete + re-insert via saveLinks()).
+ *     On success, updates currentProfile in-place and switches back to display mode.
+ * FI: Tallentaa opiskelijan profiilin muokkaustilan jälkeen. Suorittaa kolme
+ *     Supabase-kirjoitusta peräkkäin (ei rinnakkain), koska jokainen riippuu
+ *     profiilin olemassaolosta:
+ *       1. Päivitetään student_profiles-rivi.
+ *       2. Poistetaan + lisätään uudelleen student_categories (yksinkertaisin johdonmukaisuusstrategia).
+ *       3. Tallennetaan linkit (poisto + uudelleenlisäys saveLinks()-kautta).
+ *     Onnistuessaan päivittää currentProfile-objektin paikallaan ja siirtyy takaisin näyttötilaan.
+ */
 // ==========================================
 // SAVE PROFILE
 // ==========================================
@@ -1836,6 +2402,19 @@ async function saveProfile() {
 // ==========================================
 // CATEGORY SEARCH & SELECTION
 // ==========================================
+
+/**
+ * EN: Renders the full category dropdown from the module-level allCategories array.
+ *     Categories are grouped by their job_groups.title so the list is organised
+ *     into labelled sections. Each option gets the 'selected' CSS class if its
+ *     category_id is already in selectedCategoryIds, providing persistent visual
+ *     state across open/close cycles without a re-query.
+ * FI: Renderöi täyden kategoriavalikkolistauksen moduulitason allCategories-taulukosta.
+ *     Kategoriat ryhmitellään job_groups.title-kentän mukaan, jotta lista on
+ *     järjestetty nimettyihin osioihin. Jokainen vaihtoehto saa 'selected'-CSS-luokan,
+ *     jos sen category_id on jo selectedCategoryIds-taulukossa, tarjoten pysyvän
+ *     visuaalisen tilan avaus/sulkemissyklien välillä ilman uudelleenkyselyä.
+ */
 function buildCategoryDropdown() {
   const dropdown = document.getElementById('categoryDropdown');
   if (!dropdown) return;
@@ -1864,6 +2443,19 @@ function buildCategoryDropdown() {
   dropdown.innerHTML = html;
 }
 
+/**
+ * EN: Filters the visible category options in-place by the current search input
+ *     text. Works on existing rendered DOM elements (not a re-render) for speed.
+ *     Group title headers are hidden unless at least one option in that group
+ *     matches, keeping the layout clean when groups have no results. Walks
+ *     backwards through siblings to find the owning group title element.
+ * FI: Suodattaa näkyvät kategoriavaihtoehdot paikanpäällä nykyisen hakusyötteen mukaan.
+ *     Toimii olemassa olevissa renderöidyissä DOM-elementeissä (ei uudelleenrenderöintiä)
+ *     nopeuden vuoksi. Ryhmäotsikot piilotetaan, ellei vähintään yksi vaihtoehto
+ *     kyseisessä ryhmässä vastaa hakua, pitäen asettelun siistinä kun ryhmissä
+ *     ei ole tuloksia. Kävelee taaksepäin sisarelementtien läpi löytääkseen
+ *     omistavan ryhmäotsikon elementin.
+ */
 function filterCategories() {
   const search = document.getElementById('categorySearchInput').value.toLowerCase();
   const dropdown = document.getElementById('categoryDropdown');
@@ -1891,6 +2483,17 @@ function filterCategories() {
   });
 }
 
+/**
+ * EN: Opens the category dropdown and resets all items to visible. Called when
+ *     the user focuses the category search input without having typed anything.
+ *     Explicitly un-hides every option and group title in case a prior
+ *     filterCategories() call hid some of them — avoids a full re-render.
+ * FI: Avaa kategoriavalikkolistauksen ja palauttaa kaikki kohteet näkyviksi.
+ *     Kutsutaan kun käyttäjä tarkentaa kategoriahakusyötteeseen ilman kirjoittamista.
+ *     Poistaa nimenomaisesti piilotuksen kaikista vaihtoehdoista ja ryhmäotsikoista,
+ *     jos edellinen filterCategories()-kutsu piilotti joitakin — välttää täyden
+ *     uudelleenrenderöinnin.
+ */
 function showCategoryDropdown() {
   const dropdown = document.getElementById('categoryDropdown');
   if (dropdown) {
@@ -1902,6 +2505,20 @@ function showCategoryDropdown() {
   }
 }
 
+/**
+ * EN: Toggles a category in/out of selectedCategoryIds when the user clicks an
+ *     option in the dropdown. After mutation, re-renders the selected-tags row
+ *     and rebuilds the dropdown so the 'selected' highlight class updates.
+ *     In-place splice/push avoids creating a new array reference, preserving
+ *     any closures that hold a reference to selectedCategoryIds.
+ * FI: Lisää/poistaa kategorian selectedCategoryIds-taulukosta, kun käyttäjä
+ *     klikkaa vaihtoehtoa valikkolistauksessa. Mutaation jälkeen uudelleenrenderöi
+ *     valittujen tunnisteiden rivin ja rakentaa valikkolistauksen uudelleen,
+ *     jotta 'selected'-korostusluokka päivittyy. Paikanpäällä tapahtuva
+ *     splice/push välttää uuden taulukkoviittauksen luomista, säilyttäen
+ *     mahdolliset sulkeumat, joilla on viittaus selectedCategoryIds-taulukkoon.
+ * @param {number} categoryId - EN: category_id to toggle / FI: category_id, joka lisätään tai poistetaan
+ */
 function toggleCategory(categoryId) {
   const idx = selectedCategoryIds.indexOf(categoryId);
   if (idx === -1) {
@@ -1913,12 +2530,37 @@ function toggleCategory(categoryId) {
   buildCategoryDropdown();
 }
 
+/**
+ * EN: Removes a category from selectedCategoryIds by creating a new filtered
+ *     array (unlike toggleCategory which mutates in place). Called by the ×
+ *     button on each selected tag chip, so reassignment is intentional here —
+ *     the tag's onclick already captured the ID, no dropdown interaction needed.
+ * FI: Poistaa kategorian selectedCategoryIds-taulukosta luomalla uuden suodatetun
+ *     taulukon (toisin kuin toggleCategory, joka mutoi paikanpäällä). Kutsutaan
+ *     ×-painikkeella jokaisesta valitun tunnisteen napista, joten uudelleenmääritys
+ *     on tarkoituksellinen tässä — napin onclick on jo siepannut ID:n, dropdown-
+ *     vuorovaikutusta ei tarvita.
+ * @param {number} categoryId - EN: category_id to remove / FI: poistettava category_id
+ */
 function removeCategory(categoryId) {
   selectedCategoryIds = selectedCategoryIds.filter(id => id !== categoryId);
   renderSelectedCategories();
   buildCategoryDropdown();
 }
 
+/**
+ * EN: Renders the selected-category tag chips in the edit form. Uses allCategories
+ *     (already in memory) to look up titles by ID, avoiding an extra DB query.
+ *     Returns empty string for any ID not found (defensive against stale state).
+ *     Each chip has an inline × button that calls removeCategory so removal
+ *     stays snappy without a server round-trip.
+ * FI: Renderöi valittujen kategorioiden tunnistenapit muokkauslomakkeeseen.
+ *     Käyttää allCategories-taulukkoa (jo muistissa) otsikoiden hakuun ID:n mukaan,
+ *     välttäen ylimääräisen DB-kyselyn. Palauttaa tyhjän merkkijonon kaikille
+ *     ID:ille, joita ei löydy (puolustautuu vanhentunutta tilaa vastaan).
+ *     Jokaisella napilla on inline-×-painike, joka kutsuu removeCategory-funktiota,
+ *     jotta poisto pysyy nopeana ilman palvelinkierrosta.
+ */
 function renderSelectedCategories() {
   const container = document.getElementById('eSelectedCategories');
   if (!container) return;
@@ -1956,6 +2598,18 @@ document.addEventListener('click', function(e) {
 // ==========================================
 // LINKS (Student_links table)
 // ==========================================
+
+/**
+ * EN: Unicode icon map for the four supported link types.
+ *     Kept as a constant so all link-rendering functions share one source of truth.
+ *     Numeric HTML entities are used instead of emoji literals to avoid encoding
+ *     issues in files saved with non-UTF-8 editors.
+ * FI: Unicode-kuvaketaulukko neljälle tuetulle linkityypille.
+ *     Pidetään vakiona, jotta kaikki linkkien renderöintifunktiot jakavat
+ *     yhden totuuden lähteen. Numeerisia HTML-entiteettejä käytetään
+ *     emoji-literaalien sijaan, jotta vältetään koodausongelmat
+ *     ei-UTF-8-editoreilla tallennetuissa tiedostoissa.
+ */
 const LINK_ICONS = {
   github: '&#128736;',
   linkedin: '&#128100;',
@@ -1963,6 +2617,16 @@ const LINK_ICONS = {
   other: '&#128279;'
 };
 
+/**
+ * EN: Renders the read-only links list in the student profile display panel.
+ *     Falls back to a labelled empty-state message when no links are saved.
+ *     Uses rel="noopener" on external links to prevent the opened tab from
+ *     gaining a reference to the parent window via window.opener.
+ * FI: Renderöi vain-luku-linkkilistaukseen opiskelijan profiilin näyttöpaneelissa.
+ *     Palaa nimettyyn tyhjän tilan viestiin, kun linkkejä ei ole tallennettu.
+ *     Käyttää rel="noopener" ulkoisissa linkeissä estääkseen avatun välilehden
+ *     saamasta viittausta pääikkunaan window.opener-kautta.
+ */
 function fillLinks() {
   const container = document.getElementById('dLinks');
   if (!container) return;
@@ -1982,6 +2646,16 @@ function fillLinks() {
   }).join('');
 }
 
+/**
+ * EN: Populates the edit-mode links form from the currentLinks module variable.
+ *     Clears the container first so switching to edit mode doesn't double-render.
+ *     Delegates each row to addLinkRowHtml so the DOM structure is consistent
+ *     between loaded links and newly added empty rows.
+ * FI: Täyttää muokkaustilan linkkilomakkeen currentLinks-moduulimuuttujasta.
+ *     Tyhjentää säiliön ensin, jotta muokkaustilaan siirtyminen ei renderöi
+ *     kahteen kertaan. Delegoi jokaisen rivin addLinkRowHtml-funktiolle, jotta
+ *     DOM-rakenne on yhtenäinen ladattujen linkkien ja uusien tyhjien rivien välillä.
+ */
 function fillEditLinks() {
   const container = document.getElementById('eLinksContainer');
   if (!container) return;
@@ -1992,12 +2666,42 @@ function fillEditLinks() {
   });
 }
 
+/**
+ * EN: Adds a blank link row to the edit-mode links container when the user
+ *     clicks "Add Link". Defaults the type to 'github' as the most common
+ *     link type for student profiles. linkId is null because this row has
+ *     no existing DB record yet — saveLinks() will INSERT it on save.
+ * FI: Lisää tyhjän linkkirivi muokkaustilan linkkisäiliöön, kun käyttäjä
+ *     klikkaa "Lisää linkki". Oletustyyppinä on 'github', koska se on yleisin
+ *     linkityyppi opiskelijaprofiileissa. linkId on null, koska tällä rivillä
+ *     ei ole vielä olemassa olevaa DB-tietuetta — saveLinks() lisää sen tallennuksessa.
+ */
 function addLinkRow() {
   const container = document.getElementById('eLinksContainer');
   if (!container) return;
   addLinkRowHtml(container, 'github', '', '', null);
 }
 
+/**
+ * EN: Creates and appends a single editable link row DOM element to the container.
+ *     Used for both loading existing links and inserting new blank rows. Stores
+ *     linkId in data-link-id so saveLinks() can distinguish updates from inserts;
+ *     an empty string signals a new row. The ×-button removes the row entirely
+ *     without touching the DB — saveLinks() handles the delete on save by
+ *     using a full delete+re-insert pattern rather than tracking individual changes.
+ * FI: Luo ja lisää yksittäisen muokattavan linkkirivin DOM-elementin säiliöön.
+ *     Käytetään sekä olemassa olevien linkkien lataamiseen että uusien tyhjien
+ *     rivien lisäämiseen. Tallentaa linkId:n data-link-id-attribuuttiin, jotta
+ *     saveLinks() voi erottaa päivitykset lisäyksistä; tyhjä merkkijono merkitsee
+ *     uuden rivin. ×-painike poistaa rivin kokonaan ilman DB-kosketusta —
+ *     saveLinks() käsittelee poiston tallennuksessa käyttämällä täyttä
+ *     poista+uudelleenlisää-mallia yksilöllisten muutosten seuraamisen sijaan.
+ * @param {HTMLElement} container - EN: parent element to append the row to / FI: vanhempaelementti, johon rivi lisätään
+ * @param {string} type - EN: link type key (github/linkedin/portfolio/other) / FI: linkityypin avain
+ * @param {string} label - EN: display label for the link / FI: linkin näyttöteksti
+ * @param {string} url - EN: full URL / FI: täydellinen URL
+ * @param {string|null} linkId - EN: existing DB row ID, or null for new row / FI: olemassa oleva DB-rivin ID tai null uudelle riville
+ */
 function addLinkRowHtml(container, type, label, url, linkId) {
   const row = document.createElement('div');
   row.className = 'link-edit-row';
@@ -2016,6 +2720,21 @@ function addLinkRowHtml(container, type, label, url, linkId) {
   container.appendChild(row);
 }
 
+/**
+ * EN: Persists the current link edit form to Supabase using a delete+re-insert
+ *     pattern. All existing links for the student are deleted first, then the
+ *     form rows with a non-empty URL are inserted as new records. This avoids
+ *     complex diff logic (which rows changed, which are new, which were removed)
+ *     at the cost of one extra delete round-trip. After save, reloads links from
+ *     DB into currentLinks and refreshes the display panel.
+ * FI: Tallentaa nykyisen linkkimuokkauslomakkeen Supabaseen käyttämällä
+ *     poista+uudelleenlisää-mallia. Kaikki opiskelijan olemassa olevat linkit
+ *     poistetaan ensin, sitten lomakerivit, joilla on ei-tyhjä URL, lisätään
+ *     uusina tietueina. Tämä välttää monimutkaisen diff-logiikan (mitkä rivit
+ *     muuttuivat, mitkä ovat uusia, mitkä poistettiin) yhden ylimääräisen
+ *     poistokierroksen kustannuksella. Tallennuksen jälkeen lataa linkit uudelleen
+ *     DB:stä currentLinks-muuttujaan ja päivittää näyttöpaneelin.
+ */
 async function saveLinks() {
   if (!currentProfile) return;
 
@@ -2068,6 +2787,18 @@ async function saveLinks() {
 // ==========================================
 // AVATAR (Supabase Storage: foto)
 // ==========================================
+
+/**
+ * EN: Updates the avatar <img> and placeholder elements based on whether
+ *     the profile has a photo_url. The placeholder (typically initials or
+ *     a default icon) is shown when there is no URL, and the <img> is hidden,
+ *     preventing a broken-image icon from flashing while the URL is absent.
+ * FI: Päivittää avatar-<img>- ja paikkamerkki-elementit sen mukaan, onko
+ *     profiililla photo_url. Paikkamerkki (yleensä nimikirjaimet tai
+ *     oletusokulake) näytetään, kun URL puuttuu, ja <img> piilotetaan,
+ *     estäen rikkinäisen kuvan kuvakkeen vilkkuminen URL:n puuttuessa.
+ * @param {Object} profile - EN: profile object with optional photo_url / FI: profiiliobjekti valinnaisella photo_url-kentällä
+ */
 function fillAvatar(profile) {
   const img = document.getElementById('avatarImg');
   const placeholder = document.getElementById('avatarPlaceholder');
@@ -2083,6 +2814,22 @@ function fillAvatar(profile) {
   }
 }
 
+/**
+ * EN: Uploads a student's profile photo to the 'foto' Supabase Storage bucket
+ *     and saves the resulting public URL to student_profiles.photo_url.
+ *     Uses a deterministic filename (user_{id}/avatar.{ext}) with upsert:true
+ *     so repeated uploads overwrite the same path rather than creating new files.
+ *     After upload, updates currentProfile in memory and re-renders fillAvatar()
+ *     so the new photo appears instantly without a page reload.
+ * FI: Lataa opiskelijan profiilikuvan 'foto'-Supabase-tallennussäilöön ja tallentaa
+ *     tuloksena olevan julkisen URL:n student_profiles.photo_url-kenttään.
+ *     Käyttää deterministä tiedostonimeä (user_{id}/avatar.{ext}) upsert:true-asetuksella,
+ *     jotta toistuvat lataukset ylikirjoittavat saman polun uusien tiedostojen
+ *     luomisen sijaan. Latauksen jälkeen päivittää currentProfile-muuttujan muistissa
+ *     ja renderöi fillAvatar() uudelleen, jotta uusi kuva näkyy välittömästi
+ *     ilman sivun uudelleenlatausta.
+ * @param {HTMLInputElement} input - EN: file input element after change event / FI: tiedostosyöttöelementti muutostapahtuman jälkeen
+ */
 async function uploadAvatar(input) {
   const file = input.files[0];
   if (!file || !currentProfile) return;
@@ -2131,9 +2878,25 @@ async function uploadAvatar(input) {
   }
 }
 
+/**
+ * EN: Uploads a company logo to the 'foto' bucket and saves the public URL to
+ *     the Companies table. Uses a cache-busting timestamp query string (?t=...)
+ *     appended to the URL before saving to DB so the browser fetches the new
+ *     image immediately rather than serving the old one from its HTTP cache.
+ *     Falls back to manually updating #avatarImg if fillCompanyLogo() is not
+ *     yet defined (defensive programming for load-order edge cases).
+ * FI: Lataa yrityksen logon 'foto'-säilöön ja tallentaa julkisen URL:n
+ *     Companies-taulukkoon. Käyttää välimuistin ohittavaa aikaleimakysely-
+ *     merkkijonoa (?t=...) URL:ään liitettynä ennen DB:hen tallentamista,
+ *     jotta selain hakee uuden kuvan välittömästi palvelematta vanhaa HTTP-
+ *     välimuististaan. Palautuu manuaaliseen #avatarImg-päivitykseen, jos
+ *     fillCompanyLogo() ei ole vielä määritelty (puolustava ohjelmointi
+ *     latausjärjestyksen reunatapauksille).
+ * @param {HTMLInputElement} input - EN: file input element after change event / FI: tiedostosyöttöelementti muutostapahtuman jälkeen
+ */
 async function uploadLogo(input) {
   const file = input.files[0];
-  
+
   // 1. Basic checks (Must have file and profile loaded)
   if (!file || !currentProfile) return;
 
@@ -2216,6 +2979,26 @@ async function uploadLogo(input) {
 // ==========================================
 // CV FILE (Supabase Storage: practice-files)
 // ==========================================
+
+/**
+ * EN: Uploads a CV/resume file to the 'practice-files' Supabase Storage bucket.
+ *     Sanitizes the filename (non-alphanumeric chars replaced with _) to prevent
+ *     path traversal and URL encoding issues. Prefixes with Date.now() to make
+ *     filenames unique and avoid collisions when the student uploads a new CV
+ *     with the same original name. Saves only the public URL and original filename
+ *     to student_profiles (not the file content) so the row stays lightweight.
+ *     On error, still calls renderCVList() so the UI reflects any previous state.
+ * FI: Lataa CV/ansioluettelo-tiedoston 'practice-files'-Supabase-tallennussäilöön.
+ *     Puhdistaa tiedostonimen (ei-aakkosnumeeriset merkit korvataan _:llä) polun
+ *     läpikäymis- ja URL-koodausongelmien estämiseksi. Lisää etuliitteeksi
+ *     Date.now()-arvon tiedostonimien ainutlaatuisuuden varmistamiseksi ja
+ *     törmäysten välttämiseksi, kun opiskelija lataa uuden CV:n samalla
+ *     alkuperäisellä nimellä. Tallentaa vain julkisen URL:n ja alkuperäisen
+ *     tiedostonimen student_profiles-taulukkoon (ei tiedoston sisältöä),
+ *     jotta rivi pysyy kevyenä. Virhetilanteessa kutsuu silti renderCVList():tä,
+ *     jotta käyttöliittymä heijastaa mahdollista aiempaa tilaa.
+ * @param {HTMLInputElement} input - EN: file input after change event / FI: tiedostosyöttö muutostapahtuman jälkeen
+ */
 // 1. THE UPLOAD FUNCTION
 async function uploadCV(input) {
   const file = input.files[0];
@@ -2265,6 +3048,19 @@ async function uploadCV(input) {
   }
 }
 
+/**
+ * EN: Removes the student's CV reference from the DB (sets cv_url and
+ *     cv_original_name to null). Note: this does NOT delete the file from
+ *     Supabase Storage — the file path remains in the bucket. Storage cleanup
+ *     only happens during full account deletion (confirmDeleteAccount). Uses
+ *     showConfirm() to require explicit user confirmation before destructive action.
+ * FI: Poistaa opiskelijan CV-viittauksen DB:stä (asettaa cv_url:n ja
+ *     cv_original_name:n nulliksi). Huomio: tämä EI poista tiedostoa Supabase
+ *     Storage -säilöstä — tiedostopolku jää ämpäriin. Tallennuksen siivous
+ *     tapahtuu vain täydellisen tilin poistamisen yhteydessä (confirmDeleteAccount).
+ *     Käyttää showConfirm():tä vaatiakseen käyttäjältä nimenomaisen vahvistuksen
+ *     ennen tuhoavaa toimintoa.
+ */
 // 3. THE DELETE FUNCTION
 async function deleteCV() {
   if (!await showConfirm("Are you sure you want to remove this CV?", "Remove")) return;
@@ -2292,15 +3088,38 @@ async function deleteCV() {
   }
 }
 
+/**
+ * EN: Compatibility alias for renderCVList(). Exists so HTML onclick attributes
+ *     and older code that called fillCvInfo() continue to work without refactoring.
+ * FI: Yhteensopivuusaliase renderCVList()-funktiolle. Olemassa, jotta HTML-
+ *     onclick-attribuutit ja vanhempi koodi, joka kutsui fillCvInfo():tä,
+ *     toimivat edelleen ilman uudelleenmuotoilua.
+ */
 // 4. ALIAS FOR COMPATIBILITY
 function fillCvInfo() {
     renderCVList();
 }
 
+/**
+ * EN: Compatibility alias for renderCompanyCvList(). Mirrors fillCvInfo() for
+ *     the company-side document widget.
+ * FI: Yhteensopivuusaliase renderCompanyCvList()-funktiolle. Peilaa fillCvInfo():tä
+ *     yrityksen asiakirjawidgetille.
+ */
 function fillCompanyCvInfo() {
     renderCompanyCvList();
 }
 
+/**
+ * EN: Renders the student's CV download/delete widget in #cvFileInfo.
+ *     Shows the original filename (stored separately in cv_original_name) rather
+ *     than the storage path, which contains a sanitized + timestamped version.
+ *     Falls back to 'Resume.pdf' if cv_original_name was not saved (older records).
+ * FI: Renderöi opiskelijan CV-lataus/poisto-widgetin #cvFileInfo-elementtiin.
+ *     Näyttää alkuperäisen tiedostonimen (tallennettu erikseen cv_original_name-kenttään)
+ *     tallennuspolun sijaan, joka sisältää puhdistetun + aikaleimatun version.
+ *     Palaa 'Resume.pdf':ään, jos cv_original_name:ä ei tallennettu (vanhemmat tietueet).
+ */
 function renderCVList() {
   const container = document.getElementById('cvFileInfo');
   if (!container || !currentProfile || !currentProfile.cv_url) {
@@ -2333,6 +3152,17 @@ function renderCVList() {
 }
 
 
+/**
+ * EN: Renders the company profile document download widget in #companyCvFileInfo.
+ *     Company-side documents are read-only from the profile page (no delete button),
+ *     so only a Download button is shown. Provides a friendly display name label
+ *     above the filename to help users identify the widget purpose at a glance.
+ * FI: Renderöi yrityksen profiiliasiakirjan latauswidgetin #companyCvFileInfo-elementtiin.
+ *     Yrityksen puolen asiakirjat ovat vain-luku profiilisivulta (ei poistopainiketta),
+ *     joten vain Lataa-painike näytetään. Tarjoaa ystävällisen näyttönimiotsikon
+ *     tiedostonimen yläpuolella auttamaan käyttäjiä tunnistamaan widgetin tarkoituksen
+ *     yhdellä silmäyksellä.
+ */
 function renderCompanyCvList() {
   const container = document.getElementById('companyCvFileInfo');
   if (!container || !currentProfile || !currentProfile.company_cv_url) {
@@ -2360,6 +3190,24 @@ function renderCompanyCvList() {
 // ==========================================
 // DOWNLOAD CV
 // ==========================================
+
+/**
+ * EN: Downloads a file from a URL by fetching it as a Blob and triggering a
+ *     programmatic <a> click with a download attribute. This forces the browser
+ *     to save the file with the given filename rather than navigating to it.
+ *     Falls back to a plain anchor open-in-new-tab approach when fetch fails
+ *     (e.g. CORS policy on the storage URL), ensuring the user can still access
+ *     the file even if the Blob download route is blocked.
+ * FI: Lataa tiedoston URL:sta hakemalla sen Blob-muodossa ja käynnistämällä
+ *     ohjelmallisen <a>-klikkauksen download-attribuutilla. Tämä pakottaa selaimen
+ *     tallentamaan tiedoston annetulla tiedostonimellä navigoimisen sijaan.
+ *     Palaa tavalliseen ankkuri-avaa-uudessa-välilehdessä-lähestymistapaan,
+ *     kun fetch epäonnistuu (esim. CORS-käytäntö tallennuksen URL:ssa),
+ *     varmistaen, että käyttäjä pääsee silti tiedostoon käsiksi, vaikka
+ *     Blob-latausreitti olisi estetty.
+ * @param {string} url - EN: public storage URL of the file / FI: tiedoston julkinen tallennuksen URL
+ * @param {string} filename - EN: filename to use for the downloaded file / FI: ladattavan tiedoston tiedostonimi
+ */
 function downloadCVFile(url, filename) {
   if (!url) {
     showToast('No CV uploaded yet.', 'warning');
@@ -2388,6 +3236,15 @@ function downloadCVFile(url, filename) {
     });
 }
 
+/**
+ * EN: Convenience wrapper for downloadCVFile() that reads the URL and filename
+ *     from currentProfile. Used by the student profile page Download button
+ *     so the caller doesn't need to pass arguments explicitly.
+ * FI: Käytännöllinen kääre downloadCVFile()-funktiolle, joka lukee URL:n ja
+ *     tiedostonimen currentProfile-muuttujasta. Käytetään opiskelijan profiilisivun
+ *     Lataa-painikkeessa, jotta kutsujan ei tarvitse välittää argumentteja
+ *     eksplisiittisesti.
+ */
 function downloadCV() {
   if (!currentProfile || !currentProfile.cv_url) {
     showToast('No CV uploaded yet.', 'warning');
@@ -2400,10 +3257,41 @@ function downloadCV() {
 // PRACTICE REQUESTS
 // ==========================================
 
+/**
+ * EN: Module-level state for the practice requests feature.
+ *     practiceRequests: cached array of all requests for the current student.
+ *     showAllRequests: toggle flag — when false, only active (non-expired) requests
+ *       are shown; when true, all including past requests are displayed.
+ *     reqSelectedCategoryIds: selected category IDs for the add-request modal,
+ *       separate from selectedCategoryIds (which is for profile categories) to
+ *       avoid state collision when both dropdowns can be open on the same page.
+ * FI: Moduulitason tila harjoittelupyyntöominaisuudelle.
+ *     practiceRequests: välimuistissa oleva taulukko kaikista nykyisen opiskelijan pyynnöistä.
+ *     showAllRequests: vaihtoehtoinen lippu — kun false, näytetään vain aktiiviset
+ *       (ei vanhentuneet) pyynnöt; kun true, näytetään kaikki mukaan lukien menneet pyynnöt.
+ *     reqSelectedCategoryIds: valitut kategoriaID:t lisää-pyyntö-modaalille,
+ *       erillään selectedCategoryIds:stä (joka on profiilikatgorioille) tilakollision
+ *       välttämiseksi, kun molemmat valikkolistaukset voivat olla auki samalla sivulla.
+ */
 let practiceRequests = [];
 let showAllRequests = false;
 let reqSelectedCategoryIds = [];
 
+/**
+ * EN: Fetches all practice requests for a student from Supabase including their
+ *     linked categories (via student_request_categories) and the found company name
+ *     (via Companies foreign key join aliased as Companies:found_company_id).
+ *     The nested select avoids separate queries for each request's categories.
+ *     Results are stored in the practiceRequests module variable and passed to
+ *     fillPracticeRequests() for rendering.
+ * FI: Hakee kaikki opiskelijan harjoittelupyynnöt Supabasesta mukaan lukien
+ *     niiden linkitetyt kategoriat (student_request_categories-kautta) ja
+ *     löydetyn yrityksen nimen (Companies-ulkoinen avain liitettynä Companies:found_company_id-nimellä).
+ *     Sisäkkäinen select välttää erilliset kyselyt jokaisen pyynnön kategorioille.
+ *     Tulokset tallennetaan practiceRequests-moduulimuuttujaan ja välitetään
+ *     fillPracticeRequests()-funktiolle renderöintiä varten.
+ * @param {string} studentId - EN: student_profiles.id / FI: student_profiles.id
+ */
 async function loadPracticeRequests(studentId) {
   const { data, error } = await supabaseClient
     .from('student_practice_requests')
@@ -2416,6 +3304,23 @@ async function loadPracticeRequests(studentId) {
   fillPracticeRequests();
 }
 
+/**
+ * EN: Renders the practice request cards in the profile display panel.
+ *     Splits requests into active (period_end >= today) and archived (expired)
+ *     sets. When showAllRequests is false only active are shown; the toggle
+ *     button reveals all. The today date is normalized to midnight local time
+ *     so requests ending today are still counted as active (not expired).
+ *     The "Show all" button label includes the total count so the user knows
+ *     how many archived requests exist before expanding.
+ * FI: Renderöi harjoittelupyyntöjen kortit profiilin näyttöpaneelissa.
+ *     Jakaa pyynnöt aktiivisiin (period_end >= tänään) ja arkistoituihin
+ *     (vanhentuneisiin) joukkoihin. Kun showAllRequests on false, näytetään
+ *     vain aktiiviset; vaihtonappi paljastaa kaikki. Tämänpäivän päivämäärä
+ *     normalisoidaan puoliyöhön paikallisessa ajassa, jotta tänään päättyvät
+ *     pyynnöt lasketaan edelleen aktiivisiksi (ei vanhentuneiksi).
+ *     "Näytä kaikki" -painikkeen otsikko sisältää kokonaismäärän, jotta käyttäjä
+ *     tietää kuinka monta arkistoitua pyyntöä on ennen laajentamista.
+ */
 function fillPracticeRequests() {
   const container = document.getElementById('dPracticeRequests');
   const showAllWrap = document.getElementById('showAllRequestsWrap');
@@ -2451,6 +3356,26 @@ function fillPracticeRequests() {
   }
 }
 
+/**
+ * EN: Generates the HTML markup for a single practice request card.
+ *     Computes isExpired to style the card differently and show an "Expired" badge.
+ *     The status toggle button dynamically decides whether clicking it should
+ *     open the Found Company modal (when marking as found) or call the toggle
+ *     directly (when reverting to searching) — this avoids two separate buttons.
+ *     Company name prioritises the DB join (r.Companies.company_name) over the
+ *     free-text fallback (r.found_company_name) for found requests.
+ * FI: Luo HTML-merkinnän yksittäiselle harjoittelupyyntökortille.
+ *     Laskee isExpired-arvon kortin erilaista tyylitystä varten ja näyttää
+ *     "Vanhentunut"-merkkiä. Tilan vaihtonappi päättää dynaamisesti, pitäisikö
+ *     klikkaaminen avata Löydetty yritys -modaali (merkittäessä löydetyksi)
+ *     vai kutsua vaihtoa suoraan (palattaessa hakemiseen) — tämä välttää
+ *     kahden erillisen painikkeen tarpeellisuuden. Yrityksen nimi priorisoi
+ *     DB-liitoksen (r.Companies.company_name) vapaatekstiperusteisen varavalinnon
+ *     (r.found_company_name) sijaan löydetyissä pyynnöissä.
+ * @param {Object} r - EN: single practice request record with joined data / FI: yksittäinen harjoittelupyyntötietue liitetyillä tiedoilla
+ * @param {Date} today - EN: current date normalized to midnight / FI: nykyinen päivämäärä normalisoituna puoliyöhön
+ * @returns {string} EN: HTML string for the card / FI: HTML-merkkijono kortille
+ */
 function renderRequestCard(r, today) {
   const isExpired = new Date(r.period_end) < today;
   const cats = (r.student_request_categories || [])
@@ -2485,6 +3410,20 @@ function renderRequestCard(r, today) {
   `;
 }
 
+/**
+ * EN: Updates a practice request's status in Supabase and reloads the list.
+ *     When reverting to 'searching', also nullifies found_company_id and
+ *     found_company_name so the card no longer shows a company association —
+ *     a clean state reset for the reversal flow. The 'found' path is not handled
+ *     here; it goes through confirmMarkAsFound() via the Found Company modal.
+ * FI: Päivittää harjoittelupyynnön tilan Supabasessa ja lataa listan uudelleen.
+ *     Palatessa 'searching'-tilaan nollaa myös found_company_id:n ja
+ *     found_company_name:n, jotta kortti ei enää näytä yritysassosiaatiota —
+ *     puhdas tilanpalautus peruutusvirralle. 'found'-polkua ei käsitellä
+ *     täällä; se menee confirmMarkAsFound()-funktion kautta Löydetty yritys -modaalin kautta.
+ * @param {number} requestId - EN: student_practice_requests.request_id / FI: student_practice_requests.request_id
+ * @param {string} newStatus - EN: 'searching' or 'found' / FI: 'searching' tai 'found'
+ */
 async function togglePracticeRequestStatus(requestId, newStatus) {
   const updates = { status: newStatus, updated_at: new Date().toISOString() };
   if (newStatus === 'searching') {
@@ -2502,6 +3441,19 @@ async function togglePracticeRequestStatus(requestId, newStatus) {
   await loadPracticeRequests(currentProfile.id);
 }
 
+/**
+ * EN: Deletes a practice request from Supabase after user confirmation.
+ *     On success, removes the item from the local practiceRequests array
+ *     without re-fetching from DB — optimistic local update keeps the UI
+ *     snappy. Cascading deletes in the DB handle student_request_categories
+ *     rows automatically.
+ * FI: Poistaa harjoittelupyynnön Supabasesta käyttäjän vahvistuksen jälkeen.
+ *     Onnistuessaan poistaa kohteen paikallisesta practiceRequests-taulukosta
+ *     ilman uudelleenhakua DB:stä — optimistinen paikallinen päivitys pitää
+ *     käyttöliittymän virkeänä. DB:ssä olevat kaskadipoistot käsittelevät
+ *     student_request_categories-rivit automaattisesti.
+ * @param {number} requestId - EN: request_id to delete / FI: poistettava request_id
+ */
 async function deletePracticeRequest(requestId) {
   if (!await showConfirm('Delete this internship request?', 'Delete')) return;
 
@@ -2516,6 +3468,14 @@ async function deletePracticeRequest(requestId) {
   fillPracticeRequests();
 }
 
+/**
+ * EN: Toggles the showAllRequests flag and re-renders the practice requests list.
+ *     No DB call needed — the full list is already in practiceRequests memory.
+ *     fillPracticeRequests() handles the show/hide logic based on the flag.
+ * FI: Vaihtaa showAllRequests-lippua ja renderöi harjoittelupyyntölistauksen uudelleen.
+ *     DB-kutsua ei tarvita — täydellinen lista on jo practiceRequests-muistissa.
+ *     fillPracticeRequests() käsittelee näytä/piilota-logiikan lipun perusteella.
+ */
 function toggleShowAllRequests() {
   showAllRequests = !showAllRequests;
   fillPracticeRequests();
@@ -2523,6 +3483,18 @@ function toggleShowAllRequests() {
 
 // --- Add Request Modal ---
 
+/**
+ * EN: Opens the Add Practice Request modal with a clean slate. Resets
+ *     reqSelectedCategoryIds to an empty array (not a reference copy) so that
+ *     opening the modal a second time doesn't carry over selections from
+ *     the previous open. Clears all form fields and rebuilds the dropdown
+ *     before showing the modal.
+ * FI: Avaa Lisää harjoittelupyyntö -modaalin puhtaalla pohjalla. Nollaa
+ *     reqSelectedCategoryIds tyhjäksi taulukoksi (ei viittauskopiona), jotta
+ *     modaalin avaaminen toisen kerran ei kanna yli valintoja edellisestä
+ *     avauskerrasta. Tyhjentää kaikki lomakekentät ja rakentaa valikkolistauksen
+ *     uudelleen ennen modaalin näyttämistä.
+ */
 function openAddRequestModal() {
   reqSelectedCategoryIds = [];
   document.getElementById('reqPeriodStart').value = '';
@@ -2533,10 +3505,32 @@ function openAddRequestModal() {
   document.getElementById('addRequestModal').style.display = 'block';
 }
 
+/**
+ * EN: Closes the Add Practice Request modal without saving. State is left as-is
+ *     but will be reset by openAddRequestModal() when the user opens it again.
+ * FI: Sulkee Lisää harjoittelupyyntö -modaalin tallentamatta. Tila jätetään
+ *     sellaisenaan, mutta openAddRequestModal() nollaa sen, kun käyttäjä
+ *     avaa sen uudelleen.
+ */
 function closeAddRequestModal() {
   document.getElementById('addRequestModal').style.display = 'none';
 }
 
+/**
+ * EN: Validates and saves a new practice request. Inserts the request row first
+ *     with .select().single() to get the generated request_id, then inserts
+ *     category rows in a second call. This two-step approach is necessary because
+ *     the category rows need the request_id foreign key which only exists after
+ *     the parent record is created. Reloads the full list from DB after save
+ *     to ensure the UI is consistent with the server state.
+ * FI: Validoi ja tallentaa uuden harjoittelupyynnön. Lisää pyyntörivin ensin
+ *     .select().single()-kutsulla saadakseen generoidun request_id:n, sitten
+ *     lisää kategoriarivit toisessa kutsussa. Tämä kaksivaiheinen lähestymistapa
+ *     on välttämätön, koska kategoriarivit tarvitsevat request_id-ulkoisen avaimen,
+ *     joka on olemassa vasta vanhemmatietueen luomisen jälkeen. Lataa koko listan
+ *     uudelleen DB:stä tallennuksen jälkeen varmistaakseen, että käyttöliittymä
+ *     on yhdenmukainen palvelimen tilan kanssa.
+ */
 async function savePracticeRequest() {
   const periodStart = document.getElementById('reqPeriodStart').value;
   const periodEnd = document.getElementById('reqPeriodEnd').value;
@@ -2581,6 +3575,20 @@ async function savePracticeRequest() {
 
 // --- Category selector for request modal ---
 
+/**
+ * EN: Builds the category dropdown for the request modal, with optional text
+ *     filtering applied at build time (rather than hiding DOM nodes like the
+ *     profile dropdown does). This approach re-renders the dropdown HTML when
+ *     the user types, which is acceptable because the dropdown is inside a modal
+ *     that is not permanently visible. Filters by substring match on cat.title.
+ * FI: Rakentaa kategoriavalikkolistauksen pyyntömodaalille valinnaisella teksti-
+ *     suodatuksella sovellettuna rakennusaikana (DOM-solmujen piilottamisen sijaan
+ *     kuten profiilivarikko tekee). Tämä lähestymistapa renderöi valikkolistauksen
+ *     HTML:n uudelleen käyttäjän kirjoittaessa, mikä on hyväksyttävää, koska
+ *     valikkolistaus on modaalissa, joka ei ole pysyvästi näkyvissä. Suodattaa
+ *     osamerkkijonon vastaavuudella cat.title-kentässä.
+ * @param {string} query - EN: filter string, empty string shows all / FI: suodatusmerkkijono, tyhjä merkkijono näyttää kaikki
+ */
 function buildReqCategoryDropdown(query) {
   const dropdown = document.getElementById('reqCategoryDropdown');
   if (!dropdown) return;
@@ -2606,17 +3614,42 @@ function buildReqCategoryDropdown(query) {
   `).join('');
 }
 
+/**
+ * EN: Shows the request-modal category dropdown, rebuilding it with the current
+ *     search input value so the filtered view is consistent on focus.
+ * FI: Näyttää pyyntömodaalin kategoriavalikkolistauksen rakentamalla sen uudelleen
+ *     nykyisellä hakusyötteen arvolla, jotta suodatettu näkymä on johdonmukainen
+ *     tarkennuksen yhteydessä.
+ */
 function showReqCategoryDropdown() {
   buildReqCategoryDropdown(document.getElementById('reqCategorySearch').value);
   document.getElementById('reqCategoryDropdown').classList.add('show');
 }
 
+/**
+ * EN: Re-builds the request-modal category dropdown filtered by the current
+ *     search input. Called on every keyup in the search field so the list
+ *     narrows in real time.
+ * FI: Rakentaa pyyntömodaalin kategoriavalikkolistauksen uudelleen suodatettuna
+ *     nykyisellä hakusyötteellä. Kutsutaan jokaisella näppäimistön vapautuksella
+ *     hakukentässä, jotta lista kapenee reaaliajassa.
+ */
 function filterReqCategories() {
   const query = document.getElementById('reqCategorySearch').value;
   buildReqCategoryDropdown(query);
   document.getElementById('reqCategoryDropdown').classList.add('show');
 }
 
+/**
+ * EN: Adds or removes a category from reqSelectedCategoryIds (the request modal's
+ *     category state). Rebuilds the dropdown after mutation to update the 'selected'
+ *     highlight, passing the current search query so the filtered view is preserved.
+ * FI: Lisää tai poistaa kategorian reqSelectedCategoryIds-taulukosta (pyyntömodaalin
+ *     kategoriatila). Rakentaa valikkolistauksen uudelleen mutaation jälkeen
+ *     päivittääkseen 'selected'-korostuksen, välittäen nykyisen hakukyselyn,
+ *     jotta suodatettu näkymä säilyy.
+ * @param {number} categoryId - EN: category_id to toggle / FI: category_id joka lisätään tai poistetaan
+ */
 function toggleReqCategory(categoryId) {
   if (reqSelectedCategoryIds.includes(categoryId)) {
     reqSelectedCategoryIds = reqSelectedCategoryIds.filter(id => id !== categoryId);
@@ -2627,6 +3660,17 @@ function toggleReqCategory(categoryId) {
   buildReqCategoryDropdown(document.getElementById('reqCategorySearch').value);
 }
 
+/**
+ * EN: Renders the selected-category chips for the request modal. Mirrors
+ *     renderSelectedCategories() but operates on reqSelectedCategoryIds and
+ *     #reqSelectedCategories so the two dropdowns don't share DOM state.
+ *     Uses toggleReqCategory for removal so the dropdown highlights update.
+ * FI: Renderöi valittujen kategorioiden napit pyyntömodaalille. Peilaa
+ *     renderSelectedCategories()-funktiota, mutta toimii reqSelectedCategoryIds-
+ *     taulukolla ja #reqSelectedCategories-elementillä, jotta kaksi valikkolistausta
+ *     eivät jaa DOM-tilaa. Käyttää toggleReqCategory-funktiota poistamiseen,
+ *     jotta valikkolistauksen korostukset päivittyvät.
+ */
 function renderReqSelectedCategories() {
   const container = document.getElementById('reqSelectedCategories');
   if (!container) return;
@@ -2645,10 +3689,41 @@ function renderReqSelectedCategories() {
 // FOUND COMPANY MODAL
 // ==========================================
 
+/**
+ * EN: Module-level state for the Found Company modal.
+ *     pendingFoundRequestId: the request_id currently being marked as found —
+ *       carried from openFoundCompanyModal() through to confirmMarkAsFound().
+ *     foundCompanyId: the company_id selected from the dropdown, or null if the
+ *       user typed a free-text company name not in the Companies table.
+ *     allCompanies: lazily loaded company name list, fetched once per modal open
+ *       (not page load) to avoid an unnecessary query when the user never opens this modal.
+ * FI: Moduulitason tila Löydetty yritys -modaalille.
+ *     pendingFoundRequestId: request_id, jota merkitään parhaillaan löydetyksi —
+ *       siirretty openFoundCompanyModal():sta confirmMarkAsFound():iin.
+ *     foundCompanyId: valikkolistauksesta valittu company_id tai null, jos käyttäjä
+ *       kirjoitti vapaatekstisen yrityksen nimen, joka ei ole Companies-taulukossa.
+ *     allCompanies: laiskasti ladattu yrityksen nimilista, haettu kerran per modaalin
+ *       avaus (ei sivun lataus) tarpeettoman kyselyn välttämiseksi, kun käyttäjä
+ *       ei koskaan avaa tätä modaalia.
+ */
 let pendingFoundRequestId = null;
 let foundCompanyId = null;
 let allCompanies = [];
 
+/**
+ * EN: Opens the Found Company modal for a given practice request. Resets all
+ *     modal state (input, dropdown, chip) before showing so leftover selections
+ *     from a previous open don't appear. Loads the company list from Supabase
+ *     only on the first modal open (allCompanies.length === 0 guard) — subsequent
+ *     opens reuse the cached list for instant display.
+ * FI: Avaa Löydetty yritys -modaalin tietylle harjoittelupyynnölle. Nollaa
+ *     kaikki modaalin tilan (syöte, valikkolistaus, nappula) ennen näyttämistä,
+ *     jotta edellisen avauksen ylijääneet valinnat eivät näy. Lataa yritysluettelon
+ *     Supabasesta vain ensimmäisellä modaalin avauksella (allCompanies.length === 0
+ *     -vartiolla) — myöhemmät avaukset käyttävät välimuistissa olevaa listaa
+ *     välittömän näytön vuoksi.
+ * @param {number} requestId - EN: the practice request to mark as found / FI: löydetyksi merkittävä harjoittelupyyntö
+ */
 async function openFoundCompanyModal(requestId) {
   pendingFoundRequestId = requestId;
   foundCompanyId = null;
@@ -2670,16 +3745,43 @@ async function openFoundCompanyModal(requestId) {
   document.getElementById('foundCompanyModal').style.display = 'block';
 }
 
+/**
+ * EN: Closes the Found Company modal and clears the pending state variables.
+ *     Clearing pendingFoundRequestId prevents confirmMarkAsFound() from
+ *     accidentally updating a stale request if the modal state is somehow
+ *     triggered after close.
+ * FI: Sulkee Löydetty yritys -modaalin ja tyhjentää odottavat tilamuuttujat.
+ *     pendingFoundRequestId:n tyhjentäminen estää confirmMarkAsFound():tä
+ *     päivittämästä vahingossa vanhentunutta pyyntöä, jos modaalin tila
+ *     jollain tavoin käynnistyy sulkemisen jälkeen.
+ */
 function closeFoundCompanyModal() {
   document.getElementById('foundCompanyModal').style.display = 'none';
   pendingFoundRequestId = null;
   foundCompanyId = null;
 }
 
+/**
+ * EN: Shows the company search dropdown on input focus using the current input value.
+ *     Delegates to renderFoundCompanyDropdown() which handles filtering.
+ * FI: Näyttää yrityshaun valikkolistauksen syöttötarkennuksessa käyttäen nykyistä
+ *     syöttöarvoa. Delegoi renderFoundCompanyDropdown()-funktiolle, joka käsittelee suodatuksen.
+ */
 function showFoundCompanyDropdown() {
   renderFoundCompanyDropdown(document.getElementById('foundCompanyInput').value);
 }
 
+/**
+ * EN: Handles input changes in the company search field. If a company was
+ *     previously selected (foundCompanyId is set), clears the selection and
+ *     hides the chip — the user has started a new search. Then re-renders
+ *     the dropdown with the new query.
+ * FI: Käsittelee syöttömuutokset yrityshaun kentässä. Jos yritys oli
+ *     aiemmin valittu (foundCompanyId on asetettu), tyhjentää valinnan ja
+ *     piilottaa napin — käyttäjä on aloittanut uuden haun. Sitten renderöi
+ *     valikkolistauksen uudelleen uudella kyselyllä.
+ * @param {string} query - EN: current input text / FI: nykyinen syöteteksti
+ */
 function searchFoundCompany(query) {
   if (foundCompanyId) {
     foundCompanyId = null;
@@ -2688,6 +3790,15 @@ function searchFoundCompany(query) {
   renderFoundCompanyDropdown(query);
 }
 
+/**
+ * EN: Renders filtered company options in the Found Company dropdown. An empty
+ *     query shows all companies. Returns without showing the dropdown if no
+ *     companies match, preventing an empty floating box from appearing.
+ * FI: Renderöi suodatetut yritysvalinnat Löydetty yritys -valikkolistauksessa.
+ *     Tyhjä kysely näyttää kaikki yritykset. Palaa näyttämättä valikkolistausta,
+ *     jos yhtään yritystä ei vastaa, estäen tyhjän kelluvan ruudun ilmestymistä.
+ * @param {string} query - EN: filter text, empty = show all / FI: suodatusteksti, tyhjä = näytä kaikki
+ */
 function renderFoundCompanyDropdown(query) {
   const dropdown = document.getElementById('foundCompanyDropdown');
   const q = (query || '').toLowerCase().trim();
@@ -2709,6 +3820,18 @@ function renderFoundCompanyDropdown(query) {
   dropdown.classList.add('show');
 }
 
+/**
+ * EN: Stores the selected company and updates the UI. Populates the text input
+ *     with the company name (for display), hides the dropdown, and shows a
+ *     confirmation chip below the input. The chip's × button calls clearFoundCompany()
+ *     so the user can deselect and search again.
+ * FI: Tallentaa valitun yrityksen ja päivittää käyttöliittymän. Täyttää tekstisyötteen
+ *     yrityksen nimellä (näyttämistä varten), piilottaa valikkolistauksen ja näyttää
+ *     vahvistusnapin syötteen alapuolella. Napin ×-painike kutsuu clearFoundCompany()-
+ *     funktiota, jotta käyttäjä voi poistaa valinnan ja hakea uudelleen.
+ * @param {number} companyId - EN: Companies.company_id / FI: Companies.company_id
+ * @param {string} companyName - EN: display name for the chip / FI: napin näyttönimi
+ */
 function selectFoundCompany(companyId, companyName) {
   foundCompanyId = companyId;
   document.getElementById('foundCompanyInput').value = companyName;
@@ -2724,12 +3847,36 @@ function selectFoundCompany(companyId, companyName) {
   `;
 }
 
+/**
+ * EN: Clears the found company selection — nullifies foundCompanyId, blanks the
+ *     input, and hides the chip. The user can then type a new search or close
+ *     the modal. The company list (allCompanies) is not cleared since it can be
+ *     reused for the new search.
+ * FI: Tyhjentää löydetyn yrityksen valinnan — nollaa foundCompanyId:n, tyhjentää
+ *     syötteen ja piilottaa napin. Käyttäjä voi sitten kirjoittaa uuden haun tai
+ *     sulkea modaalin. Yritysluetteloa (allCompanies) ei tyhjennetä, koska sitä
+ *     voidaan käyttää uudelleen uudessa haussa.
+ */
 function clearFoundCompany() {
   foundCompanyId = null;
   document.getElementById('foundCompanyInput').value = '';
   document.getElementById('foundCompanyChip').style.display = 'none';
 }
 
+/**
+ * EN: Saves the "found" status for a practice request. Supports two modes:
+ *     1. Company from DB: found_company_id is set, found_company_name stays null
+ *        (the JOIN in loadPracticeRequests will supply the name on reload).
+ *     2. Free-text company: foundCompanyId is null so the typed name is saved
+ *        directly to found_company_name for display without a JOIN.
+ *     After updating, reloads the request list and closes the modal.
+ * FI: Tallentaa "löydetty"-tilan harjoittelupyynnölle. Tukee kahta tilaa:
+ *     1. Yritys DB:stä: found_company_id on asetettu, found_company_name pysyy
+ *        nullina (JOIN loadPracticeRequests():ssa toimittaa nimen uudelleenlatauksen yhteydessä).
+ *     2. Vapaatekstiyritys: foundCompanyId on null, joten kirjoitettu nimi tallennetaan
+ *        suoraan found_company_name-kenttään näyttämistä varten ilman JOIN-kyselyä.
+ *     Päivityksen jälkeen lataa pyyntölistan uudelleen ja sulkee modaalin.
+ */
 async function confirmMarkAsFound() {
   if (!pendingFoundRequestId) return;
 
@@ -2765,16 +3912,61 @@ document.addEventListener('click', function(e) {
 // DELETE ACCOUNT (GDPR Art. 17)
 // ==========================================
 
+/**
+ * EN: Opens the account deletion confirmation modal with a clean state.
+ *     Clears the confirmation input and hides any previous error message so
+ *     re-opening after a failed attempt doesn't show stale error text.
+ * FI: Avaa tilin poistamisen vahvistusmodaalin puhtaalla tilalla.
+ *     Tyhjentää vahvistussyötteen ja piilottaa mahdolliset aiemmat
+ *     virheilmoitukset, jotta epäonnistuneen yrityksen jälkeen uudelleen
+ *     avaaminen ei näytä vanhentunutta virhetekstiä.
+ */
 function openDeleteAccountModal() {
   document.getElementById('deleteConfirmInput').value = '';
   document.getElementById('deleteAccountError').style.display = 'none';
   document.getElementById('deleteAccountModal').style.display = 'block';
 }
 
+/**
+ * EN: Closes the account deletion modal without performing any action.
+ * FI: Sulkee tilin poistamisen modaalin ilman toimia.
+ */
 function closeDeleteAccountModal() {
   document.getElementById('deleteAccountModal').style.display = 'none';
 }
 
+/**
+ * EN: Implements the GDPR Art. 17 "right to erasure" account deletion flow.
+ *     Requires the user to type "DELETE" (uppercase) to prevent accidental
+ *     deletion — a typed confirmation is deliberately hard to do by mistake.
+ *     The deletion sequence:
+ *       1. Removes the CV file from 'practice-files' storage.
+ *       2. Removes the avatar from 'foto' storage.
+ *       3. Batch-removes all application CV files from 'resumes' storage.
+ *       4. Deletes the Users row — DB cascade removes student_profiles,
+ *          applications, student_categories, Student_links, and practice requests.
+ *       5. Calls the delete_auth_user_by_email RPC to remove the Supabase Auth
+ *          identity (service-role operation wrapped in a DB function for security).
+ *       6. Clears all localStorage keys and redirects to index.html.
+ *     Storage paths are extracted by splitting on the known bucket-name segment
+ *     because the public URL format is: .../storage/v1/object/public/{bucket}/{path}.
+ *     RPC errors are logged but don't abort the flow since the Users row is already gone.
+ * FI: Toteuttaa GDPR:n 17. artiklan "oikeus tulla unohdetuksi" -tilin poistamisen virran.
+ *     Vaatii käyttäjää kirjoittamaan "DELETE" (isoin kirjaimin) vahingollisen poistamisen
+ *     estämiseksi — kirjoitettu vahvistus on tarkoituksellisesti vaikea tehdä vahingossa.
+ *     Poistamissekvenssi:
+ *       1. Poistaa CV-tiedoston 'practice-files'-tallennuksesta.
+ *       2. Poistaa avatarin 'foto'-tallennuksesta.
+ *       3. Poistaa kaikki hakemusten CV-tiedostot eräajona 'resumes'-tallennuksesta.
+ *       4. Poistaa Users-rivin — DB-kaskadi poistaa student_profiles-, applications-,
+ *          student_categories-, Student_links- ja practice_requests-rivit.
+ *       5. Kutsuu delete_auth_user_by_email-RPC:tä poistaakseen Supabase Auth
+ *          -identiteetin (palveluroolin toiminto käärittynä DB-funktioon turvallisuuden vuoksi).
+ *       6. Tyhjentää kaikki localStorage-avaimet ja ohjaa index.html:ään.
+ *     Tallennuspolut poimitaan jakamalla tunnetun säilö-nimiosan kohdalta, koska
+ *     julkisen URL:n muoto on: .../storage/v1/object/public/{bucket}/{path}.
+ *     RPC-virheet kirjataan lokiin, mutta eivät keskeytä virtaa, koska Users-rivi on jo poistettu.
+ */
 async function confirmDeleteAccount() {
   const input = document.getElementById('deleteConfirmInput').value.trim();
   const errorEl = document.getElementById('deleteAccountError');
