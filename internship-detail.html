@@ -103,51 +103,51 @@
 
             <!-- Job Overview -->
             <div class="card-content">
-              <h3>Job Overview</h3>
+              <h3 data-i18n="pages.internshipDetail.jobOverviewH">Job Overview</h3>
               <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 2rem;">
                 <div>
-                  <p class="text-muted" style="margin: 0; font-size: 0.875rem;">SALARY</p>
+                  <p class="text-muted" style="margin: 0; font-size: 0.875rem;" data-i18n="pages.internshipDetail.salaryLabel">SALARY</p>
                   <p id="displaySalary" style="margin: 0.5rem 0; font-weight: 600; font-size: 1.25rem;">Loading...</p>
                 </div>
                 <div>
-                  <p class="text-muted" style="margin: 0; font-size: 0.875rem;">DURATION</p>
+                  <p class="text-muted" style="margin: 0; font-size: 0.875rem;" data-i18n="pages.internshipDetail.durationLabel">DURATION</p>
                   <p id="displayDuration" style="margin: 0.5rem 0; font-weight: 600; font-size: 1.25rem;">Loading...</p>
                 </div>
                 <div>
-                  <p class="text-muted" style="margin: 0; font-size: 0.875rem;">LOCATION</p>
+                  <p class="text-muted" style="margin: 0; font-size: 0.875rem;" data-i18n="pages.internshipDetail.locationLabel">LOCATION</p>
                   <p id="displayLocation" style="margin: 0.5rem 0; font-weight: 600; font-size: 1.25rem;">Loading...</p>
                 </div>
               </div>
             </div>
 
             <div class="card-content">
-              <h3>About Us</h3> 
+              <h3 data-i18n="pages.internshipDetail.aboutUsH">About Us</h3>
               <p id="pDesc" style="white-space: pre-wrap; color: var(--text-color);">
                 Loading company description...
               </p>
             </div>
             
             <div class="card-content" id="descriptionSection">
-              <h3>Description</h3>
+              <h3 data-i18n="pages.internshipDetail.descriptionH">Description</h3>
               <p id="displayDescription" style="white-space: pre-wrap; color: var(--text-color);"></p>
             </div>
 
             <div class="card-content">
-              <h3>Responsibilities</h3>
+              <h3 data-i18n="pages.internshipDetail.responsibilitiesH">Responsibilities</h3>
               <p id="displayResponsibilities" style="white-space: pre-wrap; color: var(--text-color);">
                   Loading responsibilities...
               </p>
             </div>
             
             <div class="card-content">
-              <h3>Requirements</h3>
+              <h3 data-i18n="pages.internshipDetail.requirementsH">Requirements</h3>
               <p id="pReqs" style="white-space: pre-wrap;"></p> 
             </div>
 
             <!-- Application Button -->
             <div class="card-footer" style="border-top: 1px solid var(--border-color); padding-top: 2rem; margin-top: 2rem;">
-              <button id="applyBtn" class="btn btn-primary btn-large" onclick="openApplyModal()">Apply Now</button>
-              <button class="btn btn-outline btn-large" onclick="showToast('Saved to favorites!', 'success')">Save Position</button>
+              <button id="applyBtn" class="btn btn-primary btn-large" onclick="openApplyModal()" data-i18n="pages.internshipDetail.applyBtn">Apply Now</button>
+              <button class="btn btn-outline btn-large" onclick="showToast('Saved to favorites!', 'success')" data-i18n="pages.internshipDetail.savePositionBtn">Save Position</button>
             </div>
           </div>
 
@@ -167,49 +167,49 @@
                ──────────────────────────────────────────────────────── -->
 <div class="card" style="margin-top: 2rem;">
   <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-    <h3 class="card-title">Company Profile</h3>
+    <h3 class="card-title" data-i18n="pages.internshipDetail.companyProfileH">Company Profile</h3>
     <div id="companyAuthControls">
 
       <div id="editActionButtons" style="display: none; gap: 0.5rem;">
-        <button class="btn btn-small btn-primary" id="saveCompanyBtn" onclick="saveCompanyProfile()">Save</button>
-        <button class="btn btn-small btn-secondary" id="cancelCompanyBtn" onclick="toggleCompanyEdit(false)">Cancel</button>
+        <button class="btn btn-small btn-primary" id="saveCompanyBtn" onclick="saveCompanyProfile()" data-i18n="pages.internshipDetail.saveBtn">Save</button>
+        <button class="btn btn-small btn-secondary" id="cancelCompanyBtn" onclick="toggleCompanyEdit(false)" data-i18n="pages.internshipDetail.cancelBtn">Cancel</button>
       </div>
     </div>
   </div>
   <div id="companyDisplayMode" class="card-content">
     <p id="dCompanyDesc" style="white-space: pre-wrap;">Add company description here...</p>
     <p>
-      <strong>Email:</strong> <span id="dCompanyEmail"> No Added Email</span><br>
-      <strong>Website:</strong> <span id="dWebsite">No added Website</span><br>
-      <strong>Headquarters:</strong> <span id="dHeadquarters">No added Headquarters</span><br>
-      <strong>Business ID (Y-Tunnus):</strong> <span id="dYTunnus">No added Y</span><br>
+      <strong data-i18n="pages.internshipDetail.emailLabel">Email:</strong> <span id="dCompanyEmail" data-i18n="pages.internshipDetail.noEmail">No email added</span><br>
+      <strong data-i18n="pages.internshipDetail.websiteLabel">Website:</strong> <span id="dWebsite" data-i18n="pages.internshipDetail.noWebsite">No website added</span><br>
+      <strong data-i18n="pages.internshipDetail.hqLabel">Headquarters:</strong> <span id="dHeadquarters" data-i18n="pages.internshipDetail.noHQ">No headquarters added</span><br>
+      <strong data-i18n="pages.internshipDetail.ytunnusLabel">Business ID (Y-Tunnus):</strong> <span id="dYTunnus" data-i18n="pages.internshipDetail.noYTunnus">No Y-Tunnus added</span><br>
     </p>
   </div>
 
   <div id="companyEditMode" class="card-content" style="display: none;">
     <div class="form-group" style="margin-bottom: 1rem;">
-      <label>Company Name</label>
+      <label data-i18n="pages.internshipDetail.companyNameLabel">Company Name</label>
       <input type="text" id="eCompanyName" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
     </div>
     <div class="form-group">
-      <label>Company Description</label>
+      <label data-i18n="pages.internshipDetail.companyDescLabel">Company Description</label>
       <textarea id="eCompanyDesc" class="edit-textarea" rows="4" style="width:100%; border:1px solid #ddd; border-radius:4px; padding:10px;"></textarea>
     </div>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
       <div class="form-group">
-        <label>Website</label>
+        <label data-i18n="pages.internshipDetail.websiteEditLabel">Website</label>
         <input type="text" id="eWebsite" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
       </div>
       <div class="form-group">
-        <label>Headquarters (City)</label>
+        <label data-i18n="pages.internshipDetail.hqEditLabel">Headquarters (City)</label>
         <input type="text" id="eCity" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
       </div>
       <div class="form-group">
-        <label>Business ID (Y-Tunnus)</label>
+        <label data-i18n="pages.internshipDetail.ytunnusEditLabel">Business ID (Y-Tunnus)</label>
         <input type="text" id="eYTunnus" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
       </div>
       <div class="form-group">
-        <label>Contact Email</label>
+        <label data-i18n="pages.internshipDetail.contactEmailLabel">Contact Email</label>
         <input type="email" id="eEmail" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
       </div>
     </div>
@@ -238,10 +238,10 @@
       <div id="applicantsSection" style="display: none;">
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title">📋 Received Applications <span id="applicantsCount" style="font-size: 0.9rem; color: #666; font-weight:400;">(0)</span></h3>
+            <h3 class="card-title"><span data-i18n="pages.internshipDetail.receivedAppsH">📋 Received Applications </span><span id="applicantsCount" style="font-size: 0.9rem; color: #666; font-weight:400;">(0)</span></h3>
           </div>
           <div class="card-content" id="companyApplicationsContainer">
-            <p>No applications yet.</p>
+            <p data-i18n="pages.internshipDetail.noApps">No applications yet.</p>
           </div>
         </div>
       </div>
@@ -272,13 +272,13 @@
     <div class="modal-content" style="background-color: white; margin: 5% auto; padding: 30px; border-radius: 12px; width: 90%; max-width: 550px; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
       <span onclick="closeApplyModal()" style="position: absolute; right: 20px; top: 15px; font-size: 28px; cursor: pointer; color: #999;">&times;</span>
       
-      <h2>Apply for <span id="modalTitle">...</span></h2>
+      <h2><span data-i18n="pages.internshipDetail.applyForPrefix">Apply for</span> <span id="modalTitle">...</span></h2>
       <p id="modalCompany">...</p>
   
       <div id="companyFormControls" style="display: none; background: #f0f7ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px dashed #007bff;">
-          <p style="font-weight: bold; font-size: 0.8rem; color: #007bff; margin-top: 0;">COMPANY ADMIN CONTROLS</p>
+          <p style="font-weight: bold; font-size: 0.8rem; color: #007bff; margin-top: 0;" data-i18n="pages.internshipDetail.adminControlsLabel">COMPANY ADMIN CONTROLS</p>
           <div id="customLinesContainer"></div>
-          <button type="button" class="btn btn-small btn-outline" onclick="addNewLine()" style="margin-top: 10px;">
+          <button type="button" class="btn btn-small btn-outline" onclick="addNewLine()" style="margin-top: 10px;" data-i18n="pages.internshipDetail.addQuestionBtn">
               + Add Question Field
           </button>
       </div>
@@ -286,46 +286,46 @@
       <form id="modalApplyForm">
         <div id="dynamicFormFields">
 
-            <p style="font-size:0.8rem; color:#6b7280; margin:0 0 1rem;">Your profile information will be shared with the employer. <a href="student-profile.html" style="color:#6366f1;">Edit in profile →</a></p>
+            <p style="font-size:0.8rem; color:#6b7280; margin:0 0 1rem;" data-i18n-html="pages.internshipDetail.profileSharedNote">Your profile information will be shared with the employer. <a href="student-profile.html" style="color:#6366f1;">Edit in profile →</a></p>
 
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
                 <div class="form-group">
-                    <label>First Name</label>
+                    <label data-i18n="pages.internshipDetail.firstNameLabel">First Name</label>
                     <input type="text" id="applyFirstName" readonly style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; background:#f9f9f9; color:#374151;">
                 </div>
                 <div class="form-group">
-                    <label>Last Name</label>
+                    <label data-i18n="pages.internshipDetail.lastNameLabel">Last Name</label>
                     <input type="text" id="applyLastName" readonly style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; background:#f9f9f9; color:#374151;">
                 </div>
             </div>
 
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
                 <div class="form-group">
-                    <label>Email Address</label>
+                    <label data-i18n="pages.internshipDetail.emailFormLabel">Email Address</label>
                     <input type="email" id="applyEmail" readonly style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; background:#f9f9f9; color:#374151;">
                 </div>
                 <div class="form-group">
-                    <label>Phone Number</label>
+                    <label data-i18n="pages.internshipDetail.phoneLabel">Phone Number</label>
                     <input type="tel" id="applyPhone" readonly style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; background:#f9f9f9; color:#374151;">
                 </div>
             </div>
 
             <div style="background:#f8f9fa; padding:12px; border-radius:8px; margin-bottom:1rem; border:1px solid #eee;">
-                <p style="font-weight:600; margin:0 0 8px; font-size:0.9rem;">📄 CV / Resume</p>
-                <div id="cvFileInfo"><p style="font-size:0.9rem; color:#666; margin:0;">No CV uploaded yet.</p></div>
-                <label for="cvUpload" class="btn btn-secondary" style="width:100%; display:block; text-align:center; cursor:pointer; padding:8px 0; margin-top:8px;">
+                <p style="font-weight:600; margin:0 0 8px; font-size:0.9rem;" data-i18n="pages.internshipDetail.cvLabel">📄 CV / Resume</p>
+                <div id="cvFileInfo"><p style="font-size:0.9rem; color:#666; margin:0;" data-i18n="pages.internshipDetail.noCvText">No CV uploaded yet.</p></div>
+                <label for="cvUpload" class="btn btn-secondary" style="width:100%; display:block; text-align:center; cursor:pointer; padding:8px 0; margin-top:8px;" data-i18n="pages.internshipDetail.uploadCvBtn">
                     Upload different CV (PDF)
                 </label>
                 <input type="file" id="cvUpload" accept=".pdf" style="display:none;" onchange="handleCVSelection(this)" />
             </div>
 
             <div class="form-group" style="margin-bottom:1rem;">
-                <label>Cover Letter / Why should we hire you?</label>
-                <textarea id="applyLetter" rows="4" placeholder="Write something to the employer..." style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-family:inherit;"></textarea>
+                <label data-i18n="pages.internshipDetail.coverLetterLabel">Cover Letter / Why should we hire you?</label>
+                <textarea id="applyLetter" rows="4" placeholder="Write something to the employer..." data-i18n-placeholder="pages.internshipDetail.coverLetterPlaceholder" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-family:inherit;"></textarea>
             </div>
         </div>
 
-        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:10px; padding:12px;">Submit Application</button>
+        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:10px; padding:12px;" data-i18n="pages.internshipDetail.submitBtn">Submit Application</button>
       </form>
     </div>
   </div> 
