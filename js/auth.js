@@ -76,6 +76,7 @@ async function logout(event) {
   localStorage.removeItem('userId');
   localStorage.removeItem('userRole');
   localStorage.removeItem('userLogin');
+  localStorage.removeItem('favorites');
   window.location.href = 'index.html';
 }
 

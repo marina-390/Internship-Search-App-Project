@@ -328,7 +328,9 @@ async function handleLogin(event) {
     //     pre-dates Supabase Auth and has no matching auth.users row.
     // FI: Muodostetaan Supabase Auth -istunto RLS:ää varten — virhe ohitetaan hiljaa,
     //     jos tili on luotu ennen Supabase Auth:ia eikä sillä ole auth.users-tietuetta.
-    await supabaseClient.auth.signInWithPassword({ email: email, password: password }).catch(function() {});
+    await supabaseClient.auth.signInWithPassword({ email: email, password: password }).catch(function(e) {
+      console.warn('[auth] Supabase signInWithPassword failed (legacy account?):', e?.message);
+    });
 
     localStorage.setItem('isLoggedIn', 'true');
     localStorage.setItem('userId',   user.user_id);
