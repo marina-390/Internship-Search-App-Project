@@ -317,32 +317,19 @@
       }
     }
 
-    async function deleteMessage(id) {
-      if (!confirm('Delete this message? This cannot be undone.')) return;
-      // Ensure we have a Supabase Auth session so the RLS "Admins can delete" policy fires
-      const { data: { session: authSession } } = await supabaseClient.auth.getSession();
-      if (!authSession) {
-        // Try a re-auth sign-in with current localStorage session
-        const localSession = getCurrentSession();
-        if (localSession) {
-          // The admin is authenticated via our custom Users table but may need
-          // an active Supabase Auth session for RLS. We attempt a silent refresh.
-          await supabaseClient.auth.refreshSession();
-        }
-      }
-      const { error } = await supabaseClient.from('contact_messages').delete().eq('id', id);
-      if (error) {
-        // RLS may block delete if Supabase Auth session is missing —
-        // fall back to service-role via edge function if configured,
-        // or advise the admin to disable RLS on contact_messages for DELETE.
-        showToast('Delete failed: ' + error.message + '. Ensure the RLS policy allows authenticated deletes, or disable RLS for contact_messages DELETE.', 'error');
-        return;
-      }
-      showToast('Message deleted.', 'success');
-      await loadMessages();
-      await loadStats();
-    }
-
+async function deleteMessage(id) {
+  if (!confirm('Delete this message? This cannot be undone.')) return;
+  const { data, error } = await supabaseClient
+    .from('contact_messages').delete().eq('id', id).select();
+  if (error) { showToast('Delete failed: ' + error.message); return; }
+  if (!data || data.length === 0) { showToast('Nothing deleted - check RLS policy.'); return; }
+  const rows = document.querySelectorAll('#messagesTableBody tr');
+  rows.forEach(row => {
+    if (row.innerHTML.includes(`deleteMessage(${id})`)) row.remove();
+  });
+  showToast('Message deleted successfully.');
+  await loadStats();
+}
     function openMessageModal(data) {
       document.getElementById('viewSubject').textContent   = data.subject || '';
       document.getElementById('viewName').textContent      = data.name    || '';
@@ -493,14 +480,18 @@
     }
 
     async function deleteFeedback(id) {
-      if (!confirm('Delete this feedback? This cannot be undone.')) return;
-      const { error } = await supabaseClient.from('feedbacks').delete().eq('id', id);
-      if (error) { showToast('Delete failed: ' + error.message, 'error'); return; }
-      showToast('Feedback deleted.', 'success');
-      closeFeedbackModal();
-      await loadFeedbacks();
-      await loadStats();
-    }
+  if (!confirm('Delete this feedback? This cannot be undone.')) return;
+  const { data, error } = await supabaseClient
+    .from('feedbacks').delete().eq('id', id).select();
+  if (error) { showToast('Delete failed: ' + error.message); return; }
+  if (!data || data.length === 0) { alert('Nothing deleted - check RLS policy.'); return; }
+  document.getElementById(`fb-card-${id}`)?.remove();
+  delete window._adminFeedbackCache[id];
+  closeFeedbackModal();
+
+  showToast('Feedback deleted.', 'success');
+  await loadStats();
+}
 
     /* ============================================================
        USER ACTIONS
