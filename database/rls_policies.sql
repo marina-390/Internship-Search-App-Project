@@ -132,6 +132,40 @@ FOR ALL TO anon USING (true) WITH CHECK (true);
 
 
 -- ============================================================
+-- position_categories
+-- ============================================================
+-- Everyone can read position_categories
+CREATE POLICY "auth_read_position_categories" ON position_categories
+FOR SELECT TO authenticated USING (true);
+
+CREATE POLICY "anon_read_position_categories" ON position_categories
+FOR SELECT TO anon USING (true);
+
+-- Only the owning company can insert/update/delete
+CREATE POLICY "auth_company_own_position_categories" ON position_categories
+FOR ALL TO authenticated
+USING (
+  position_id IN (
+    SELECT p.position_id FROM positions p
+    JOIN "Companies" c ON c.company_id = p.company_id
+    JOIN "Users" u ON u.user_id = c.user_id
+    WHERE u.user_login = auth.email() AND u.role = 2
+  )
+)
+WITH CHECK (
+  position_id IN (
+    SELECT p.position_id FROM positions p
+    JOIN "Companies" c ON c.company_id = p.company_id
+    JOIN "Users" u ON u.user_id = c.user_id
+    WHERE u.user_login = auth.email() AND u.role = 2
+  )
+);
+
+CREATE POLICY "anon_write_position_categories" ON position_categories
+FOR ALL TO anon USING (true) WITH CHECK (true);
+
+
+-- ============================================================
 -- Companies
 -- ============================================================
 -- Everyone can read companies

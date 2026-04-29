@@ -564,11 +564,13 @@ async function loadCompanyProfile() {
   if (!session) return;
 
   try {
-    const { data: profile, error } = await supabaseClient
-      .from('Companies') 
-      .select('*')
-      .eq('user_id', session.userId)
-      .single();
+    const [profileRes, categoriesRes] = await Promise.all([
+      supabaseClient.from('Companies').select('*').eq('user_id', session.userId).single(),
+      supabaseClient.from('job_categories').select('category_id, title, group_id, job_groups(title)').order('group_id')
+    ]);
+
+    const { data: profile, error } = profileRes;
+    allCategories = categoriesRes.data || [];
 
     if (error) throw error;
     if (profile) {
@@ -802,10 +804,17 @@ function openPostModal() {
   // Clear form
   document.getElementById('pTitle').value = "";
   document.getElementById('pDesc').value = "";
+  document.getElementById('pRespon').value = "";
   document.getElementById('pReqs').value = "";
-  document.getElementById('pCategory').value = "";
-  
-  loadCategoriesIntoSelect();
+  document.getElementById('pStart').value = "";
+  document.getElementById('pEnd').value = "";
+  document.getElementById('pEnd').disabled = false;
+  document.getElementById('pOpenEnded').checked = false;
+  document.getElementById('pStatus').value = "active";
+  positionSelectedCategoryIds = [];
+  renderPosSelectedCategories();
+  document.getElementById('pCategorySearch').value = "";
+  document.getElementById('posCategoryDropdown').classList.remove('show');
 
   modal.style.display = 'block';
   document.body.style.overflow = 'hidden';
@@ -854,11 +863,14 @@ async function openEditModal(id) {
       document.getElementById('pEnd').value = data.period_end || "";
       document.getElementById('pOpenEnded').checked = data.is_open_ended;
 
-      // Load categories and then set the selected one
-      await loadCategoriesIntoSelect();
-      setTimeout(() => {
-          document.getElementById('pCategory').value = data.category_id || "";
-      }, 100);
+      // Load categories from position_categories junction table
+      const { data: posCats } = await supabaseClient
+          .from('position_categories')
+          .select('category_id')
+          .eq('position_id', id);
+      positionSelectedCategoryIds = (posCats || []).map(pc => pc.category_id);
+      document.getElementById('pCategorySearch').value = "";
+      renderPosSelectedCategories();
 
       modal.style.display = 'block';
       document.body.style.overflow = 'hidden';
@@ -887,7 +899,6 @@ async function submitPosition() {
       responsibilities: document.getElementById('pRespon').value,
       requirements: document.getElementById('pReqs').value,
       status: document.getElementById('pStatus').value,
-      category_id: document.getElementById('pCategory').value ? parseInt(document.getElementById('pCategory').value) : null,
       period_start: document.getElementById('pStart').value || null,
       period_end: document.getElementById('pEnd').value || null,
       is_open_ended: document.getElementById('pOpenEnded').checked
@@ -897,16 +908,24 @@ async function submitPosition() {
   submitBtn.innerText = "Saving...";
 
   try {
-      let error;
+      let positionId = editId ? parseInt(editId) : null;
+
       if (editId) {
-          const { error: err } = await supabaseClient.from('positions').update(postData).eq('position_id', editId);
-          error = err;
+          const { error } = await supabaseClient.from('positions').update(postData).eq('position_id', editId);
+          if (error) throw error;
       } else {
-          const { error: err } = await supabaseClient.from('positions').insert([postData]);
-          error = err;
+          const { data: newPos, error } = await supabaseClient.from('positions').insert([postData]).select().single();
+          if (error) throw error;
+          positionId = newPos.position_id;
       }
 
-      if (error) throw error;
+      // Sync position_categories junction table
+      await supabaseClient.from('position_categories').delete().eq('position_id', positionId);
+      if (positionSelectedCategoryIds.length > 0) {
+          const catRows = positionSelectedCategoryIds.map(catId => ({ position_id: positionId, category_id: catId }));
+          const { error: catError } = await supabaseClient.from('position_categories').insert(catRows);
+          if (catError) throw catError;
+      }
 
       showToast(editId ? "Updated!" : "Posted!", 'success');
       closePostModal();
@@ -922,9 +941,8 @@ async function submitPosition() {
 function closePostModal() {
   const modal = document.getElementById('postJobModal');
   modal.style.display = 'none';
-  document.body.style.overflow = ''; // Restore scrolling
-  
-  // Reset error messages
+  document.body.style.overflow = '';
+  positionSelectedCategoryIds = [];
   const err = document.getElementById('postError');
   if (err) err.style.display = 'none';
 }
@@ -935,6 +953,69 @@ window.onclick = function(event) {
   if (event.target == modal) {
       closePostModal();
   }
+}
+
+// ==========================================
+// POSITION CATEGORY MULTI-SELECT
+// ==========================================
+
+function buildPosCategoryDropdown(query) {
+  const dropdown = document.getElementById('posCategoryDropdown');
+  if (!dropdown) return;
+  const q = (query || '').toLowerCase();
+  const groups = {};
+  allCategories.forEach(cat => {
+    if (q && !cat.title.toLowerCase().includes(q)) return;
+    const groupTitle = cat.job_groups?.title || 'Other';
+    if (!groups[groupTitle]) groups[groupTitle] = [];
+    groups[groupTitle].push(cat);
+  });
+  dropdown.innerHTML = Object.entries(groups).map(([groupTitle, cats]) => `
+    <div class="category-group-title">${groupTitle}</div>
+    ${cats.map(cat => `
+      <div class="category-option${positionSelectedCategoryIds.includes(cat.category_id) ? ' selected' : ''}"
+           onclick="togglePosCategory(${cat.category_id})"
+           data-cat-title="${cat.title}">
+        ${cat.title}
+      </div>
+    `).join('')}
+  `).join('');
+}
+
+function showPosCategoryDropdown() {
+  buildPosCategoryDropdown(document.getElementById('pCategorySearch').value);
+  document.getElementById('posCategoryDropdown').classList.add('show');
+}
+
+function filterPosCategories() {
+  const query = document.getElementById('pCategorySearch').value;
+  buildPosCategoryDropdown(query);
+  document.getElementById('posCategoryDropdown').classList.add('show');
+}
+
+function togglePosCategory(categoryId) {
+  if (positionSelectedCategoryIds.includes(categoryId)) {
+    positionSelectedCategoryIds = positionSelectedCategoryIds.filter(id => id !== categoryId);
+  } else {
+    positionSelectedCategoryIds.push(categoryId);
+  }
+  renderPosSelectedCategories();
+  document.getElementById('posCategoryDropdown').classList.remove('show');
+  document.getElementById('pCategorySearch').value = '';
+}
+
+function renderPosSelectedCategories() {
+  const container = document.getElementById('posSelectedCategories');
+  if (!container) return;
+  container.innerHTML = positionSelectedCategoryIds.map(id => {
+    const cat = allCategories.find(c => c.category_id === id);
+    return cat ? `
+      <span class="category-tag">
+        ${cat.title}
+        <button onclick="togglePosCategory(${id})" type="button">×</button>
+      </span>
+    ` : '';
+  }).join('');
 }
 
 /**
@@ -1031,10 +1112,10 @@ async function loadCompanyPostings() {
   if (!container || !currentProfile) return;
 
   try {
-      // Fetch positions with application counts in one query
+      // Fetch positions with application counts and categories in one query
       const { data: positions, error } = await supabaseClient
           .from('positions')
-          .select('position_id, title, status, requirements, applications(count)')
+          .select('position_id, title, status, requirements, applications(count), position_categories(category_id, job_categories(title))')
           .eq('company_id', currentProfile.company_id)
           .order('created_at', { ascending: false });
 
@@ -1054,6 +1135,9 @@ async function loadCompanyPostings() {
       container.innerHTML = positions.map(pos => {
           const appCount = pos.applications?.[0]?.count ?? 0;
           const sc = statusColors[pos.status] || '';
+          const cats = (pos.position_categories || [])
+              .map(pc => `<span class="category-tag" style="font-size:0.75rem; padding:0.2rem 0.5rem;">${pc.job_categories?.title || ''}</span>`)
+              .join('');
           return `
           <div class="position-card" id="posting-${pos.position_id}">
               <div style="display:flex; justify-content:space-between; align-items:flex-start;">
@@ -1063,6 +1147,7 @@ async function loadCompanyPostings() {
                     <span class="status-badge" style="${sc}">${pos.status}</span>
                     <span style="font-size:0.78rem; color:var(--text-light);">👥 ${appCount} application${appCount !== 1 ? 's' : ''}</span>
                   </div>
+                  ${cats ? `<div style="display:flex; flex-wrap:wrap; gap:0.3rem; margin:0.3rem 0;">${cats}</div>` : ''}
                   ${pos.requirements ? `
                   <p id="req-${pos.position_id}" style="font-size:0.82rem;color:var(--text-light);margin:0.35rem 0 0.1rem;line-height:1.4;">
                     <span id="req-short-${pos.position_id}">${pos.requirements.length > 120 ? pos.requirements.slice(0, 120) + '…' : pos.requirements}</span>
@@ -2598,6 +2683,12 @@ document.addEventListener('click', function(e) {
   if (reqDropdown && reqSearch && !reqSearch.contains(e.target) && !reqDropdown.contains(e.target)) {
     reqDropdown.classList.remove('show');
   }
+
+  const posSearch = document.getElementById('pCategorySearch');
+  const posDropdown = document.getElementById('posCategoryDropdown');
+  if (posDropdown && posSearch && !posSearch.contains(e.target) && !posDropdown.contains(e.target)) {
+    posDropdown.classList.remove('show');
+  }
 });
 
 // ==========================================
@@ -3281,6 +3372,7 @@ function downloadCV() {
 let practiceRequests = [];
 let showAllRequests = false;
 let reqSelectedCategoryIds = [];
+let positionSelectedCategoryIds = [];
 
 /**
  * EN: Fetches all practice requests for a student from Supabase including their

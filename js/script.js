@@ -451,14 +451,14 @@ function filterJobs() {
     const title = card.querySelector('.job-title').textContent.toLowerCase();
     const company = card.querySelector('.job-company').textContent.toLowerCase();
     const location = card.querySelector('.badge-primary').textContent.toLowerCase();
-    const cardCategoryId = card.getAttribute('data-category-id');
+    const cardCategoryIds = (card.getAttribute('data-category-ids') || '').split(',').filter(Boolean);
     const jobId = card.getAttribute('data-job-id');
     const jobStart = card.getAttribute('data-start');
     const jobEnd = card.getAttribute('data-end');
 
     const matchesSearch = !searchText || title.includes(searchText) || company.includes(searchText);
     const matchesLocation = !locationText || location.includes(locationText);
-    const matchesCategory = !categoryId || cardCategoryId === categoryId;
+    const matchesCategory = !categoryId || cardCategoryIds.includes(categoryId);
     const matchesStart = !dateStartLimit || (jobStart && jobStart >= dateStartLimit);
     const matchesEnd = !dateEndLimit || (jobEnd && jobEnd <= dateEndLimit);
 
@@ -575,7 +575,7 @@ async function loadInternships() {
     // Load categories for filter
     await loadCategoriesForFilter();
 
-    // Fetch all active positions with application count
+    // Fetch all active positions with application count and categories
     const { data: positions, error } = await supabaseClient
       .from('positions')
       .select(`
@@ -588,9 +588,9 @@ async function loadInternships() {
         is_open_ended,
         status,
         company_id,
-        category_id,
         created_at,
-        applications(count)
+        applications(count),
+        position_categories(category_id, job_categories(title))
       `)
       .eq('status', 'active')
       .order('created_at', { ascending: false });
@@ -600,15 +600,7 @@ async function loadInternships() {
       throw error;
     }
 
-    // EN: Collect unique company and category IDs from positions so we can
-    //     fetch their details in two bulk queries instead of one per position.
-    //     Building in-memory maps (companyMap, categoryMap) avoids O(n²) lookups
-    //     when rendering each card.
-    // FI: Kerätään ainutlaatuiset yritys- ja kategoria-ID:t positioista, jotta
-    //     niiden tiedot voidaan hakea kahdella bulk-kyselyllä yhden position kohti sijaan.
-    //     Muistinsisäisten karttojen (companyMap, categoryMap) rakentaminen välttää
-    //     O(n²)-hakuja jokaista korttia renderöitäessä.
-    // Load company and category names for the list (less relational dependency)
+    // Load company names in bulk to avoid N+1 queries
     const companyIds = [...new Set((positions || []).map(p => p.company_id).filter(Boolean))];
     let companyMap = {};
     if (companyIds.length > 0) {
@@ -624,20 +616,6 @@ async function loadInternships() {
       companyMap = (companies || []).reduce((acc, comp) => ({ ...acc, [comp.company_id]: comp }), {});
     }
 
-    const categoryIds = [...new Set((positions || []).map(p => p.category_id).filter(Boolean))];
-    let categoryMap = {};
-    if (categoryIds.length > 0) {
-      const { data: categories, error: categoryError } = await supabaseClient
-        .from('job_categories')
-        .select('category_id, title')
-        .in('category_id', categoryIds);
-
-      if (categoryError) {
-        console.error('Supabase job_categories query error:', categoryError);
-        throw categoryError;
-      }
-      categoryMap = (categories || []).reduce((acc, cat) => ({ ...acc, [cat.category_id]: cat.title }), {});
-    }
 
     if (!positions || positions.length === 0) {
       jobsList.innerHTML = '';
@@ -654,7 +632,8 @@ async function loadInternships() {
       const companyName = company.company_name || 'Unknown Company';
       const companyLogo = company.logo_url || null;
       const location = company.city || 'Remote';
-      const category = categoryMap[pos.category_id] || 'General';
+      const posCategoryIds = (pos.position_categories || []).map(pc => pc.category_id).join(',');
+      const categoryBadges = (pos.position_categories || []).map(pc => `<span class="badge">${pc.job_categories?.title || ''}</span>`).join('');
       const companyInitial = companyName.charAt(0).toUpperCase();
 
       // Format period for display
@@ -668,10 +647,10 @@ async function loadInternships() {
       }
 
       return `
-        <div class="job-card" 
-             data-job-id="${pos.position_id}" 
-             data-category-id="${pos.category_id}" 
-             data-start="${pos.period_start || ''}" 
+        <div class="job-card"
+             data-job-id="${pos.position_id}"
+             data-category-ids="${posCategoryIds}"
+             data-start="${pos.period_start || ''}"
              data-end="${pos.period_end || ''}"
              data-created-at="${pos.created_at}">
              
@@ -692,7 +671,7 @@ async function loadInternships() {
           <div class="job-meta">
             <span class="badge badge-primary">${location}</span>
             <span class="badge badge-secondary">${periodText}</span>
-            <span class="badge">${category}</span>
+            ${categoryBadges || '<span class="badge">General</span>'}
           </div>
 
           <p class="job-description">

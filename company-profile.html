@@ -166,6 +166,19 @@
     .form-group { margin-bottom: 1.2rem; }
     .form-group label { display: block; margin-bottom: 0.4rem; font-weight: 600; }
     .form-control { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 0.5rem; }
+
+    .category-search { position: relative; margin-bottom: 0.5rem; }
+    .category-search input { width: 100%; padding: 0.75rem; border: 2px solid var(--border-color, #ddd); border-radius: 0.5rem; font-size: 1rem; box-sizing: border-box; }
+    .category-search input:focus { outline: none; border-color: var(--primary-color, #6366f1); }
+    .category-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--border-color, #ddd); border-radius: 0.5rem; max-height: 220px; overflow-y: auto; z-index: 1100; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+    .category-dropdown.show { display: block; }
+    .category-group-title { padding: 0.4rem 1rem; font-weight: 700; font-size: 0.75rem; color: #6b7280; background: #f9fafb; text-transform: uppercase; }
+    .category-option { padding: 0.5rem 1rem 0.5rem 1.5rem; cursor: pointer; font-size: 0.9rem; }
+    .category-option:hover { background: rgba(99,102,241,0.06); }
+    .category-option.selected { background: rgba(99,102,241,0.12); color: #6366f1; font-weight: 600; }
+    .selected-categories { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.4rem; }
+    .category-tag { background: #6366f1; color: white; padding: 0.3rem 0.7rem; border-radius: 2rem; font-size: 0.82rem; display: flex; align-items: center; gap: 0.4rem; }
+    .category-tag button { background: none; border: none; color: white; cursor: pointer; font-size: 1rem; padding: 0; line-height: 1; }
   </style>
 </head>
 <body>
@@ -658,10 +671,12 @@
         </div>
 
         <div class="form-group">
-            <label data-i18n="companyProfile.postCategoryLabel">Category *</label>
-            <select id="pCategory" class="form-control">
-                <option value="" data-i18n="companyProfile.postCategoryDefault">Select a category...</option>
-                </select>
+            <label data-i18n="companyProfile.postCategoryLabel">Category</label>
+            <div class="category-search">
+                <input type="text" id="pCategorySearch" placeholder="Search categories..." oninput="filterPosCategories()" onfocus="showPosCategoryDropdown()" />
+                <div class="category-dropdown" id="posCategoryDropdown"></div>
+            </div>
+            <div class="selected-categories" id="posSelectedCategories"></div>
         </div>
         <div class="form-group">
           <label data-i18n="companyProfile.postVisibilityLabel">Visibility</label>
