@@ -627,6 +627,9 @@ async function loadInternships() {
     if (noResults) noResults.style.display = 'none';
 
     // Generate job cards with data-created-at
+    const userRole = localStorage.getItem('userRole');
+    const showHeart = userRole === '1'; // Only students see heart
+
     jobsList.innerHTML = positions.map((pos, index) => {
     const company = companyMap[pos.company_id] || {};
       const companyName = company.company_name || 'Unknown Company';
@@ -645,6 +648,10 @@ async function loadInternships() {
       } else if (pos.is_open_ended) {
         periodText = 'Open-ended';
       }
+
+      const heartBtn = showHeart ? `
+            <button class="favorite-btn" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; margin-left: auto;" data-job-id="${pos.position_id}">🤍</button>
+          ` : '';
 
       return `
         <div class="job-card"
@@ -665,7 +672,7 @@ async function loadInternships() {
               <h3 class="job-title">${pos.title}</h3>
               <p class="job-company">${companyName}</p>
             </div>
-            <button class="favorite-btn" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; margin-left: auto;">🤍</button>
+            ${heartBtn}
           </div>
           
           <div class="job-meta">
@@ -690,7 +697,7 @@ async function loadInternships() {
       `;
     }).join('');
 
-    // Re-attach event listeners for job cards
+    // Re-attach event listeners for job cards (only if hearts visible)
     attachJobCardListeners();
     updateFavoriteStates();
     if (typeof highlightSavedFavorites === 'function') {
@@ -718,6 +725,9 @@ async function loadInternships() {
 // ==========================================
 function attachJobCardListeners() {
   // Job Card Navigation + Favorites
+  const userRole = localStorage.getItem('userRole');
+  const isStudent = userRole === '1';
+
   const jobCards = document.querySelectorAll('.job-card');
   jobCards.forEach(card => {
     card.addEventListener('click', function(e) {
@@ -732,11 +742,23 @@ function attachJobCardListeners() {
 
     const favBtn = card.querySelector('.favorite-btn');
     if (favBtn) {
-      favBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        const jobId = card.getAttribute('data-job-id');
-        toggleFavoriteBtn(jobId, this);
-      });
+      if (!isStudent) {
+        // Disable for companies
+        favBtn.disabled = true;
+        favBtn.style.opacity = '0.5';
+        favBtn.style.cursor = 'not-allowed';
+        favBtn.title = 'Only students can save favorites';
+      } else {
+        favBtn.disabled = false;
+        favBtn.style.opacity = '1';
+        favBtn.style.cursor = 'pointer';
+        favBtn.removeAttribute('title');
+        favBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const jobId = card.getAttribute('data-job-id');
+          toggleFavoriteBtn(jobId, this);
+        });
+      }
     }
   });
 }
@@ -790,6 +812,9 @@ function getFavorites() {
  *     että yksityiskohtasivulla (painike #favBtnContainer-elementin sisällä window.currentPosition-muuttujan kautta).
  */
 function updateFavoriteStates() {
+  const userRole = localStorage.getItem('userRole');
+  const isStudent = userRole === '1';
+
   const favorites = getFavorites();
   document.querySelectorAll('.favorite-btn').forEach(btn => {
     const jobContainer = btn.closest('[data-job-id]');
@@ -797,7 +822,20 @@ function updateFavoriteStates() {
       ? jobContainer.getAttribute('data-job-id')
       : window.currentPosition?.position_id;
     if (jobId) {
-      btn.innerHTML = favorites.includes(jobId.toString()) ? '❤️' : '🤍';
+      if (!isStudent) {
+        // Disable for companies
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+        btn.title = 'Only students can save favorites';
+        btn.innerHTML = '🤍';
+      } else {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+        btn.removeAttribute('title');
+        btn.innerHTML = favorites.includes(jobId.toString()) ? '❤️' : '🤍';
+      }
     }
   });
 }
@@ -817,6 +855,15 @@ function updateFavoriteStates() {
  * @param {HTMLButtonElement} btn - EN: the heart button element / FI: sydänpainikeelemetti
  */
 function toggleFavoriteBtn(jobId, btn) {
+  // Check role - only students can toggle favorites
+  const userRole = localStorage.getItem('userRole');
+  if (userRole !== '1') {
+    if (typeof showToast === 'function') {
+      showToast('Only students can save favorites.', 'warning');
+    }
+    return;
+  }
+
   if (!jobId) return;
   const favorites = getFavorites();
   const jobIdStr = jobId.toString();

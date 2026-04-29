@@ -234,6 +234,16 @@ async function loadInternshipDetail(positionId) {
         window.currentPosition = position;
         window.currentCompany = company;
 
+        // Hide heart for non-students (same logic as listing page)
+const userRole = localStorage.getItem('userRole');
+const favBtn = document.querySelector('#favBtnContainer .favorite-btn');
+if (favBtn) {
+  if (userRole !== '1') {
+    favBtn.style.display = 'none';
+  } else {
+    favBtn.style.display = '';
+  }
+}
         checkAlreadyApplied(position.position_id);
 
         // Set the heart color immediately if the helper exists
@@ -302,6 +312,13 @@ function hideApplyButtonForCompanies() {
     const saveBtn = document.querySelector('.card-footer .btn-outline');
     if (applyBtn) applyBtn.style.display = 'none';
     if (saveBtn) saveBtn.style.display = 'none';
+  }
+  
+  // Hide heart for anyone who isn't a student
+  const userRole = localStorage.getItem('userRole');
+  const favBtn = document.querySelector('#favBtnContainer .favorite-btn');
+  if (favBtn) {
+    favBtn.style.display = userRole === '1' ? '' : 'none';
   }
 }
 

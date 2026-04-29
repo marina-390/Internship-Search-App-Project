@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="../css/style.css">
 
 <!-- PDF library -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- No PDF needed for static tips page -->
 
 </head>
 
@@ -66,113 +66,70 @@
 
 <section class="section">
   <div class="container">
-    <div class="container-flex">
 
-      <!-- FORM -->
-      <div class="card">
-        <h3 data-i18n="pages.resumeBuilder.fillInfo">Fill Your Info</h3>
-
-        <input type="text" id="name" data-i18n-placeholder="pages.resumeBuilder.namePh" placeholder="Full Name" oninput="updateResume()">
-        <br><br>
-
-        <input type="text" id="email" data-i18n-placeholder="pages.resumeBuilder.emailPh" placeholder="Email" oninput="updateResume()">
-        <br><br>
-
-        <input type="text" id="phone" data-i18n-placeholder="pages.resumeBuilder.phonePh" placeholder="Phone" oninput="updateResume()">
-        <br><br>
-
-        <textarea id="education" data-i18n-placeholder="pages.resumeBuilder.educationPh" placeholder="Education" oninput="updateResume()"></textarea>
-        <br><br>
-
-        <textarea id="experience" data-i18n-placeholder="pages.resumeBuilder.experiencePh" placeholder="Experience" oninput="updateResume()"></textarea>
-        <br><br>
-
-        <textarea id="skills" data-i18n-placeholder="pages.resumeBuilder.skillsPh" placeholder="Skills" oninput="updateResume()"></textarea>
-        <br><br>
-
-        <button class="btn btn-primary" onclick="downloadPDF()" style="width:100%;" data-i18n="pages.resumeBuilder.downloadBtn">
-          Download PDF
-        </button>
-      </div>
-
-      <!-- PREVIEW -->
-      <div id="resume" class="resume-preview">
-
-        <h2 id="r_name">Your Name</h2>
-        <p id="r_email">email@example.com</p>
-        <p id="r_phone">+000000000</p>
-
-        <hr>
-
-        <h4 data-i18n="pages.resumeBuilder.previewEdu">Education</h4>
-        <p id="r_education">Your education...</p>
-
-        <h4 data-i18n="pages.resumeBuilder.previewExp">Experience</h4>
-        <p id="r_experience">Your experience...</p>
-
-        <h4 data-i18n="pages.resumeBuilder.previewSkills">Skills</h4>
-        <p id="r_skills">Your skills...</p>
-
-      </div>
-
+    <!-- CV TIPS SECTION (UPDATED TO PRIMARY) -->
+    <div class="card" style="margin-top: 2rem">
+      <h2 data-i18n="pages.resumeBuilder.cvTipsTitle">📝 CV Tips for Students</h2>
+      <p data-i18n="pages.resumeBuilder.cvTipsSubtitle">Essential advice to make your resume stand out for internships</p>
     </div>
+
+    <div class="grid-3" style="gap: 2rem; margin-top: 1rem">
+      <!-- BASIC STRUCTURE -->
+      <div class="card">
+        <h3 data-i18n="pages.resumeBuilder.basicStructureH">Basic Structure</h3>
+        <h4 data-i18n="pages.resumeBuilder.tip1H">Keep it 1 Page</h4>
+        <p data-i18n="pages.resumeBuilder.tip1P">Focus on most relevant info for internships. Recruiters spend ~7 seconds scanning.</p>
+        <h4 data-i18n="pages.resumeBuilder.tip2H">Clear Sections</h4>
+        <p data-i18n="pages.resumeBuilder.tip2P">Use Contact | Education | Experience | Skills. Simple fonts (Arial/Calibri 10-12pt).</p>
+        <h4 data-i18n="pages.resumeBuilder.tip3H">Contact at Top</h4>
+        <p data-i18n="pages.resumeBuilder.tip3P">Name (large), Phone, Email, LinkedIn, City. No full address/photo needed.</p>
+        <h4 data-i18n="pages.resumeBuilder.tip4H">Education First</h4>
+        <p data-i18n="pages.resumeBuilder.tip4P">For students: University/Degree | Expected Graduation | Relevant Coursework.</p>
+      </div>
+
+      <!-- CONTENT TIPS -->
+      <div class="card">
+        <h3 data-i18n="pages.resumeBuilder.contentTipsH">Content Tips</h3>
+        <h4 data-i18n="pages.resumeBuilder.tip5H">Action Verbs</h4>
+        <p data-i18n="pages.resumeBuilder.tip5P">Start bullets: "Developed", "Led", "Analyzed", "Created" (not "Responsible for").</p>
+        <h4 data-i18n="pages.resumeBuilder.tip6H">Quantify Achievements</h4>
+        <p data-i18n="pages.resumeBuilder.tip6P">"Improved efficiency 30%" > "Helped team". Use numbers/projects.</p>
+        <h4 data-i18n="pages.resumeBuilder.tip7H">Tailor Skills</h4>
+        <p data-i18n="pages.resumeBuilder.tip7P">Match job description keywords. List 6-8: Python, Excel, Teamwork, etc.</p>
+        <h4 data-i18n="pages.resumeBuilder.tip8H">Projects & Courses</h4>
+        <p data-i18n="pages.resumeBuilder.tip8P">Add school projects, GitHub, hackathons as "Experience" if no jobs.</p>
+      </div>
+
+      <!-- ATS OPTIMIZATION -->
+      <div class="card">
+        <h3 data-i18n="pages.resumeBuilder.atsTipsH">ATS Optimization</h3>
+        <h4 data-i18n="pages.resumeBuilder.tip9H">Standard Headings</h4>
+        <p data-i18n="pages.resumeBuilder.tip9P">Use "Education", not "My School Years". Avoid tables/graphics.</p>
+        <h4 data-i18n="pages.resumeBuilder.tip10H">Keywords from JD</h4>
+        <p data-i18n="pages.resumeBuilder.tip10P">Copy exact phrases from job description (e.g. "data analysis").</p>
+        <h4 data-i18n="pages.resumeBuilder.tip11H">PDF Format</h4>
+        <p data-i18n="pages.resumeBuilder.tip11P">Always PDF. Name: FirstName_LastName_Internship.pdf.</p>
+        <h4 data-i18n="pages.resumeBuilder.tip12H">No Errors</h4>
+        <p data-i18n="pages.resumeBuilder.tip12P">Spellcheck everything. Get professor/friend review.</p>
+      </div>
+    </div>
+
+    <!-- COMMON MISTAKES -->
+    <div class="card" style="margin-top: 2rem">
+      <h3 data-i18n="pages.resumeBuilder.mistakesTitle">Common Mistakes to Avoid</h3>
+      <ul>
+        <li data-i18n="pages.resumeBuilder.mistake1">Generic objective ("seeking position") – delete it</li>
+        <li data-i18n="pages.resumeBuilder.mistake2">Irrelevant high school jobs (3+ years old)</li>
+        <li data-i18n="pages.resumeBuilder.mistake3">Fancy design/graphics (ATS breaks them)</li>
+        <li data-i18n="pages.resumeBuilder.mistake4">Typos/grammar errors</li>
+        <li data-i18n="pages.resumeBuilder.mistake5">Listing duties instead of achievements</li>
+      </ul>
+    </div>
+
   </div>
 </section>
 
 <script>
-function updateResume() {
-  console.log("Education:", document.getElementById("education").value);
-  console.log("Experience:", document.getElementById("experience").value);
-  console.log("Skills:", document.getElementById("skills").value);
-
-  document.getElementById("r_name").textContent =
-    document.getElementById("name").value || "Your Name";
-
-  document.getElementById("r_email").textContent =
-    document.getElementById("email").value || "email@example.com";
-
-  document.getElementById("r_phone").textContent =
-    document.getElementById("phone").value || "+000000000";
-
-  document.getElementById("r_education").textContent =
-    document.getElementById("education").value || "No education added";
-
-  document.getElementById("r_experience").textContent =
-    document.getElementById("experience").value || "No experience added";
-
-  document.getElementById("r_skills").textContent =
-    document.getElementById("skills").value || "No skills added";
-}
-
-function downloadPDF() {
-  updateResume(); // first update preview
-
-  const element = document.getElementById("resume");
-
-  // force browser render cycle
-  element.style.transform = "scale(1)";
-
-  setTimeout(() => {
-    html2pdf()
-      .set({
-        margin: 10,
-        filename: "resume.pdf",
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          scrollY: 0
-        },
-        jsPDF: {
-          unit: "mm",
-          format: "a4",
-          orientation: "portrait"
-        }
-      })
-      .from(element)
-      .save();
-  }, 500); // IMPORTANT: longer delay fixes missing fields
-}
 </script>
 
 
