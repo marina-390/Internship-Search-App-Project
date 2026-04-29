@@ -80,7 +80,7 @@ let currentLinks = [];
 // LOAD PROFILE
 // ==========================================
 async function loadStudentProfile() {
-  const session = requireAuth();
+  const session = await validateSession();
   if (!session) return;
 
   try {
@@ -560,7 +560,7 @@ async function deleteTeamMember(id) {
 }
 
 async function loadCompanyProfile() {
-  const session = getCurrentSession();
+  const session = await validateSession();
   if (!session) return;
 
   try {

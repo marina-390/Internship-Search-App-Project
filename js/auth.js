@@ -60,6 +60,30 @@ function requireAuth() {
   return getCurrentSession();
 }
 
+// Verify the session user still exists in the DB; force logout if deleted
+async function validateSession() {
+  const session = getCurrentSession();
+  if (!session) return null;
+
+  const { data, error } = await supabaseClient
+    .from('Users')
+    .select('user_id')
+    .eq('user_id', session.userId)
+    .single();
+
+  if (error || !data) {
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userLogin');
+    localStorage.removeItem('favorites');
+    window.location.href = 'auth.html';
+    return null;
+  }
+
+  return session;
+}
+
 /**
  * EN: Signs the user out from both Supabase Auth and the local session.
  *     Clears all four localStorage keys used by the app and redirects home.
