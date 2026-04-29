@@ -97,67 +97,227 @@
       </div>
     </section>
 
+    <style>
+      .tips-section-label {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+      }
+      .tips-section-label .label-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        flex-shrink: 0;
+      }
+      .tips-section-label h2 {
+        margin: 0;
+        font-size: 1.3rem;
+      }
+      .label-icon.blue  { background: #e0e7ff; }
+      .label-icon.green { background: #d1fae5; }
+      .label-icon.amber { background: #fef3c7; }
+      .label-icon.rose  { background: #fee2e2; }
+
+      .tip-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+      @media (max-width: 600px) {
+        .tip-grid { grid-template-columns: 1fr; }
+      }
+
+      .tip-item {
+        display: flex;
+        gap: 0.875rem;
+        align-items: flex-start;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 1rem 1.1rem;
+        transition: box-shadow 0.2s, transform 0.2s;
+      }
+      .tip-item:hover {
+        box-shadow: 0 4px 14px rgba(0,0,0,0.07);
+        transform: translateY(-2px);
+      }
+      .tip-item-icon {
+        font-size: 1.5rem;
+        line-height: 1;
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+      .tip-item-text h4 {
+        margin: 0 0 0.25rem;
+        font-size: 0.95rem;
+        color: #1f2937;
+      }
+      .tip-item-text p {
+        margin: 0;
+        font-size: 0.875rem;
+        color: #6b7280;
+        line-height: 1.5;
+      }
+
+      .question-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+      }
+      @media (max-width: 600px) {
+        .question-list { grid-template-columns: 1fr; }
+      }
+      .question-list li {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 0.7rem 1rem;
+        font-size: 0.9rem;
+        color: #374151;
+        font-weight: 500;
+      }
+      .question-list li::before {
+        content: "💬";
+        font-size: 1rem;
+        flex-shrink: 0;
+      }
+    </style>
+
     <section class="section">
-      <div class="container">
-        <div class="grid-3" style="gap: 2rem">
-          <!-- BEFORE -->
-          <div class="card">
+      <div class="container" style="max-width: 900px">
+
+        <!-- BEFORE -->
+        <div class="card">
+          <div class="tips-section-label">
+            <div class="label-icon blue">📚</div>
             <h2 data-i18n="pages.interviewTips.beforeH">Before Interview</h2>
-
-            <h4 data-i18n="pages.interviewTips.b1H">Research the Company</h4>
-            <p data-i18n="pages.interviewTips.b1P">
-              Learn about mission, values, and products before the interview.
-            </p>
-
-            <h4 data-i18n="pages.interviewTips.b2H">Practice Questions</h4>
-            <p data-i18n="pages.interviewTips.b2P">Prepare answers like "Tell me about yourself".</p>
-
-            <h4 data-i18n="pages.interviewTips.b3H">Prepare Stories</h4>
-            <p data-i18n="pages.interviewTips.b3P">Use STAR method: Situation, Task, Action, Result.</p>
-
-            <h4 data-i18n="pages.interviewTips.b4H">Mock Interviews</h4>
-            <p data-i18n="pages.interviewTips.b4P">Practice with friends or mentors.</p>
           </div>
+          <div class="tip-grid">
+            <div class="tip-item">
+              <span class="tip-item-icon">🔍</span>
+              <div class="tip-item-text">
+                <h4 data-i18n="pages.interviewTips.b1H">Research the Company</h4>
+                <p data-i18n="pages.interviewTips.b1P">Learn about mission, values, and products before the interview.</p>
+              </div>
+            </div>
+            <div class="tip-item">
+              <span class="tip-item-icon">🗣️</span>
+              <div class="tip-item-text">
+                <h4 data-i18n="pages.interviewTips.b2H">Practice Questions</h4>
+                <p data-i18n="pages.interviewTips.b2P">Prepare answers like "Tell me about yourself".</p>
+              </div>
+            </div>
+            <div class="tip-item">
+              <span class="tip-item-icon">⭐</span>
+              <div class="tip-item-text">
+                <h4 data-i18n="pages.interviewTips.b3H">Prepare Stories</h4>
+                <p data-i18n="pages.interviewTips.b3P">Use STAR method: Situation, Task, Action, Result.</p>
+              </div>
+            </div>
+            <div class="tip-item">
+              <span class="tip-item-icon">🎭</span>
+              <div class="tip-item-text">
+                <h4 data-i18n="pages.interviewTips.b4H">Mock Interviews</h4>
+                <p data-i18n="pages.interviewTips.b4P">Practice with friends or mentors.</p>
+              </div>
+            </div>
+          </div>
+        </div>
 
-          <!-- DURING -->
-          <div class="card">
+        <!-- DURING -->
+        <div class="card" style="margin-top: 2rem">
+          <div class="tips-section-label">
+            <div class="label-icon green">🎯</div>
             <h2 data-i18n="pages.interviewTips.duringH">During Interview</h2>
-
-            <h4 data-i18n="pages.interviewTips.d1H">First Impression</h4>
-            <p data-i18n="pages.interviewTips.d1P">Be on time, dress well, and stay confident.</p>
-
-            <h4 data-i18n="pages.interviewTips.d2H">Communication</h4>
-            <p data-i18n="pages.interviewTips.d2P">Listen carefully and answer clearly.</p>
-
-            <h4 data-i18n="pages.interviewTips.d3H">Show Enthusiasm</h4>
-            <p data-i18n="pages.interviewTips.d3P">Explain why you want this role.</p>
-
-            <h4 data-i18n="pages.interviewTips.d4H">Ask Questions</h4>
-            <p data-i18n="pages.interviewTips.d4P">Ask about team and company culture.</p>
           </div>
+          <div class="tip-grid">
+            <div class="tip-item">
+              <span class="tip-item-icon">✨</span>
+              <div class="tip-item-text">
+                <h4 data-i18n="pages.interviewTips.d1H">First Impression</h4>
+                <p data-i18n="pages.interviewTips.d1P">Be on time, dress well, and stay confident.</p>
+              </div>
+            </div>
+            <div class="tip-item">
+              <span class="tip-item-icon">💬</span>
+              <div class="tip-item-text">
+                <h4 data-i18n="pages.interviewTips.d2H">Communication</h4>
+                <p data-i18n="pages.interviewTips.d2P">Listen carefully and answer clearly.</p>
+              </div>
+            </div>
+            <div class="tip-item">
+              <span class="tip-item-icon">🔥</span>
+              <div class="tip-item-text">
+                <h4 data-i18n="pages.interviewTips.d3H">Show Enthusiasm</h4>
+                <p data-i18n="pages.interviewTips.d3P">Explain why you want this role.</p>
+              </div>
+            </div>
+            <div class="tip-item">
+              <span class="tip-item-icon">🙋</span>
+              <div class="tip-item-text">
+                <h4 data-i18n="pages.interviewTips.d4H">Ask Questions</h4>
+                <p data-i18n="pages.interviewTips.d4P">Ask about team and company culture.</p>
+              </div>
+            </div>
+          </div>
+        </div>
 
-          <!-- AFTER -->
-          <div class="card">
+        <!-- AFTER -->
+        <div class="card" style="margin-top: 2rem">
+          <div class="tips-section-label">
+            <div class="label-icon amber">📬</div>
             <h2 data-i18n="pages.interviewTips.afterH">After Interview</h2>
-
-            <h4 data-i18n="pages.interviewTips.a1H">Thank You Email</h4>
-            <p data-i18n="pages.interviewTips.a1P">Send within 24 hours.</p>
-
-            <h4 data-i18n="pages.interviewTips.a2H">Self Review</h4>
-            <p data-i18n="pages.interviewTips.a2P">Improve your future performance.</p>
-
-            <h4 data-i18n="pages.interviewTips.a3H">Follow Up</h4>
-            <p data-i18n="pages.interviewTips.a3P">Check status politely if needed.</p>
-
-            <h4 data-i18n="pages.interviewTips.a4H">Negotiation</h4>
-            <p data-i18n="pages.interviewTips.a4P">Focus on learning opportunities and growth.</p>
+          </div>
+          <div class="tip-grid">
+            <div class="tip-item">
+              <span class="tip-item-icon">📧</span>
+              <div class="tip-item-text">
+                <h4 data-i18n="pages.interviewTips.a1H">Thank You Email</h4>
+                <p data-i18n="pages.interviewTips.a1P">Send within 24 hours.</p>
+              </div>
+            </div>
+            <div class="tip-item">
+              <span class="tip-item-icon">🪞</span>
+              <div class="tip-item-text">
+                <h4 data-i18n="pages.interviewTips.a2H">Self Review</h4>
+                <p data-i18n="pages.interviewTips.a2P">Improve your future performance.</p>
+              </div>
+            </div>
+            <div class="tip-item">
+              <span class="tip-item-icon">🔔</span>
+              <div class="tip-item-text">
+                <h4 data-i18n="pages.interviewTips.a3H">Follow Up</h4>
+                <p data-i18n="pages.interviewTips.a3P">Check status politely if needed.</p>
+              </div>
+            </div>
+            <div class="tip-item">
+              <span class="tip-item-icon">🤝</span>
+              <div class="tip-item-text">
+                <h4 data-i18n="pages.interviewTips.a4H">Negotiation</h4>
+                <p data-i18n="pages.interviewTips.a4P">Focus on learning opportunities and growth.</p>
+              </div>
+            </div>
           </div>
         </div>
 
         <!-- QUESTIONS -->
         <div class="card" style="margin-top: 2rem">
-          <h3 data-i18n="pages.interviewTips.commonQsH">Common Interview Questions</h3>
-          <ul>
+          <div class="tips-section-label">
+            <div class="label-icon rose">❓</div>
+            <h2 data-i18n="pages.interviewTips.commonQsH">Common Interview Questions</h2>
+          </div>
+          <ul class="question-list">
             <li data-i18n="pages.interviewTips.q1">Tell me about yourself</li>
             <li data-i18n="pages.interviewTips.q2">Why this internship?</li>
             <li data-i18n="pages.interviewTips.q3">Strengths and weaknesses</li>
@@ -165,6 +325,7 @@
             <li data-i18n="pages.interviewTips.q5">Where do you see yourself in 5 years?</li>
           </ul>
         </div>
+
       </div>
     </section>
 
