@@ -1140,36 +1140,38 @@ async function loadCompanyPostings() {
               .join('');
           return `
           <div class="position-card" id="posting-${pos.position_id}">
-              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                <div style="flex:1;">
-                  <h4>${pos.title}</h4>
-                  <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.25rem;">
-                    <span class="status-badge" style="${sc}">${pos.status}</span>
-                    <span style="font-size:0.78rem; color:var(--text-light);">👥 ${appCount} application${appCount !== 1 ? 's' : ''}</span>
-                  </div>
-                  ${cats ? `<div style="display:flex; flex-wrap:wrap; gap:0.3rem; margin:0.3rem 0;">${cats}</div>` : ''}
-                  ${pos.requirements ? `
-                  <p id="req-${pos.position_id}" style="font-size:0.82rem;color:var(--text-light);margin:0.35rem 0 0.1rem;line-height:1.4;">
+            <div class="position-card-inner">
+              <div class="position-card-left">
+                <h4>${pos.title}</h4>
+                ${cats ? `<div style="display:flex; flex-wrap:wrap; gap:0.3rem; margin:0.35rem 0 0.1rem;">${cats}</div>` : ''}
+                ${pos.requirements ? `
+                <div class="position-reqs-block">
+                  <span class="position-reqs-label">${t('companyProfile.postReqsLabel')}</span>
+                  <p id="req-${pos.position_id}" style="font-size:0.82rem;color:var(--text-light);margin:0.2rem 0 0;line-height:1.4;">
                     <span id="req-short-${pos.position_id}">${pos.requirements.length > 120 ? pos.requirements.slice(0, 120) + '…' : pos.requirements}</span>
                     ${pos.requirements.length > 120 ? `
                     <span id="req-full-${pos.position_id}" style="display:none;">${pos.requirements}</span>
                     <a href="javascript:void(0)" id="req-btn-${pos.position_id}" onclick="toggleReqText(${pos.position_id})" style="font-size:0.78rem;margin-left:0.25rem;">Show more</a>` : ''}
-                  </p>` : ''}
-                  <div class="pos-actions">
-                      <a href="internship-detail.html?id=${pos.position_id}" class="text-primary">View</a>
-                      <a href="javascript:void(0)" onclick="openEditModal(${pos.position_id})" class="text-primary">Edit</a>
-                      <a href="javascript:void(0)" onclick="deletePosition(${pos.position_id})" style="color:#dc3545;">Delete</a>
-                  </div>
-                  ${appCount > 0 ? `
-                  <div style="margin-top:0.75rem; border-top:1px solid #f0f0f0; padding-top:0.5rem;">
-                    <button id="pos-apps-btn-${pos.position_id}" onclick="togglePositionApplicants(${pos.position_id}, ${appCount})"
-                      style="background:none; border:none; cursor:pointer; color:#6366f1; font-size:0.85rem; font-weight:600; padding:0; display:flex; align-items:center; gap:0.3rem;">
-                      <span id="pos-apps-arrow-${pos.position_id}">▼</span> Applications (${appCount})
-                    </button>
-                    <div id="pos-apps-${pos.position_id}" style="display:none; margin-top:0.75rem;"></div>
-                  </div>` : ''}
+                  </p>
+                </div>` : ''}
+                ${appCount > 0 ? `
+                <div class="position-apps-toggle">
+                  <button id="pos-apps-btn-${pos.position_id}" onclick="togglePositionApplicants(${pos.position_id}, ${appCount})"
+                    style="background:none; border:none; cursor:pointer; color:#6366f1; font-size:0.85rem; font-weight:600; padding:0; display:flex; align-items:center; gap:0.3rem;">
+                    <span id="pos-apps-arrow-${pos.position_id}">▼</span> 👥 Applications (${appCount})
+                  </button>
+                </div>` : ''}
+              </div>
+              <div class="position-card-right">
+                <span class="status-badge" style="${sc}">${pos.status}</span>
+                <div class="pos-actions" id="pos-actions-${pos.position_id}">
+                  <a href="internship-detail.html?id=${pos.position_id}" class="text-primary">View</a>
+                  <a href="javascript:void(0)" onclick="openEditModal(${pos.position_id})" class="text-primary">Edit</a>
+                  <a href="javascript:void(0)" onclick="deletePosition(${pos.position_id})" style="color:#dc3545;">Delete</a>
                 </div>
               </div>
+            </div>
+            ${appCount > 0 ? `<div id="pos-apps-${pos.position_id}" style="display:none; border-top:1px solid #f0f0f0; margin-top:0.5rem; padding-top:0.25rem;"></div>` : ''}
           </div>`;
       }).join('');
 
@@ -1225,17 +1227,20 @@ async function fetchPositionApplicants(positionId, container) {
         ? `<button class="btn btn-small" style="font-size:0.78rem; background:#d1fae5; color:#065f46;" onclick="scheduleInterviewProfile('${studentName}', '${studentEmail}', '${app.positions?.title || ''}', ${app.application_id}, '${existingDate}')">${t('pages.internshipDetail.scheduledBtn')}</button>`
         : `<button class="btn btn-small btn-primary" style="font-size:0.78rem;" onclick="scheduleInterviewProfile('${studentName}', '${studentEmail}', '${app.positions?.title || ''}', ${app.application_id}, '')">${t('pages.internshipDetail.scheduleInterviewBtn')}</button>`;
       return `
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap; padding:0.75rem 0; border-top:1px solid #f3f4f6;">
-          <div style="flex:1; min-width:0;">
-            <p style="margin:0; font-weight:600; color:#374151;">${studentName}</p>
-            <p style="margin:0.15rem 0 0; font-size:0.85rem; color:#6b7280;">${studentEmail}</p>
-            <p style="margin:0.25rem 0 0; font-size:0.82rem; color:#9ca3af;">${t('pages.internshipDetail.appliedLabel')} ${appliedDate}</p>
-            <p style="margin:0.25rem 0 0; font-size:0.82rem;">${t('pages.internshipDetail.statusLabel')} <span class="status-badge status-${status}">${status.replace('_', ' ')}</span></p>
-            ${interviewDate}
-          </div>
-          <div style="display:flex; gap:0.4rem; flex-shrink:0; flex-wrap:wrap;">
-            <button class="btn btn-small btn-view" onclick="openCompanyAppModal(${JSON.stringify(app).replace(/"/g, '&quot;')})">${t('pages.internshipDetail.viewBtn')}</button>
-            ${interviewBtn}
+        <div style="padding:0.6rem 0; border-top:1px solid #f3f4f6;">
+          <p style="margin:0; font-weight:600; color:#374151;">${studentName}</p>
+          <p style="margin:0.15rem 0 0; font-size:0.85rem; color:#6b7280;">${studentEmail}</p>
+          <p style="margin:0.25rem 0 0; font-size:0.82rem; color:#9ca3af;">${t('pages.internshipDetail.appliedLabel')} ${appliedDate}</p>
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; margin-top:0.25rem; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+              <span style="font-size:0.82rem;">${t('pages.internshipDetail.statusLabel')}</span>
+              <span class="status-badge status-${status}">${status.replace('_', ' ')}</span>
+              ${app.interview_date ? `<span style="font-size:0.82rem; color:#059669;">📅 ${formatDateEuropean(app.interview_date)} ${new Date(app.interview_date).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'})}</span>` : ''}
+            </div>
+            <div style="display:flex; gap:0.4rem; flex-shrink:0;">
+              <button class="btn btn-small btn-view" onclick="openCompanyAppModal(${JSON.stringify(app).replace(/"/g, '&quot;')})">${t('pages.internshipDetail.viewBtn')}</button>
+              ${interviewBtn}
+            </div>
           </div>
         </div>`;
     }).join('');
@@ -1259,6 +1264,7 @@ async function fetchPositionApplicants(positionId, container) {
 async function togglePositionApplicants(positionId, appCount) {
   const container = document.getElementById(`pos-apps-${positionId}`);
   const arrow     = document.getElementById(`pos-apps-arrow-${positionId}`);
+  const actions   = document.getElementById(`pos-actions-${positionId}`);
   if (!container) return;
 
   const isOpen = container.dataset.open === 'true';
@@ -1266,12 +1272,14 @@ async function togglePositionApplicants(positionId, appCount) {
     container.style.display = 'none';
     container.dataset.open = 'false';
     arrow.textContent = '▼';
+    if (actions) actions.style.display = '';
     return;
   }
 
   container.style.display = 'block';
   container.dataset.open = 'true';
   arrow.textContent = '▲';
+  if (actions) actions.style.display = 'none';
 
   if (container.dataset.loaded) return;
 

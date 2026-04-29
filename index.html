@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <!--
   ============================================================
   index.html — Main landing page of the InternHub application
@@ -6,16 +6,15 @@
   ============================================================
 -->
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/png" href="icon.png">
-  <title>InternHub - Find Your Dream Internship</title>
-  <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-
-  <!-- ── NAVIGATION ──────────────────────────────────────────
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="icon.png" />
+    <title>InternHub - Find Your Dream Internship</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <!-- ── NAVIGATION ──────────────────────────────────────────
        EN: Sticky top navigation bar shared across all pages. Contains the logo,
            internships link, language switcher dropdown, and login/register link.
            The .hamburger three-bar icon is toggled by script.js on mobile screens.
@@ -27,32 +26,72 @@
            .hamburger-kolmipalkki aktivoituu script.js:n kautta mobiilissa.
            data-i18n-attribuutit käännetään applyTranslations()-funktiolla (i18n.js).
        ──────────────────────────────────────────────────────── -->
-  <nav>
-    <div class="nav-container">
-      <a href="index.html" class="logo"><img src="logo-hub.svg" alt="InternHub" class="logo-img"></a>
-      <ul class="nav-menu">
-        <li class="nav-item"><a href="internships.html" class="nav-link" data-i18n="nav.internships">Internships</a></li>
-        <li class="nav-item">
-          <!-- EN: Language switcher — data-lang attribute on each button is read by setLanguage() -->
-          <!-- FI: Kielivalitsin — jokaisen painikkeen data-lang-attribuutin lukee setLanguage() -->
-          <div class="lang-switcher">
-            <button class="lang-toggle" onclick="toggleLangDropdown(event)">🌐 <span class="lang-current">EN</span> <span class="lang-caret">▾</span></button>
-            <ul class="lang-dropdown">
-              <li><button class="lang-btn" data-lang="en" onclick="setLanguage('en')">🇬🇧 English</button></li>
-              <li><button class="lang-btn" data-lang="fi" onclick="setLanguage('fi')">🇫🇮 Suomi</button></li>
-              <li><button class="lang-btn" data-lang="sv" onclick="setLanguage('sv')">🇸🇪 Svenska</button></li>
-            </ul>
-          </div>
-        </li>
-        <li class="nav-item"><a href="auth.html" class="nav-link" data-i18n="nav.loginRegister">Login/Register</a></li>
-      </ul>
-      <!-- EN: Three <span> bars form the hamburger icon; toggled by script.js on small screens -->
-      <!-- FI: Kolme <span>-palkkia muodostavat hampurilaisvalikon, jota script.js hallinnoi mobiilinäytöillä -->
-      <div class="hamburger"><span></span><span></span><span></span></div>
-    </div>
-  </nav>
+    <nav>
+      <div class="nav-container">
+        <a href="index.html" class="logo"
+          ><img src="logo-hub.svg" alt="InternHub" class="logo-img"
+        /></a>
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a
+              href="internships.html"
+              class="nav-link"
+              data-i18n="nav.internships"
+              >Internships</a
+            >
+          </li>
+          <li class="nav-item">
+            <!-- EN: Language switcher — data-lang attribute on each button is read by setLanguage() -->
+            <!-- FI: Kielivalitsin — jokaisen painikkeen data-lang-attribuutin lukee setLanguage() -->
+            <div class="lang-switcher">
+              <button class="lang-toggle" onclick="toggleLangDropdown(event)">
+                🌐 <span class="lang-current">EN</span>
+                <span class="lang-caret">▾</span>
+              </button>
+              <ul class="lang-dropdown">
+                <li>
+                  <button
+                    class="lang-btn"
+                    data-lang="en"
+                    onclick="setLanguage('en')"
+                  >
+                    🇬🇧 English
+                  </button>
+                </li>
+                <li>
+                  <button
+                    class="lang-btn"
+                    data-lang="fi"
+                    onclick="setLanguage('fi')"
+                  >
+                    🇫🇮 Suomi
+                  </button>
+                </li>
+                <li>
+                  <button
+                    class="lang-btn"
+                    data-lang="sv"
+                    onclick="setLanguage('sv')"
+                  >
+                    🇸🇪 Svenska
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </li>
+          <li class="nav-item">
+            <a href="auth.html" class="nav-link" data-i18n="nav.loginRegister"
+              >Login/Register</a
+            >
+          </li>
+        </ul>
+        <!-- EN: Three <span> bars form the hamburger icon; toggled by script.js on small screens -->
+        <!-- FI: Kolme <span>-palkkia muodostavat hampurilaisvalikon, jota script.js hallinnoi mobiilinäytöillä -->
+        <div class="hamburger"><span></span><span></span><span></span></div>
+      </div>
+    </nav>
 
-  <!-- ── HERO SECTION ──────────────────────────────────────────
+    <!-- ── HERO SECTION ──────────────────────────────────────────
        EN: Full-width banner with gradient background, headline, subtitle, and
            two call-to-action buttons. "Browse Internships" goes to internships.html.
            "Post Internship" calls checkCompanyAuth() in script.js — unauthenticated
@@ -63,44 +102,69 @@
            "Post Internship" kutsuu checkCompanyAuth() (script.js) — kirjautumattomat
            ohjataan auth.html:ään, yritykset company-profile.html:ään.
        ──────────────────────────────────────────────────────── -->
-  <section class="hero" id="heroSection">
-    <div class="hero-content" id="heroContent">
-      <!-- EN: data-i18n keys resolved by applyTranslations() in i18n.js -->
-      <!-- FI: data-i18n-avaimet ratkaisee applyTranslations() i18n.js:ssä -->
-      <h1 data-i18n="hero.title">Find Your Perfect Internship</h1>
-      <p data-i18n="hero.subtitle">Discover exciting internship opportunities with leading companies and launch your career</p>
-      <div class="hero-buttons">
-        <a href="internships.html" class="btn btn-primary btn-large" data-i18n="hero.btnBrowse">Browse Internships</a>
-        <!-- EN: javascript:void(0) prevents default navigation; checkCompanyAuth() handles routing -->
-        <!-- FI: javascript:void(0) estää oletusnavigaation; checkCompanyAuth() hoitaa reitityksen -->
-        <a href="javascript:void(0)" onclick="checkCompanyAuth()" class="btn btn-secondary btn-large" data-i18n="hero.btnPost">Post Internship</a>
+    <section class="hero" id="heroSection">
+      <div class="hero-content" id="heroContent">
+        <!-- EN: data-i18n keys resolved by applyTranslations() in i18n.js -->
+        <!-- FI: data-i18n-avaimet ratkaisee applyTranslations() i18n.js:ssä -->
+        <h1 data-i18n="hero.title">Find Your Perfect Internship</h1>
+        <p data-i18n="hero.subtitle">
+          Discover exciting internship opportunities with leading companies and
+          launch your career
+        </p>
+        <div class="hero-buttons">
+          <a
+            href="internships.html"
+            class="btn btn-primary btn-large"
+            data-i18n="hero.btnBrowse"
+            >Browse Internships</a
+          >
+          <!-- EN: javascript:void(0) prevents default navigation; checkCompanyAuth() handles routing -->
+          <!-- FI: javascript:void(0) estää oletusnavigaation; checkCompanyAuth() hoitaa reitityksen -->
+          <a
+            href="javascript:void(0)"
+            onclick="checkCompanyAuth()"
+            class="btn btn-secondary btn-large"
+            data-i18n="hero.btnPost"
+            >Post Internship</a
+          >
+        </div>
       </div>
-    </div>
 
-    <!-- EN: Three SVG wave paths layered at the bottom of the hero. Each path animates
+      <!-- EN: Three SVG wave paths layered at the bottom of the hero. Each path animates
              independently (waveAnim1/2/3 keyframes defined in <style>) for an organic flow.
              The front layer (wave-layer-1) is solid white to blend into the page below.
          FI: Kolme SVG-aaltopolkua päällekkäin hero-osion alaosassa. Jokainen polku animoituu
              itsenäisesti (waveAnim1/2/3). Etummainen kerros on valkoinen sulautuakseen sisältöön. -->
-    <div class="hero-waves" id="heroWaves">
-      <svg viewBox="0 0 1440 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="height:100px;">
-        <!-- back wave -->
-        <path class="wave-layer-3"
-          d="M0,50 C240,100 480,0 720,50 C960,100 1200,0 1440,50 L1440,100 L0,100 Z"
-          fill="rgba(255,255,255,0.16)"/>
-        <!-- mid wave -->
-        <path class="wave-layer-2"
-          d="M0,60 C180,15 420,85 660,45 C900,5 1140,75 1440,35 L1440,100 L0,100 Z"
-          fill="rgba(255,255,255,0.26)"/>
-        <!-- front wave (solid white) -->
-        <path class="wave-layer-1"
-          d="M0,65 C360,25 720,85 1080,45 C1260,25 1360,65 1440,55 L1440,100 L0,100 Z"
-          fill="white"/>
-      </svg>
-    </div>
-  </section>
+      <div class="hero-waves" id="heroWaves">
+        <svg
+          viewBox="0 0 1440 100"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+          style="height: 100px"
+        >
+          <!-- back wave -->
+          <path
+            class="wave-layer-3"
+            d="M0,50 C240,100 480,0 720,50 C960,100 1200,0 1440,50 L1440,100 L0,100 Z"
+            fill="rgba(255,255,255,0.16)"
+          />
+          <!-- mid wave -->
+          <path
+            class="wave-layer-2"
+            d="M0,60 C180,15 420,85 660,45 C900,5 1140,75 1440,35 L1440,100 L0,100 Z"
+            fill="rgba(255,255,255,0.26)"
+          />
+          <!-- front wave (solid white) -->
+          <path
+            class="wave-layer-1"
+            d="M0,65 C360,25 720,85 1080,45 C1260,25 1360,65 1440,55 L1440,100 L0,100 Z"
+            fill="white"
+          />
+        </svg>
+      </div>
+    </section>
 
-  <!-- ── LOGO MARQUEE STRIP ──────────────────────────────────────────
+    <!-- ── LOGO MARQUEE STRIP ──────────────────────────────────────────
        EN: Auto-scrolling strip with logos of Finnish educational institutions.
            The .logo-track contains all logos twice — the duplicate set allows the
            CSS animation (logoScroll: translateX(-50%), 24s linear infinite) to loop
@@ -112,41 +176,70 @@
            Hiiren vieminen nauhalle pysäyttää vierityksen. mask-image luo pehmeän
            häivytyksen vasemmalla ja oikealla reunalla.
        ──────────────────────────────────────────────────────── -->
-  <div class="logo-strip">
-    <p class="logo-strip-label" data-i18n="logoStrip.label">Trusted by interns from the leading educational institutions</p>
-    <div class="logo-track-wrap">
-      <!-- EN: Logos duplicated below for seamless infinite scroll animation -->
-      <!-- FI: Logot kaksoiskopioitu alla saumatonta looppausta varten -->
-      <div class="logo-track">
-        <div class="logo-item"><img src="pics/aalto.jpg"    alt="Aalto" /></div>
-        <div class="logo-item"><img src="pics/metropolia.jpg"    alt="Metropolia" /></div>
-        <div class="logo-item"><img src="pics/vamk.jpg"       alt="VAMK" /></div>
-        <div class="logo-item"><img src="pics/kpedu_logo_2018.png"      alt="KPEDU" /></div>
-        <div class="logo-item"><img src="pics/stadin.jpg"      alt="Stadin" /></div>
-        <div class="logo-item"><img src="pics/chydenius.jpg"   alt="Chydenius" /></div>
-        <div class="logo-item"><img src="pics/centria.png"    alt="Centria" /></div>
-        <div class="logo-item"><img src="pics/jedu.jpg"       alt="JEDU" /></div>
-        <div class="logo-item"><img src="pics/STEP-koulutus.jpg"       alt="STEP" /></div>
-        <div class="logo-item"><img src="pics/LAB.jpg"       alt="LAB" /></div>
-        <div class="logo-item"><img src="pics/turun_amk.jpg"       alt="Turun AMK" /></div>
-        <!-- duplicate for seamless loop -->
-        <div class="logo-item"><img src="pics/aalto.jpg"    alt="Aalto" /></div>
-        <div class="logo-item"><img src="pics/metropolia.jpg"    alt="Metropolia" /></div>
-        <div class="logo-item"><img src="pics/vamk.jpg"       alt="VAMK" /></div>
-        <div class="logo-item"><img src="pics/kpedu_logo_2018.png"      alt="KPEDU" /></div>
-        <div class="logo-item"><img src="pics/stadin.jpg"      alt="Stadin" /></div>
-        <div class="logo-item"><img src="pics/chydenius.jpg"   alt="Chydenius" /></div>
-        <div class="logo-item"><img src="pics/centria.png"    alt="Centria" /></div>
-        <div class="logo-item"><img src="pics/jedu.jpg"       alt="JEDU" /></div>
-        <div class="logo-item"><img src="pics/STEP-koulutus.jpg"       alt="STEP" /></div>
-        <div class="logo-item"><img src="pics/LAB.jpg"       alt="LAB" /></div>
-        <div class="logo-item"><img src="pics/turun_amk.jpg"       alt="Turun AMK" /></div>
-        
+    <div class="logo-strip">
+      <p class="logo-strip-label" data-i18n="logoStrip.label">
+        Trusted by interns from the leading educational institutions
+      </p>
+      <div class="logo-track-wrap">
+        <!-- EN: Logos duplicated below for seamless infinite scroll animation -->
+        <!-- FI: Logot kaksoiskopioitu alla saumatonta looppausta varten -->
+        <div class="logo-track">
+          <div class="logo-item"><img src="pics/aalto.jpg" alt="Aalto" /></div>
+          <div class="logo-item">
+            <img src="pics/metropolia.jpg" alt="Metropolia" />
+          </div>
+          <div class="logo-item"><img src="pics/vamk.jpg" alt="VAMK" /></div>
+          <div class="logo-item">
+            <img src="pics/kpedu_logo_2018.png" alt="KPEDU" />
+          </div>
+          <div class="logo-item">
+            <img src="pics/stadin.jpg" alt="Stadin" />
+          </div>
+          <div class="logo-item">
+            <img src="pics/chydenius.jpg" alt="Chydenius" />
+          </div>
+          <div class="logo-item">
+            <img src="pics/centria.png" alt="Centria" />
+          </div>
+          <div class="logo-item"><img src="pics/jedu.jpg" alt="JEDU" /></div>
+          <div class="logo-item">
+            <img src="pics/STEP-koulutus.jpg" alt="STEP" />
+          </div>
+          <div class="logo-item"><img src="pics/LAB.jpg" alt="LAB" /></div>
+          <div class="logo-item">
+            <img src="pics/turun_amk.jpg" alt="Turun AMK" />
+          </div>
+          <!-- duplicate for seamless loop -->
+          <div class="logo-item"><img src="pics/aalto.jpg" alt="Aalto" /></div>
+          <div class="logo-item">
+            <img src="pics/metropolia.jpg" alt="Metropolia" />
+          </div>
+          <div class="logo-item"><img src="pics/vamk.jpg" alt="VAMK" /></div>
+          <div class="logo-item">
+            <img src="pics/kpedu_logo_2018.png" alt="KPEDU" />
+          </div>
+          <div class="logo-item">
+            <img src="pics/stadin.jpg" alt="Stadin" />
+          </div>
+          <div class="logo-item">
+            <img src="pics/chydenius.jpg" alt="Chydenius" />
+          </div>
+          <div class="logo-item">
+            <img src="pics/centria.png" alt="Centria" />
+          </div>
+          <div class="logo-item"><img src="pics/jedu.jpg" alt="JEDU" /></div>
+          <div class="logo-item">
+            <img src="pics/STEP-koulutus.jpg" alt="STEP" />
+          </div>
+          <div class="logo-item"><img src="pics/LAB.jpg" alt="LAB" /></div>
+          <div class="logo-item">
+            <img src="pics/turun_amk.jpg" alt="Turun AMK" />
+          </div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- ── JOURNEY CAROUSEL ──────────────────────────────────────────
+    <!-- ── JOURNEY CAROUSEL ──────────────────────────────────────────
        EN: Full-width three-step image carousel illustrating the internship journey:
            Apply → Interview → Get Hired. Slides fade via CSS opacity transition (0.9s).
            Navigation functions prevSlide() / nextSlide() / goToSlide(index) live in script.js.
@@ -157,43 +250,60 @@
            Navigointifunktiot prevSlide() / nextSlide() / goToSlide(index) sijaitsevat script.js:ssä.
            Pistenäyttimet heijastava nykyistä dian hakemistoa; pisteen napsauttaminen hyppää dialle.
        ──────────────────────────────────────────────────────── -->
-  <div class="journey-carousel">
-    <div class="carousel-track" id="carouselTrack">
-      <div class="carousel-slide active">
-        <img src="pics/apply.jpg" alt="Apply" />
-        <div class="carousel-caption">
-          <span class="carousel-step" data-i18n="carousel.step1">Step 01</span>
-          <h3 data-i18n="carousel.step1Title">Apply</h3>
-          <p data-i18n="carousel.step1Desc">Browse hundreds of positions and submit your application in minutes</p>
+    <div class="journey-carousel">
+      <div class="carousel-track" id="carouselTrack">
+        <div class="carousel-slide active">
+          <img src="pics/apply.jpg" alt="Apply" />
+          <div class="carousel-caption">
+            <span class="carousel-step" data-i18n="carousel.step1"
+              >Step 01</span
+            >
+            <h3 data-i18n="carousel.step1Title">Apply</h3>
+            <p data-i18n="carousel.step1Desc">
+              Browse hundreds of positions and submit your application in
+              minutes
+            </p>
+          </div>
+        </div>
+        <div class="carousel-slide">
+          <img src="pics/interview.jpg" alt="Interview" />
+          <div class="carousel-caption">
+            <span class="carousel-step" data-i18n="carousel.step2"
+              >Step 02</span
+            >
+            <h3 data-i18n="carousel.step2Title">Interview</h3>
+            <p data-i18n="carousel.step2Desc">
+              Connect with top companies and showcase your skills
+            </p>
+          </div>
+        </div>
+        <div class="carousel-slide">
+          <img src="pics/hired.jpg" alt="Get Hired" />
+          <div class="carousel-caption">
+            <span class="carousel-step" data-i18n="carousel.step3"
+              >Step 03</span
+            >
+            <h3 data-i18n="carousel.step3Title">Get Hired</h3>
+            <p data-i18n="carousel.step3Desc">
+              Land your dream internship and launch your career
+            </p>
+          </div>
         </div>
       </div>
-      <div class="carousel-slide">
-        <img src="pics/interview.jpg" alt="Interview" />
-        <div class="carousel-caption">
-          <span class="carousel-step" data-i18n="carousel.step2">Step 02</span>
-          <h3 data-i18n="carousel.step2Title">Interview</h3>
-          <p data-i18n="carousel.step2Desc">Connect with top companies and showcase your skills</p>
-        </div>
+      <div class="carousel-dots">
+        <button class="carousel-dot active" onclick="goToSlide(0)"></button>
+        <button class="carousel-dot" onclick="goToSlide(1)"></button>
+        <button class="carousel-dot" onclick="goToSlide(2)"></button>
       </div>
-      <div class="carousel-slide">
-        <img src="pics/hired.jpg" alt="Get Hired" />
-        <div class="carousel-caption">
-          <span class="carousel-step" data-i18n="carousel.step3">Step 03</span>
-          <h3 data-i18n="carousel.step3Title">Get Hired</h3>
-          <p data-i18n="carousel.step3Desc">Land your dream internship and launch your career</p>
-        </div>
-      </div>
+      <button class="carousel-arrow carousel-prev" onclick="prevSlide()">
+        &#8592;
+      </button>
+      <button class="carousel-arrow carousel-next" onclick="nextSlide()">
+        &#8594;
+      </button>
     </div>
-    <div class="carousel-dots">
-      <button class="carousel-dot active" onclick="goToSlide(0)"></button>
-      <button class="carousel-dot"        onclick="goToSlide(1)"></button>
-      <button class="carousel-dot"        onclick="goToSlide(2)"></button>
-    </div>
-    <button class="carousel-arrow carousel-prev" onclick="prevSlide()">&#8592;</button>
-    <button class="carousel-arrow carousel-next" onclick="nextSlide()">&#8594;</button>
-  </div>
 
-  <!-- ── SHARE EXPERIENCE SECTION ──────────────────────────────────────────
+    <!-- ── SHARE EXPERIENCE SECTION ──────────────────────────────────────────
        EN: Three-column layout: [← nav | left card] [center CTA card] [right card | nav →].
            Testimonial cards (#testimonialLeft, #testimonialRight) are populated dynamically
            by share-experience.js, which fetches approved reviews from Supabase 'internship_reviews'.
@@ -206,53 +316,97 @@
            Keskimmäinen "Write your story" -painike kutsuu openExperienceModal() -funktiota,
            joka tarkistaa kirjautumisen ja hyväksytyn hakemuksen olemassaolon ennen avaamista.
        ──────────────────────────────────────────────────────── -->
-  <section id="share-experience-section">
-    <div class="share-experience-inner">
-      <div class="section-header">
-        <p class="section-subtitle" data-i18n="shareExperience.sectionSubtitle">Pay It Forward</p>
-        <h2 data-i18n="shareExperience.sectionTitle">Share Your Experience</h2>
-        <p data-i18n="shareExperience.sectionDesc">Join thousands of successful interns in helping the next generation. Your advice can launch a career.</p>
-      </div>
-      <div class="share-grid">
-        <!-- EN: Left testimonial panel. Arrow is left of card (flex row-direction).
+    <section id="share-experience-section">
+      <div class="share-experience-inner">
+        <div class="section-header">
+          <p
+            class="section-subtitle"
+            data-i18n="shareExperience.sectionSubtitle"
+          >
+            Pay It Forward
+          </p>
+          <h2 data-i18n="shareExperience.sectionTitle">
+            Share Your Experience
+          </h2>
+          <p data-i18n="shareExperience.sectionDesc">
+            Join thousands of successful interns in helping the next generation.
+            Your advice can launch a career.
+          </p>
+        </div>
+        <div class="share-grid">
+          <!-- EN: Left testimonial panel. Arrow is left of card (flex row-direction).
                  id="testimonialLeft" is injected by renderTestimonial() in share-experience.js.
                  prevShareTestimonial() decrements the testimonial index and re-renders cards. -->
-        <!-- FI: Vasen suosituspaneeli. Nuoli on kortin vasemmalla puolella (flex-suunta: row).
+          <!-- FI: Vasen suosituspaneeli. Nuoli on kortin vasemmalla puolella (flex-suunta: row).
                  id="testimonialLeft" lisätään renderTestimonial()-funktiolla share-experience.js:ssä.
                  prevShareTestimonial() pienentää suositushakemistoa ja piirtää kortit uudelleen. -->
-        <div class="testimonial-panel panel-left">
-          <button type="button" class="testimonial-nav testimonial-prev" onclick="prevShareTestimonial()" aria-label="Previous testimonial">←</button>
-          <article class="testimonial-card" id="testimonialLeft"></article>
-        </div>
-
-        <!-- EN: Center card — fixed, non-navigable. Holds CTA to open the share modal.
-                 id="writeStoryBtn" is disabled by share-experience.js when the user lacks eligibility. -->
-        <!-- FI: Keskikortti — paikallaan, ei navigoi. Sisältää CTA modaalin avaamiseksi.
-                 share-experience.js poistaa id="writeStoryBtn" käytöstä, jos käyttäjällä ei ole oikeutta. -->
-        <article class="journey-card">
-          <div class="journey-card-inner">
-            <span class="journey-label" data-i18n="shareExperience.journeyLabel">Share Your Journey</span>
-            <h3 class="journey-heading" data-i18n="shareExperience.journeyHeading">Write your story</h3>
-            <div class="journey-cta journey-cta--centered">
-              <button type="button" id="writeStoryBtn" class="journey-action-btn" onclick="openExperienceModal()" data-i18n="shareExperience.journeyBtn">Write your story</button>
-              <p data-i18n="shareExperience.journeyDesc">Share a concise reflection that helps other interns navigate their next opportunity.</p>
-            </div>
+          <div class="testimonial-panel panel-left">
+            <button
+              type="button"
+              class="testimonial-nav testimonial-prev"
+              onclick="prevShareTestimonial()"
+              aria-label="Previous testimonial"
+            >
+              ←
+            </button>
+            <article class="testimonial-card" id="testimonialLeft"></article>
           </div>
-        </article>
 
-        <!-- EN: Right testimonial panel. Arrow is AFTER the card in DOM, so it appears on the right
+          <!-- EN: Center card — fixed, non-navigable. Holds CTA to open the share modal.
+                 id="writeStoryBtn" is disabled by share-experience.js when the user lacks eligibility. -->
+          <!-- FI: Keskikortti — paikallaan, ei navigoi. Sisältää CTA modaalin avaamiseksi.
+                 share-experience.js poistaa id="writeStoryBtn" käytöstä, jos käyttäjällä ei ole oikeutta. -->
+          <article class="journey-card">
+            <div class="journey-card-inner">
+              <span
+                class="journey-label"
+                data-i18n="shareExperience.journeyLabel"
+                >Share Your Journey</span
+              >
+              <h3
+                class="journey-heading"
+                data-i18n="shareExperience.journeyHeading"
+              >
+                Write your story
+              </h3>
+              <div class="journey-cta journey-cta--centered">
+                <button
+                  type="button"
+                  id="writeStoryBtn"
+                  class="journey-action-btn"
+                  onclick="openExperienceModal()"
+                  data-i18n="shareExperience.journeyBtn"
+                >
+                  Write your story
+                </button>
+                <p data-i18n="shareExperience.journeyDesc">
+                  Share a concise reflection that helps other interns navigate
+                  their next opportunity.
+                </p>
+              </div>
+            </div>
+          </article>
+
+          <!-- EN: Right testimonial panel. Arrow is AFTER the card in DOM, so it appears on the right
                  in the flex row layout. nextShareTestimonial() increments the testimonial index. -->
-        <!-- FI: Oikea suosituspaneeli. Nuoli tulee korttiElementin JÄLKEEN DOM:ssa, joten se
+          <!-- FI: Oikea suosituspaneeli. Nuoli tulee korttiElementin JÄLKEEN DOM:ssa, joten se
                  näkyy oikealla flex-rivissä. nextShareTestimonial() kasvattaa hakemistoa. -->
-        <div class="testimonial-panel panel-right">
-          <article class="testimonial-card" id="testimonialRight"></article>
-          <button type="button" class="testimonial-nav testimonial-next" onclick="nextShareTestimonial()" aria-label="Next testimonial">→</button>
+          <div class="testimonial-panel panel-right">
+            <article class="testimonial-card" id="testimonialRight"></article>
+            <button
+              type="button"
+              class="testimonial-nav testimonial-next"
+              onclick="nextShareTestimonial()"
+              aria-label="Next testimonial"
+            >
+              →
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- MODAL: Share Experience Form
+    <!-- MODAL: Share Experience Form
        EN: Opened by openExperienceModal() in share-experience.js. Only students with at
            least one accepted application can submit. The script validates session and
            accepted-application status before displaying this modal.
@@ -269,42 +423,92 @@
            id="sharePositionSelect" — täytetään dynaamisesti opiskelijan hyväksytyillä paikoilla.
            Merkkienlaskurit (#surpriseCount, #tipCount) päivitetään updateCharCounter()-funktiolla
            jokaisella oninput-tapahtumalla (max 200 merkkiä kummallakin). -->
-  <div id="shareModal" class="share-modal" style="display:none;">
-    <div class="share-modal-panel">
-      <button type="button" class="share-modal-close" onclick="closeExperienceModal()" aria-label="Close form">×</button>
-      <div class="share-modal-header">
-        <p class="section-subtitle" data-i18n="shareExperience.modalSubtitle">Share Your Story</p>
-        <h3 data-i18n="shareExperience.modalTitle">Publish your experience</h3>
-        <p data-i18n="shareExperience.modalDesc">Write a short reflection and help future interns learn from your journey.</p>
+    <div id="shareModal" class="share-modal" style="display: none">
+      <div class="share-modal-panel">
+        <button
+          type="button"
+          class="share-modal-close"
+          onclick="closeExperienceModal()"
+          aria-label="Close form"
+        >
+          ×
+        </button>
+        <div class="share-modal-header">
+          <p class="section-subtitle" data-i18n="shareExperience.modalSubtitle">
+            Share Your Story
+          </p>
+          <h3 data-i18n="shareExperience.modalTitle">
+            Publish your experience
+          </h3>
+          <p data-i18n="shareExperience.modalDesc">
+            Write a short reflection and help future interns learn from your
+            journey.
+          </p>
+        </div>
+        <form
+          id="shareForm"
+          class="share-modal-form"
+          onsubmit="submitExperienceForm(event)"
+        >
+          <div class="share-name-display">
+            <span id="shareStudentName"></span>
+          </div>
+          <label>
+            <span data-i18n="shareExperience.positionLabel"
+              >Internship position</span
+            >
+            <select id="sharePositionSelect" required></select>
+          </label>
+          <label>
+            <span data-i18n="shareExperience.surpriseLabel"
+              >What surprised you most?</span
+            >
+            <textarea
+              name="surprise"
+              rows="4"
+              placeholder="The team was so supportive..."
+              data-i18n-placeholder="shareExperience.surprisePlaceholder"
+              required
+              maxlength="200"
+              oninput="updateCharCounter(this, 'surpriseCount')"
+            ></textarea>
+            <span class="char-counter" id="surpriseCount">0/200</span>
+          </label>
+          <label>
+            <span data-i18n="shareExperience.tipLabel">Top interview tip</span>
+            <textarea
+              name="tip"
+              rows="3"
+              placeholder="Prepare strong examples..."
+              data-i18n-placeholder="shareExperience.tipPlaceholder"
+              required
+              maxlength="200"
+              oninput="updateCharCounter(this, 'tipCount')"
+            ></textarea>
+            <span class="char-counter" id="tipCount">0/200</span>
+          </label>
+          <div class="share-modal-actions">
+            <button
+              type="button"
+              class="btn-cancel"
+              onclick="closeExperienceModal()"
+              data-i18n="shareExperience.btnCancel"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="btn-publish"
+              data-i18n="shareExperience.btnPublish"
+            >
+              Publish story
+            </button>
+          </div>
+        </form>
       </div>
-      <form id="shareForm" class="share-modal-form" onsubmit="submitExperienceForm(event)">
-        <div class="share-name-display">
-          <span id="shareStudentName"></span>
-        </div>
-        <label>
-          <span data-i18n="shareExperience.positionLabel">Internship position</span>
-          <select id="sharePositionSelect" required></select>
-        </label>
-        <label>
-          <span data-i18n="shareExperience.surpriseLabel">What surprised you most?</span>
-          <textarea name="surprise" rows="4" placeholder="The team was so supportive..." data-i18n-placeholder="shareExperience.surprisePlaceholder" required maxlength="200" oninput="updateCharCounter(this,'surpriseCount')"></textarea>
-          <span class="char-counter" id="surpriseCount">0/200</span>
-        </label>
-        <label>
-          <span data-i18n="shareExperience.tipLabel">Top interview tip</span>
-          <textarea name="tip" rows="3" placeholder="Prepare strong examples..." data-i18n-placeholder="shareExperience.tipPlaceholder" required maxlength="200" oninput="updateCharCounter(this,'tipCount')"></textarea>
-          <span class="char-counter" id="tipCount">0/200</span>
-        </label>
-        <div class="share-modal-actions">
-          <button type="button" class="btn-cancel" onclick="closeExperienceModal()" data-i18n="shareExperience.btnCancel">Cancel</button>
-          <button type="submit" class="btn-publish" data-i18n="shareExperience.btnPublish">Publish story</button>
-        </div>
-      </form>
     </div>
-  </div>
 
-
-  <!-- ── FOOTER ──────────────────────────────────────────
+    <!-- ── FOOTER ──────────────────────────────────────────
        EN: Site-wide footer with four link groups: About InternHub, For Students,
            For Employers, Legal. All link text is translatable via data-i18n attributes.
            The footer-bottom strip holds the copyright notice.
@@ -312,47 +516,120 @@
            Opiskelijoille, Työnantajille, Lakiasiat. Kaikki linkkitekstit käännetään
            data-i18n-attribuuttien avulla. footer-bottom sisältää tekijänoikeusilmoituksen.
        ──────────────────────────────────────────────────────── -->
-  <footer>
-    <div class="footer-content">
-      <div class="footer-section">
-        <h4 data-i18n="footer.aboutHeading">About InternHub</h4>
-        <ul>
-          <li><a href="footer_info/about-us.html" data-i18n="footer.aboutUs" class="mobile-responsive-link">About Us</a></li>
-          <li><a href="footer_info/team.html" data-i18n="footer.team">Our Team</a></li>
-          <li><a href="footer_info/contact.html" data-i18n="footer.contact" class="mobile-responsive-link">Contact</a></li>
-        </ul>
+    <footer>
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4 data-i18n="footer.aboutHeading">About InternHub</h4>
+          <ul>
+            <li>
+              <a
+                href="footer_info/about-us.html"
+                data-i18n="footer.aboutUs"
+                class="mobile-responsive-link"
+                >About Us</a
+              >
+            </li>
+            <li>
+              <a href="footer_info/team.html" data-i18n="footer.team"
+                >Our Team</a
+              >
+            </li>
+            <li>
+              <a
+                href="footer_info/contact.html"
+                data-i18n="footer.contact"
+                class="mobile-responsive-link"
+                >Contact</a
+              >
+            </li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4 data-i18n="footer.studentsHeading">For Students</h4>
+          <ul>
+            <li>
+              <a
+                href="footer_info/career-resources.html"
+                data-i18n="footer.careerResources"
+                class="mobile-responsive-link"
+                >Career Resources</a
+              >
+            </li>
+            <li>
+              <a
+                href="footer_info/resume-builder.html"
+                data-i18n="footer.resumeBuilder"
+                class="mobile-responsive-link"
+                >Resume Builder</a
+              >
+            </li>
+            <li>
+              <a
+                href="footer_info/interview-tips.html"
+                data-i18n="footer.interviewTips"
+                >Interview Tips</a
+              >
+            </li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4 data-i18n="footer.employersHeading">For Employers</h4>
+          <ul>
+            <li>
+              <a href="footer_info/company.html" data-i18n="footer.postJob"
+                >Post Job</a
+              >
+            </li>
+            <li>
+              <a
+                href="footer_info/browse-candidates.html"
+                data-i18n="footer.browseCandidates"
+                >Browse Candidates</a
+              >
+            </li>
+            <li>
+              <a href="footer_info/support.html" data-i18n="footer.support"
+                >Support</a
+              >
+            </li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4 data-i18n="footer.legalHeading">Legal</h4>
+          <ul>
+            <li>
+              <a
+                href="footer_info/privacy-policy.html"
+                data-i18n="footer.privacyPolicy"
+                >Privacy Policy</a
+              >
+            </li>
+            <li>
+              <a
+                href="footer_info/terms-of-service.html"
+                data-i18n="footer.termsOfService"
+                >Terms of Service</a
+              >
+            </li>
+            <li>
+              <a
+                href="footer_info/cookie-policy.html"
+                data-i18n="footer.cookiePolicy"
+                >Cookie Policy</a
+              >
+            </li>
+          </ul>
+        </div>
       </div>
-      <div class="footer-section">
-        <h4 data-i18n="footer.studentsHeading">For Students</h4>
-        <ul>
-          <li><a href="footer_info/career-resources.html" data-i18n="footer.careerResources" class="mobile-responsive-link">Career Resources</a></li>
-          <li><a href="footer_info/resume-builder.html" data-i18n="footer.resumeBuilder" class="mobile-responsive-link">Resume Builder</a></li>
-          <li><a href="footer_info/interview-tips.html" data-i18n="footer.interviewTips">Interview Tips</a></li>
-        </ul>
+      <div class="footer-bottom">
+        <p style="color: rgba(255, 255, 255, 0.7)" data-i18n="footer.copyright">
+          &copy; 2026 InternHub. All rights reserved. | Helping students find
+          their next opportunity
+        </p>
       </div>
-      <div class="footer-section">
-        <h4 data-i18n="footer.employersHeading">For Employers</h4>
-        <ul>
-          <li><a href="footer_info/company.html" data-i18n="footer.postJob">Post Job</a></li>
-          <li><a href="footer_info/browse-candidates.html" data-i18n="footer.browseCandidates">Browse Candidates</a></li>
-          <li><a href="footer_info/support.html" data-i18n="footer.support">Support</a></li>
-        </ul>
-      </div>
-      <div class="footer-section">
-        <h4 data-i18n="footer.legalHeading">Legal</h4>
-        <ul>
-          <li><a href="footer_info/privacy-policy.html" data-i18n="footer.privacyPolicy">Privacy Policy</a></li>
-          <li><a href="footer_info/terms-of-service.html" data-i18n="footer.termsOfService">Terms of Service</a></li>
-          <li><a href="footer_info/cookie-policy.html" data-i18n="footer.cookiePolicy">Cookie Policy</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p data-i18n="footer.copyright">&copy; 2026 InternHub. All rights reserved. | Helping students find their next opportunity</p>
-    </div>
-  </footer>
+    </footer>
 
-  <!-- ── SCRIPTS — load order is dependency-driven ──────────────────────────────────────────
+    <!-- ── SCRIPTS — load order is dependency-driven ──────────────────────────────────────────
        EN: 1. supabase-js CDN    — provides the global Supabase library
            2. js/supabase.js     — initialises supabaseClient (URL + anon key)
            3. js/auth.js         — getCurrentSession(), checkCompanyAuth(); needs supabase.js
@@ -368,12 +645,12 @@
            6. js/share-experience.js — lataa suositukset, hallitsee modaalin ja lomakkeen lähetyksen
            7. js/cookie-consent.js   — lisää GDPR-evästebannerin jos suostumusta ei ole annettu
        ──────────────────────────────────────────────────────── -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/i18n.js"></script>
-  <script src="js/script.js"></script>
-  <script src="js/share-experience.js"></script>
-  <script src="js/cookie-consent.js"></script>
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/i18n.js"></script>
+    <script src="js/script.js"></script>
+    <script src="js/share-experience.js"></script>
+    <script src="js/cookie-consent.js"></script>
+  </body>
 </html>
