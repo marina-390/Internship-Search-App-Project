@@ -9,6 +9,13 @@ async function loadFavorites() {
   const container = document.getElementById('favoritesContainer');
   if (!container) return;
 
+  // Check role - only students can see favorites
+  const userRole = localStorage.getItem('userRole');
+  if (userRole !== '1') {
+    container.innerHTML = '<p style="font-size:0.85rem;color:var(--text-light);">Only students can save favorites.</p>';
+    return;
+  }
+
   const { data: { session } } = await supabaseClient.auth.getSession();
   const user = session?.user;
   if (!user) {
@@ -87,6 +94,14 @@ async function loadFavorites() {
       .in('company_id', companyIds);
     (companies || []).forEach(c => { companyMap[c.company_id] = c; });
   }
+
+  (function() {
+  const userRole = localStorage.getItem('userRole');
+  const favContainer = document.getElementById('favBtnContainer');
+  if (favContainer && userRole !== '1') {
+    favContainer.style.display = 'none';
+  }
+})();
 
   const positionMap = {};
   (positions || []).forEach(p => { positionMap[p.position_id] = p; });
@@ -175,6 +190,14 @@ async function removeFavoriteByInternshipId(internshipId) {
 // Saves or removes a favorite in Supabase when a heart button is clicked.
 // Only stores user_id + internship_id — all other data fetched at display time.
 async function syncFavoriteToSupabase(internshipId, isAdding) {
+  // Check role - only students can sync to Supabase
+  const userRole = localStorage.getItem('userRole');
+  if (userRole !== '1') {
+    console.warn('[favorites] Companies cannot save favorites');
+    if (typeof showToast === 'function') showToast('Only students can save favorites.', 'warning');
+    return;
+  }
+
   const { data: { session } } = await supabaseClient.auth.getSession();
   const user = session?.user;
   if (!user) {
@@ -199,6 +222,10 @@ async function syncFavoriteToSupabase(internshipId, isAdding) {
 
 // Highlights heart buttons on the internships page based on Supabase data.
 async function highlightSavedFavorites() {
+  // Check role - only highlight for students
+  const userRole = localStorage.getItem('userRole');
+  if (userRole !== '1') return;
+
   const { data: { session } } = await supabaseClient.auth.getSession();
   const user = session?.user;
   if (!user) return;
