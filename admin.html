@@ -1,46 +1,4 @@
 <!DOCTYPE html>
-<!--
-  ============================================================
-  admin.html — Administration Dashboard (role 0 only)
-  Hallintapaneeli — vain rooli 0 (admin)
-
-  EN: Restricted page accessible only to users with role 0 (admin).
-      auth guard in the inline DOMContentLoaded script checks
-      getCurrentSession().role; any non-admin is redirected immediately.
-      Features:
-      • Stats row — live counts for Users, Students, Employers,
-        Positions, Applications, Contact Messages (parallel Supabase queries)
-      • All Users table — lists every user with role badge and
-        quick-action buttons: Delete user, promote/demote role
-      • All Positions table — lists every internship position with
-        company name, status badge and Delete action
-      • Messages table — lists contact form submissions from
-        contact_messages table; supports View (full-text modal) and Delete
-      • #messageModal — read-only modal for viewing full message text
-      • Inline script contains all admin logic (no separate admin.js file):
-        loadStats(), loadUsers(), loadPositions(), loadMessages(),
-        deleteUser(), setRole(), deletePosition(),
-        handleContactForm(), deleteMessage(), viewMessage(), closeModal()
-
-  FI: Rajoitettu sivu, joka on käytettävissä vain rooli 0 (admin) -käyttäjille.
-      Inline DOMContentLoaded -skriptin auth-vahti tarkistaa
-      getCurrentSession().role; ei-admin ohjataan välittömästi pois.
-      Ominaisuudet:
-      • Tilastorivi — reaaliaikaiset luvut käyttäjistä, opiskelijoista, työnantajista,
-        harjoittelupaikoista, hakemuksista, yhteydenottoviesteistä (rinnakkaiset Supabase-kyselyt)
-      • Kaikki käyttäjät -taulukko — listaa jokaisen käyttäjän roolin pitkällä ja
-        pikatoimintopainikkeilla: Poista käyttäjä, muuta roolia
-      • Kaikki paikat -taulukko — listaa jokaisen harjoittelupaikan yrityksen nimellä,
-        tilabadgella ja Poista-toiminnolla
-      • Viestit-taulukko — listaa yhteydenottolomakkeen lähetyksiä
-        contact_messages-taulusta; tukee Näytä (koko tekstin modal) ja Poista -toimintoja
-      • #messageModal — vain luku -modal koko viestitekstien tarkasteluun
-      • Inline-skripti sisältää kaiken admin-logiikan (ei erillistä admin.js-tiedostoa):
-        loadStats(), loadUsers(), loadPositions(), loadMessages(),
-        deleteUser(), setRole(), deletePosition(),
-        handleContactForm(), deleteMessage(), viewMessage(), closeModal()
-  ============================================================
--->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -48,46 +6,11 @@
   <link rel="icon" type="image/png" href="icon.png">
   <title>Admin Dashboard - InternHub</title>
   <link rel="stylesheet" href="css/style.css">
-  <!-- ── INLINE STYLES ──────────────────────────────────────
-       EN: Page-specific CSS supplementing css/style.css.
-           .admin-stats       — responsive CSS grid of stat cards; auto-fit columns
-                                (min 180px each) — adapts from 6-up on desktop to 1-up on mobile
-           .stat-card         — individual metric tile with white background, border, shadow;
-                                .stat-number (2rem bold indigo) shows the count,
-                                .stat-label (small grey) shows the metric name
-           .admin-table       — full-width collapsed-border data table with:
-                                • purple header row (--primary-color background, white text)
-                                • zebra-stripe even rows (--light-color bg)
-                                • hover highlight (#eef2ff)
-           .role-badge        — pill badge for user role or position status;
-                                colour variants: .role-admin (purple), .role-student (blue),
-                                .role-employer (green)
-           .admin-section-title — bold underlined section heading above each table card
-           .action-btn        — compact table action button (padding 0.25rem 0.6rem, 0.75rem font)
-           .btn-danger        — red variant of action button for destructive actions (Delete)
-           .btn-promote       — purple variant for role promotion actions (→ Admin)
-       FI: Sivukohtainen CSS joka täydentää css/style.css-tiedostoa.
-           .admin-stats       — responsiivinen CSS-ruudukko tilastokorteille; auto-fit-sarakkeet
-                                (min 180px) — skaalautuu 6-rinnakkaisesta työpöydällä 1-rinnakkaiseen mobiilissa
-           .stat-card         — yksittäinen metriikkalaatta valkoisella taustalla, reunuksella, varjolla;
-                                .stat-number (2rem lihavoitu indigo) näyttää luvun,
-                                .stat-label (pieni harmaa) näyttää metriikan nimen
-           .admin-table       — täyden leveyden yhtenäinen tietotaulukko jossa:
-                                • violetti otsikkorivi (--primary-color tausta, valkoinen teksti)
-                                • seepraraidoitetut parilliset rivit (--light-color tausta)
-                                • hover-korostus (#eef2ff)
-           .role-badge        — pillipitkö käyttäjäroolille tai position statukselle;
-                                värivariantit: .role-admin (violetti), .role-student (sininen),
-                                .role-employer (vihreä)
-           .admin-section-title — lihavoitu alleviivattu osion otsikko kunkin taulukkokortin yläpuolella
-           .action-btn        — kompakti taulukko-toimintopainike (padding 0.25rem 0.6rem, 0.75rem fontti)
-           .btn-danger        — punainen variantti toimintopainikkeelle tuhoaville toiminnoille (Poista)
-           .btn-promote       — violetti variantti roolin ylennystoiminnoille (→ Admin)
-       ──────────────────────────────────────────────────────── -->
   <style>
+    /* ── STATS ── */
     .admin-stats {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
       gap: 1rem;
       margin-bottom: 2rem;
     }
@@ -110,6 +33,8 @@
       color: var(--text-light);
       margin: 0;
     }
+
+    /* ── TABLE ── */
     .admin-table {
       width: 100%;
       border-collapse: collapse;
@@ -121,18 +46,18 @@
       padding: 0.6rem 0.875rem;
       text-align: left;
       font-weight: 600;
+      white-space: nowrap;
     }
     .admin-table td {
       padding: 0.6rem 0.875rem;
       border-bottom: 1px solid var(--border-color);
       color: var(--text-color);
+      vertical-align: middle;
     }
-    .admin-table tr:nth-child(even) td {
-      background: var(--light-color);
-    }
-    .admin-table tr:hover td {
-      background: #eef2ff;
-    }
+    .admin-table tr:nth-child(even) td { background: var(--light-color); }
+    .admin-table tr:hover td { background: #eef2ff; }
+
+    /* ── ROLE BADGES ── */
     .role-badge {
       display: inline-block;
       padding: 0.15rem 0.55rem;
@@ -143,6 +68,8 @@
     .role-admin    { background: #ede9fe; color: #5b21b6; }
     .role-student  { background: #dbeafe; color: #1e40af; }
     .role-employer { background: #d1fae5; color: #065f46; }
+
+    /* ── SECTION TITLE ── */
     .admin-section-title {
       font-size: 1rem;
       font-weight: 700;
@@ -151,6 +78,8 @@
       border-bottom: 2px solid var(--primary-color);
       color: var(--dark-color);
     }
+
+    /* ── ACTION BUTTONS ── */
     .action-btn {
       padding: 0.25rem 0.6rem;
       font-size: 0.75rem;
@@ -158,26 +87,178 @@
       border-radius: 0.25rem;
       cursor: pointer;
       font-weight: 600;
+      white-space: nowrap;
     }
-    .btn-danger { background: #fee2e2; color: #991b1b; }
-    .btn-danger:hover { background: #fca5a5; }
+    .btn-danger  { background: #fee2e2; color: #991b1b; }
+    .btn-danger:hover  { background: #fca5a5; }
     .btn-promote { background: #ede9fe; color: #5b21b6; }
     .btn-promote:hover { background: #c4b5fd; }
+    .btn-view-action { background: #dbeafe; color: #1e40af; }
+    .btn-view-action:hover { background: #bfdbfe; }
+    .btn-edit-action { background: #d1fae5; color: #065f46; }
+    .btn-edit-action:hover { background: #a7f3d0; }
+
+    /* ── ACTION CELL ── */
+    .actions-cell {
+      display: flex;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    /* ── MOBILE: card-style rows for tables ── */
+    @media (max-width: 640px) {
+      /* Page header */
+      .admin-page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.4rem;
+      }
+
+      /* Hide traditional table on mobile; show card list */
+      .admin-table thead { display: none; }
+      .admin-table, .admin-table tbody, .admin-table tr, .admin-table td {
+        display: block;
+        width: 100%;
+      }
+      .admin-table tr {
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        margin-bottom: 0.75rem;
+        background: white;
+        padding: 0.5rem 0.75rem;
+      }
+      .admin-table tr:nth-child(even) td { background: transparent; }
+      .admin-table tr:hover td { background: transparent; }
+      .admin-table td {
+        border: none;
+        padding: 0.3rem 0;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.4rem;
+        font-size: 0.85rem;
+      }
+      .admin-table td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: var(--text-light);
+        min-width: 80px;
+        flex-shrink: 0;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding-top: 0.1rem;
+      }
+      .actions-cell {
+        flex-wrap: wrap;
+        gap: 0.35rem;
+      }
+
+      /* Stat cards smaller on mobile */
+      .admin-stats {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+      }
+      .stat-card { padding: 0.75rem 0.5rem; }
+      .stat-card .stat-number { font-size: 1.5rem; }
+      .stat-card .stat-label { font-size: 0.72rem; }
+    }
+
+    @media (max-width: 380px) {
+      .admin-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* ── MODALS ── */
+    .admin-modal-backdrop {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      overflow-y: auto;
+      padding: 1rem;
+    }
+    .admin-modal-box {
+      background: white;
+      margin: 5% auto;
+      padding: 2rem;
+      border-radius: 0.75rem;
+      width: 95%;
+      max-width: 580px;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    .admin-modal-close {
+      position: absolute;
+      right: 1.25rem;
+      top: 0.875rem;
+      font-size: 1.6rem;
+      cursor: pointer;
+      background: none;
+      border: none;
+      color: var(--text-light);
+      line-height: 1;
+    }
+    .admin-modal-close:hover { color: var(--dark-color); }
+
+    @media (max-width: 640px) {
+      .admin-modal-box { padding: 1.25rem; margin: 2% auto; }
+    }
+
+    /* ── FEEDBACK CARD ── */
+    .feedback-card {
+      background: #f9fafb;
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .feedback-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.5rem;
+    }
+    .feedback-card-meta {
+      font-size: 0.82rem;
+      color: var(--text-light);
+    }
+    .feedback-card-answers p {
+      margin: 0.35rem 0 0;
+      font-size: 0.875rem;
+      color: var(--text-color);
+      line-height: 1.5;
+    }
+    .feedback-card-answers strong {
+      color: var(--primary-color);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── EDIT TEXTAREA ── */
+    .admin-edit-textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      font-family: inherit;
+      font-size: 0.9rem;
+      resize: vertical;
+      margin-bottom: 0.75rem;
+    }
+    .admin-edit-textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+    }
+
+    /* ── CARD overflow helper ── */
+    .table-wrapper { overflow-x: auto; }
   </style>
 </head>
 <body>
-  <!-- ── NAVIGATION ────────────────────────────────────────
-       EN: Minimal navigation bar — admin dashboard only needs the logo and
-           an "Internships" link. No language switcher or login/register links
-           are shown because this page is exclusively for authenticated admins.
-           auth.js still runs and will append the user avatar / logout button
-           to the nav after confirming the active session.
-       FI: Minimaalinen navigointipalkki — admin-paneeli tarvitsee vain logon
-           ja "Internships"-linkin. Kielenvaihtajaa tai kirjautumis-/rekisteröitymislinkkejä
-           ei näytetä, koska tämä sivu on yksinomaan autentikoituneille admineille.
-           auth.js suoritetaan silti ja lisää käyttäjän avatarin / uloskirjautumispainikkeen
-           navigointiin aktiivisen istunnon vahvistamisen jälkeen.
-       ──────────────────────────────────────────────────────── -->
   <nav>
     <div class="nav-container">
       <a href="index.html" class="logo">InternHub</a>
@@ -188,101 +269,29 @@
     </div>
   </nav>
 
-  <!-- ── ADMIN DASHBOARD SECTION ──────────────────────────
-       EN: Main content section; reduced top/bottom padding (1.5rem) vs default
-           section padding so more table rows are visible without scrolling.
-           Page header row:
-           • "Admin Dashboard" h2 — static title
-           • #adminEmail — populated in DOMContentLoaded with
-             "Logged in as: <session.login>" so the admin can confirm
-             they are using the correct account.
-       FI: Pääsisältöosio; pienempi ylä/alapadding (1.5rem) verrattuna oletusarvoiseen
-           section-paddingiin jotta enemmän taulukon rivejä on näkyvissä ilman vieritystä.
-           Sivun otsikkorivi:
-           • "Admin Dashboard" h2 — staattinen otsikko
-           • #adminEmail — täytetään DOMContentLoaded-tapahtumassa tekstillä
-             "Logged in as: <session.login>" jotta admin voi varmistaa
-             käyttävänsä oikeaa tiliä.
-       ──────────────────────────────────────────────────────── -->
   <section class="section section-light" style="padding: 1.5rem 0;">
     <div class="container">
 
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+      <div class="admin-page-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.5rem;">
         <h2 style="margin:0;">Admin Dashboard</h2>
         <span id="adminEmail" style="font-size:0.85rem; color:var(--text-light);"></span>
       </div>
 
-      <!-- ── STATS ROW ──────────────────────────────────────
-           EN: Six .stat-card tiles, each showing one platform metric.
-               All values are initially "-" (or "0") and replaced by loadStats()
-               which runs four parallel Supabase queries via Promise.all:
-               1. Users → total users; broken down by role 1 (students) and role 2 (employers)
-               2. positions → total internship listings (all statuses)
-               3. applications → total applications submitted
-               4. contact_messages → total contact form submissions
-               Stat IDs: #statUsers #statStudents #statEmployers
-                          #statPositions #statApplications #statMessages
-           FI: Kuusi .stat-card-laattaa, joista jokainen näyttää yhden alustakohtaisen metriikan.
-               Kaikki arvot ovat aluksi "-" (tai "0") ja korvataan loadStats():lla
-               joka suorittaa neljä rinnakkaista Supabase-kyselyä Promise.all:n avulla:
-               1. Users → käyttäjien kokonaismäärä; jaettu roolin 1 (opiskelijat) ja roolin 2 (työnantajat) mukaan
-               2. positions → harjoitteluilmoitusten kokonaismäärä (kaikki statukset)
-               3. applications → jätettyjen hakemusten kokonaismäärä
-               4. contact_messages → yhteydenottolomakkeen lähetysten kokonaismäärä
-               Tilasto-ID:t: #statUsers #statStudents #statEmployers
-                              #statPositions #statApplications #statMessages
-           ──────────────────────────────────────────────────────── -->
-      <!-- Stats row -->
+      <!-- STATS -->
       <div class="admin-stats" id="statsRow">
         <div class="stat-card"><p class="stat-number" id="statUsers">-</p><p class="stat-label">Total Users</p></div>
         <div class="stat-card"><p class="stat-number" id="statStudents">-</p><p class="stat-label">Students</p></div>
         <div class="stat-card"><p class="stat-number" id="statEmployers">-</p><p class="stat-label">Employers</p></div>
         <div class="stat-card"><p class="stat-number" id="statPositions">-</p><p class="stat-label">Positions</p></div>
         <div class="stat-card"><p class="stat-number" id="statApplications">-</p><p class="stat-label">Applications</p></div>
-        <div class="stat-card">
-          <p class="stat-number" id="statMessages">0</p>
-          <p class="stat-label">Contact Messages</p>
-        </div>
+        <div class="stat-card"><p class="stat-number" id="statMessages">0</p><p class="stat-label">Contact Msgs</p></div>
+        <div class="stat-card"><p class="stat-number" id="statFeedbacks">0</p><p class="stat-label">Feedbacks</p></div>
       </div>
 
-      <!-- ── ALL USERS TABLE ───────────────────────────────
-           EN: Full list of every user in the Users table, newest first.
-               Columns: ID | Email | Role | Registered | Actions
-               #usersTableBody is populated by loadUsers() which queries:
-               SELECT user_id, user_login, role, created_at FROM Users ORDER BY created_at DESC
-               Each row renders:
-               • role as a .role-badge (.role-admin/.role-student/.role-employer)
-               • date localised with toLocaleDateString()
-               • Action buttons generated conditionally per row:
-                 "Delete" → deleteUser(id, email):
-                   confirm() dialog → DELETE FROM Users WHERE user_id = id
-                   then reloads stats + users table
-                 "→ Admin" (only if role !== 0) → setRole(id, 0)
-                 "→ Student" (only if role !== 1) → setRole(id, 1)
-                 "→ Employer" (only if role !== 2) → setRole(id, 2)
-                 setRole(id, newRole) → UPDATE Users SET role = newRole WHERE user_id = id
-               overflow-x:auto ensures the table scrolls horizontally on narrow screens.
-           FI: Täydellinen lista jokaisesta käyttäjästä Users-taulussa, uusimmasta alkaen.
-               Sarakkeet: ID | Sähköposti | Rooli | Rekisteröity | Toiminnot
-               #usersTableBody täytetään loadUsers():lla joka kyselee:
-               SELECT user_id, user_login, role, created_at FROM Users ORDER BY created_at DESC
-               Jokainen rivi renderöi:
-               • roolin .role-badge-pitkällä (.role-admin/.role-student/.role-employer)
-               • päivämäärän lokalisoituna toLocaleDateString():lla
-               • Toimintopainikkeet generoidaan ehdollisesti per rivi:
-                 "Delete" → deleteUser(id, email):
-                   confirm()-dialogi → DELETE FROM Users WHERE user_id = id
-                   lataa sitten tilastot + käyttäjätaulukko uudelleen
-                 "→ Admin" (vain jos role !== 0) → setRole(id, 0)
-                 "→ Student" (vain jos role !== 1) → setRole(id, 1)
-                 "→ Employer" (vain jos role !== 2) → setRole(id, 2)
-                 setRole(id, newRole) → UPDATE Users SET role = newRole WHERE user_id = id
-               overflow-x:auto varmistaa että taulukko vieritetään vaakasuoraan kapeilla näytöillä.
-           ──────────────────────────────────────────────────────── -->
-      <!-- Users table -->
+      <!-- USERS TABLE -->
       <div class="card" style="padding: 1.25rem;">
         <div class="admin-section-title">All Users</div>
-        <div style="overflow-x:auto;">
+        <div class="table-wrapper">
           <table class="admin-table">
             <thead>
               <tr>
@@ -300,40 +309,10 @@
         </div>
       </div>
 
-      <!-- ── ALL POSITIONS TABLE ──────────────────────────
-           EN: Lists every internship position across all companies, newest first.
-               Columns: ID | Title | Company | Status | Created | Actions
-               #positionsTableBody is populated by loadPositions():
-               SELECT position_id, title, status, created_at, Companies(company_name)
-               FROM positions ORDER BY created_at DESC
-               The joined Companies.company_name is accessed via p.Companies?.company_name
-               (Supabase returns the related row object via the foreign key join syntax).
-               Status is colour-coded via statusColors object:
-               • active → green badge
-               • draft  → grey badge
-               • closed → red badge
-               "Delete" button → deletePosition(id):
-                 confirm() → DELETE FROM positions WHERE position_id = id
-                 then reloads stats + positions table.
-           FI: Listaa jokaisen harjoittelupaikan kaikista yrityksistä, uusimmasta alkaen.
-               Sarakkeet: ID | Nimike | Yritys | Status | Luotu | Toiminnot
-               #positionsTableBody täytetään loadPositions():lla:
-               SELECT position_id, title, status, created_at, Companies(company_name)
-               FROM positions ORDER BY created_at DESC
-               Liitetty Companies.company_name haetaan p.Companies?.company_name:n kautta
-               (Supabase palauttaa liittyvän rivi-objektin vierasavainliitossyntaksin kautta).
-               Status on värikoodattu statusColors-objektin avulla:
-               • active → vihreä pitkö
-               • draft  → harmaa pitkö
-               • closed → punainen pitkö
-               "Delete"-painike → deletePosition(id):
-                 confirm() → DELETE FROM positions WHERE position_id = id
-                 lataa sitten tilastot + paikat-taulukko uudelleen.
-           ──────────────────────────────────────────────────────── -->
-      <!-- Positions table -->
+      <!-- POSITIONS TABLE -->
       <div class="card" style="padding: 1.25rem; margin-top: 1rem;">
         <div class="admin-section-title">All Positions</div>
-        <div style="overflow-x:auto;">
+        <div class="table-wrapper">
           <table class="admin-table">
             <thead>
               <tr>
@@ -352,41 +331,10 @@
         </div>
       </div>
 
-      <!-- ── MESSAGES TABLE ────────────────────────────────
-           EN: Lists all contact form submissions stored in contact_messages table.
-               Columns: From | Subject | Message (truncated to 30 chars) | Date | Actions
-               #messagesTableBody is populated by loadMessages():
-               SELECT * FROM contact_messages ORDER BY created_at DESC
-               Row actions:
-               • "View" → viewMessage(messageObject): passes the full row data to
-                 the inline viewMessage() function which populates #messageModal fields
-                 and sets its display to 'block'.
-               • "Delete" → deleteMessage(id):
-                 confirm() → DELETE FROM contact_messages WHERE id = id
-                 then reloads messages AND stats (to update #statMessages counter).
-               handleContactForm() is also defined in the inline script — it is used
-               by contact.html's form submission path that routes through this page's
-               Supabase insert + EmailJS notification (service_q4hp8tj / template_vq3sxru).
-           FI: Listaa kaikki contact_messages-tauluun tallennetut yhteydenottolomakkeen lähetykset.
-               Sarakkeet: Lähettäjä | Aihe | Viesti (katkaistaan 30 merkkiin) | Päivämäärä | Toiminnot
-               #messagesTableBody täytetään loadMessages():lla:
-               SELECT * FROM contact_messages ORDER BY created_at DESC
-               Rivin toiminnot:
-               • "View" → viewMessage(messageObject): välittää koko rivitiedot
-                 inline viewMessage()-funktiolle joka täyttää #messageModal-kentät
-                 ja asettaa sen näkyvyydeksi 'block'.
-               • "Delete" → deleteMessage(id):
-                 confirm() → DELETE FROM contact_messages WHERE id = id
-                 lataa sitten viestit JA tilastot uudelleen (päivittääkseen #statMessages-laskurin).
-               handleContactForm() on myös määritelty inline-skriptissä — sitä käyttää
-               contact.html:n lomakkeen lähetyspolku joka reitittyy tämän sivun
-               Supabase insert + EmailJS-ilmoituksen kautta (service_q4hp8tj / template_vq3sxru).
-           ──────────────────────────────────────────────────────── -->
+      <!-- CONTACT MESSAGES TABLE -->
       <div class="card" style="padding: 1.25rem; margin-top: 1rem;">
-        <div class="admin-section-title">Message</div>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-        </div>
-        <div style="overflow-x:auto;">
+        <div class="admin-section-title">Contact Messages</div>
+        <div class="table-wrapper">
           <table class="admin-table">
             <thead>
               <tr>
@@ -404,113 +352,80 @@
         </div>
       </div>
 
+      <!-- SHARE YOUR EXPERIENCE / FEEDBACKS -->
+      <div class="card" style="padding: 1.25rem; margin-top: 1rem;">
+        <div class="admin-section-title">Share Your Experience (Feedbacks)</div>
+        <div id="feedbacksContainer">
+          <p style="text-align:center; color:var(--text-light);">Loading feedbacks...</p>
+        </div>
+      </div>
+
     </div>
   </section>
 
-  <!-- ── MESSAGE VIEW MODAL ────────────────────────────────
-       EN: Read-only modal for viewing the complete text of a contact message.
-           Triggered by viewMessage(data) function:
-           • #viewSubject     — contact_messages.subject
-           • #viewName        — contact_messages.name (sender's name)
-           • #viewEmail       — contact_messages.email (sender's email address)
-           • #viewDate        — contact_messages.created_at formatted by toLocaleString()
-           • #viewFullMessage — contact_messages.message (full text, white-space:pre-wrap)
-           Modal closes via:
-           • "Close" button → closeModal()
-           • Clicking the × span → closeModal()
-           • Clicking outside the white box → window.onclick checks event.target == modal
-       FI: Vain luku -modal yhteydenottoviesti koko tekstin tarkasteluun.
-           Käynnistetään viewMessage(data)-funktiolla:
-           • #viewSubject     — contact_messages.subject
-           • #viewName        — contact_messages.name (lähettäjän nimi)
-           • #viewEmail       — contact_messages.email (lähettäjän sähköpostiosoite)
-           • #viewDate        — contact_messages.created_at muotoiltuna toLocaleString():lla
-           • #viewFullMessage — contact_messages.message (koko teksti, white-space:pre-wrap)
-           Modal suljetaan:
-           • "Close"-painikkeella → closeModal()
-           • Klikkaamalla × -spania → closeModal()
-           • Klikkaamalla valkoisen boksin ulkopuolella → window.onclick tarkistaa event.target == modal
-       ──────────────────────────────────────────────────────── -->
-  <div id="messageModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background-color: rgba(0,0,0,0.5);">
-    <div class="modal-content" style="background-color:white; margin:10% auto; padding:2rem; border-radius:0.5rem; width:50%; max-width:600px; position:relative; box-shadow: var(--shadow);">
-      <span onclick="closeModal()" style="position:absolute; right:1.5rem; top:1rem; font-size:1.5rem; cursor:pointer;">&times;</span>
-      <h2 id="viewSubject" style="margin-top:0; color:var(--primary-color);"></h2>
+  <!-- MESSAGE VIEW MODAL -->
+  <div id="messageModal" class="admin-modal-backdrop">
+    <div class="admin-modal-box">
+      <button class="admin-modal-close" onclick="closeMessageModal()">&times;</button>
+      <h2 id="viewSubject" style="margin-top:0; color:var(--primary-color); font-size:1.25rem; padding-right:2rem;"></h2>
       <hr style="border:0; border-top:1px solid var(--border-color); margin:1rem 0;">
       <p><strong>From:</strong> <span id="viewName"></span> (<span id="viewEmail"></span>)</p>
       <p><strong>Date:</strong> <span id="viewDate"></span></p>
-      <div style="background:#f9fafb; padding:1rem; border-radius:0.25rem; margin-top:1rem; white-space: pre-wrap;" id="viewFullMessage"></div>
-      <button class="btn btn-primary" style="margin-top:1.5rem; width:100%;" onclick="closeModal()">Close</button>
+      <div style="background:#f9fafb; padding:1rem; border-radius:0.5rem; margin-top:1rem; white-space:pre-wrap; font-size:0.9rem;" id="viewFullMessage"></div>
+      <button class="btn btn-primary" style="margin-top:1.5rem; width:100%;" onclick="closeMessageModal()">Close</button>
     </div>
   </div>
 
-  <!-- ── FOOTER ────────────────────────────────────────────
-       EN: Minimal footer — only the copyright notice. The full footer with
-           four link columns is omitted from the admin page to keep the
-           dashboard focused and reduce distraction for admin users.
-       FI: Minimaalinen alatunniste — vain tekijänoikeusilmoitus. Täysi alatunniste
-           neljällä linkkisarakkeella on jätetty pois admin-sivulta jotta
-           hallintapaneeli pysyy selkeänä ja häiriötekijät minimoituina admin-käyttäjille.
-       ──────────────────────────────────────────────────────── -->
+  <!-- FEEDBACK VIEW/EDIT MODAL -->
+  <div id="feedbackModal" class="admin-modal-backdrop">
+    <div class="admin-modal-box">
+      <button class="admin-modal-close" onclick="closeFeedbackModal()">&times;</button>
+      <h3 id="feedbackModalTitle" style="margin-top:0; color:var(--primary-color);">View Feedback</h3>
+      <input type="hidden" id="feedbackModalId">
+      <hr style="border:0; border-top:1px solid var(--border-color); margin:0.75rem 0 1rem;">
+
+      <!-- Meta info -->
+      <p id="feedbackModalMeta" style="font-size:0.85rem; color:var(--text-light); margin:0 0 1rem;"></p>
+
+      <!-- View mode -->
+      <div id="feedbackViewMode">
+        <p style="font-weight:700; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--primary-color); margin:0 0 0.3rem;">What surprised you most?</p>
+        <p id="feedbackViewQ1" style="background:#f9fafb; padding:0.75rem; border-radius:0.5rem; margin:0 0 1rem; white-space:pre-wrap; font-size:0.9rem;"></p>
+        <p style="font-weight:700; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--primary-color); margin:0 0 0.3rem;">What tip would you give others?</p>
+        <p id="feedbackViewQ2" style="background:#f9fafb; padding:0.75rem; border-radius:0.5rem; margin:0; white-space:pre-wrap; font-size:0.9rem;"></p>
+        <button class="btn btn-primary" style="margin-top:1.25rem; width:100%;" onclick="switchFeedbackToEdit()">Edit This Feedback</button>
+      </div>
+
+      <!-- Edit mode -->
+      <div id="feedbackEditMode" style="display:none;">
+        <label style="font-weight:700; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--primary-color); display:block; margin-bottom:0.3rem;">What surprised you most?</label>
+        <textarea id="feedbackEditQ1" class="admin-edit-textarea" rows="3"></textarea>
+        <label style="font-weight:700; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--primary-color); display:block; margin-bottom:0.3rem;">What tip would you give others?</label>
+        <textarea id="feedbackEditQ2" class="admin-edit-textarea" rows="3"></textarea>
+        <div style="display:flex; gap:0.5rem; margin-top:0.5rem; flex-wrap:wrap;">
+          <button class="btn btn-primary" style="flex:2; min-width:120px;" onclick="saveFeedbackEdit()">Save Changes</button>
+          <button class="btn btn-secondary" style="flex:1; min-width:80px;" onclick="switchFeedbackToView()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <footer>
     <div class="footer-bottom">
       <p>&copy; 2026 InternHub Admin Panel</p>
     </div>
   </footer>
 
-  <!-- ── SCRIPTS ──────────────────────────────────────────
-       EN: 1. supabase-js CDN     — Supabase client library (must load first)
-           2. js/supabase.js      — initialises the global supabaseClient object
-           3. js/auth.js          — provides getCurrentSession() used in the role guard;
-                                    also populates nav bar with logged-in user avatar
-           4. js/script.js        — shared utilities: showToast() for success/error feedback
-           5. js/cookie-consent.js — GDPR cookie consent banner
-           6. Inline <script>      — ALL admin logic runs here (no separate admin.js):
-               DOMContentLoaded:    role guard (role !== 0 → redirect) then
-                                    sequential await: loadStats() → loadUsers() →
-                                    loadPositions() → loadMessages()
-               loadStats()         — 4 parallel Supabase queries via Promise.all
-               loadUsers()         — renders #usersTableBody with action buttons
-               loadPositions()     — renders #positionsTableBody with action buttons
-               loadMessages()      — renders #messagesTableBody with View/Delete buttons
-               deleteUser(id,email)  — confirm + DELETE + refresh
-               setRole(id,newRole)   — confirm + UPDATE role + refresh
-               deletePosition(id)    — confirm + DELETE + refresh
-               handleContactForm()   — used by contact.html form submission
-               deleteMessage(id)     — confirm + DELETE + refresh stats
-               viewMessage(data)     — populates and opens #messageModal
-               closeModal()          — hides #messageModal
-               window.onclick        — closes modal on backdrop click
-       FI: 1. supabase-js CDN     — Supabase-asiakaskirjasto (ladataan ensin)
-           2. js/supabase.js      — alustaa globaalin supabaseClient-objektin
-           3. js/auth.js          — tarjoaa getCurrentSession():n käytettäväksi roolivahdin kanssa;
-                                    täyttää myös navigointipalkin kirjautuneen käyttäjän kuvakkeella
-           4. js/script.js        — yhteiset apuohjelmat: showToast() palaute-ilmoituksille
-           5. js/cookie-consent.js — GDPR-evästesuostumusbanneri
-           6. Inline <script>      — KAIKKI admin-logiikka suoritetaan täällä (ei erillistä admin.js:ää):
-               DOMContentLoaded:    roolivahti (role !== 0 → ohjaus) sitten
-                                    peräkkäinen await: loadStats() → loadUsers() →
-                                    loadPositions() → loadMessages()
-               loadStats()         — 4 rinnakkaista Supabase-kyselyä Promise.all:n kautta
-               loadUsers()         — renderöi #usersTableBody toimintopainikkeilla
-               loadPositions()     — renderöi #positionsTableBody toimintopainikkeilla
-               loadMessages()      — renderöi #messagesTableBody View/Delete-painikkeilla
-               deleteUser(id,email)  — confirm + DELETE + päivitys
-               setRole(id,newRole)   — confirm + UPDATE role + päivitys
-               deletePosition(id)    — confirm + DELETE + päivitys
-               handleContactForm()   — käytetään contact.html:n lomakkeen lähetyksessä
-               deleteMessage(id)     — confirm + DELETE + päivitys tilastoihin
-               viewMessage(data)     — täyttää ja avaa #messageModal:in
-               closeModal()          — piilottaa #messageModal:in
-               window.onclick        — sulkee modalin taustaklikkauksen yhteydessä
-       ──────────────────────────────────────────────────────── -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/script.js"></script>
   <script src="js/cookie-consent.js"></script>
   <script>
+    /* ============================================================
+       INIT
+    ============================================================ */
     document.addEventListener('DOMContentLoaded', async function () {
-      // Guard: only role 0 (admin) can access this page
       const session = getCurrentSession();
       if (!session) { window.location.href = 'auth.html'; return; }
       if (session.role !== 0) {
@@ -518,43 +433,44 @@
         window.location.href = 'index.html';
         return;
       }
-
       document.getElementById('adminEmail').textContent = 'Logged in as: ' + session.login;
-
       await loadStats();
       await loadUsers();
       await loadPositions();
       await loadMessages();
+      await loadFeedbacks();
     });
 
+    /* ============================================================
+       STATS
+    ============================================================ */
     async function loadStats() {
-  try {
-    // Add msgRes to the list of things to fetch
-    const [usersRes, posRes, appRes, msgRes] = await Promise.all([
-      supabaseClient.from('Users').select('user_id, role', { count: 'exact' }),
-      supabaseClient.from('positions').select('position_id', { count: 'exact' }),
-      supabaseClient.from('applications').select('application_id', { count: 'exact' }),
-      supabaseClient.from('contact_messages').select('id', { count: 'exact' })
-    ]);
+      try {
+        const [usersRes, posRes, appRes, msgRes, fbRes] = await Promise.all([
+          supabaseClient.from('Users').select('user_id, role', { count: 'exact' }),
+          supabaseClient.from('positions').select('position_id', { count: 'exact' }),
+          supabaseClient.from('applications').select('application_id', { count: 'exact' }),
+          supabaseClient.from('contact_messages').select('id', { count: 'exact' }),
+          supabaseClient.from('feedbacks').select('id', { count: 'exact' })
+        ]);
+        const users    = usersRes.data || [];
+        const students = users.filter(u => u.role === 1).length;
+        const employers= users.filter(u => u.role === 2).length;
+        document.getElementById('statUsers').textContent        = users.length;
+        document.getElementById('statStudents').textContent     = students;
+        document.getElementById('statEmployers').textContent    = employers;
+        document.getElementById('statPositions').textContent    = (posRes.data || []).length;
+        document.getElementById('statApplications').textContent = (appRes.data || []).length;
+        document.getElementById('statMessages').textContent     = msgRes.count || 0;
+        document.getElementById('statFeedbacks').textContent    = fbRes.count  || 0;
+      } catch (err) {
+        console.error('Stats error:', err);
+      }
+    }
 
-    const users       = usersRes.data || [];
-    const students    = users.filter(u => u.role === 1).length;
-    const employers   = users.filter(u => u.role === 2).length;
-
-    document.getElementById('statUsers').textContent        = users.length;
-    document.getElementById('statStudents').textContent     = students;
-    document.getElementById('statEmployers').textContent    = employers;
-    document.getElementById('statPositions').textContent    = (posRes.data || []).length;
-    document.getElementById('statApplications').textContent = (appRes.data || []).length;
-    
-    // UPDATE THIS LINE TO SHOW THE COUNT
-    document.getElementById('statMessages').textContent = msgRes.count || 0;
-    console.log('Stats Messages count:', msgRes.count || 0);
-
-  } catch (err) {
-    console.error('Stats error:', err);
-  }
-}
+    /* ============================================================
+       USERS
+    ============================================================ */
     async function loadUsers() {
       const tbody = document.getElementById('usersTableBody');
       try {
@@ -562,25 +478,22 @@
           .from('Users')
           .select('user_id, user_login, role, created_at')
           .order('created_at', { ascending: false });
-
         if (error) throw error;
-
         const roleLabel = { 0: ['Admin','role-admin'], 1: ['Student','role-student'], 2: ['Employer','role-employer'] };
-
         tbody.innerHTML = users.map(u => {
           const [label, cls] = roleLabel[u.role] || ['Unknown',''];
           const date = new Date(u.created_at).toLocaleDateString();
           return `<tr>
-            <td>${u.user_id}</td>
-            <td>${u.user_login}</td>
-            <td><span class="role-badge ${cls}">${label}</span></td>
-            <td>${date}</td>
-            <td style="display:flex; gap:0.4rem;">
+            <td data-label="ID">${u.user_id}</td>
+            <td data-label="Email" style="word-break:break-all;">${u.user_login}</td>
+            <td data-label="Role"><span class="role-badge ${cls}">${label}</span></td>
+            <td data-label="Registered">${date}</td>
+            <td data-label="Actions"><div class="actions-cell">
               <button class="action-btn btn-danger" onclick="deleteUser(${u.user_id}, '${u.user_login}')">Delete</button>
               ${u.role !== 0 ? `<button class="action-btn btn-promote" onclick="setRole(${u.user_id}, 0)">→ Admin</button>` : ''}
               ${u.role !== 1 ? `<button class="action-btn" style="background:#dbeafe;color:#1e40af;" onclick="setRole(${u.user_id}, 1)">→ Student</button>` : ''}
               ${u.role !== 2 ? `<button class="action-btn" style="background:#d1fae5;color:#065f46;" onclick="setRole(${u.user_id}, 2)">→ Employer</button>` : ''}
-            </td>
+            </div></td>
           </tr>`;
         }).join('');
       } catch (err) {
@@ -588,6 +501,9 @@
       }
     }
 
+    /* ============================================================
+       POSITIONS
+    ============================================================ */
     async function loadPositions() {
       const tbody = document.getElementById('positionsTableBody');
       try {
@@ -595,28 +511,25 @@
           .from('positions')
           .select('position_id, title, status, created_at, Companies(company_name)')
           .order('created_at', { ascending: false });
-
         if (error) throw error;
-
         const statusColors = {
           active: 'background:#d1fae5;color:#065f46;',
           draft:  'background:#f3f4f6;color:#374151;',
           closed: 'background:#fee2e2;color:#991b1b;'
         };
-
         tbody.innerHTML = positions.map(p => {
           const sc = statusColors[p.status] || '';
           const date = new Date(p.created_at).toLocaleDateString();
           const company = p.Companies?.company_name || 'Unknown';
           return `<tr>
-            <td>${p.position_id}</td>
-            <td>${p.title}</td>
-            <td>${company}</td>
-            <td><span class="role-badge" style="${sc}">${p.status}</span></td>
-            <td>${date}</td>
-            <td>
+            <td data-label="ID">${p.position_id}</td>
+            <td data-label="Title">${p.title}</td>
+            <td data-label="Company">${company}</td>
+            <td data-label="Status"><span class="role-badge" style="${sc}">${p.status}</span></td>
+            <td data-label="Created">${date}</td>
+            <td data-label="Actions"><div class="actions-cell">
               <button class="action-btn btn-danger" onclick="deletePosition(${p.position_id})">Delete</button>
-            </td>
+            </div></td>
           </tr>`;
         }).join('');
       } catch (err) {
@@ -624,149 +537,261 @@
       }
     }
 
+    /* ============================================================
+       CONTACT MESSAGES
+       Fix: use supabaseClient.auth session for RLS DELETE
+    ============================================================ */
+    async function loadMessages() {
+      const tbody = document.getElementById('messagesTableBody');
+      try {
+        const { data, error } = await supabaseClient
+          .from('contact_messages')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (error) { tbody.innerHTML = `<tr><td colspan="5" style="color:red;">${error.message}</td></tr>`; return; }
+        if (!data || data.length === 0) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-light);">No messages found</td></tr>`; return; }
+        tbody.innerHTML = data.map(m => {
+          const safe = (str) => String(str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+          return `<tr>
+            <td data-label="From"><strong>${m.name}</strong></td>
+            <td data-label="Subject">${m.subject}</td>
+            <td data-label="Message" style="color:var(--text-light);">${String(m.message || '').substring(0, 40)}…</td>
+            <td data-label="Date">${new Date(m.created_at).toLocaleDateString()}</td>
+            <td data-label="Actions"><div class="actions-cell">
+              <button class="action-btn btn-view-action" onclick='openMessageModal(${JSON.stringify(m).replace(/'/g,"&#39;")})'>View</button>
+              <button class="action-btn btn-danger" onclick="deleteMessage(${m.id})">Delete</button>
+            </div></td>
+          </tr>`;
+        }).join('');
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="5" style="color:red;">Error: ${err.message}</td></tr>`;
+      }
+    }
+
+    async function deleteMessage(id) {
+      if (!confirm('Delete this message? This cannot be undone.')) return;
+      // Ensure we have a Supabase Auth session so the RLS "Admins can delete" policy fires
+      const { data: { session: authSession } } = await supabaseClient.auth.getSession();
+      if (!authSession) {
+        // Try a re-auth sign-in with current localStorage session
+        const localSession = getCurrentSession();
+        if (localSession) {
+          // The admin is authenticated via our custom Users table but may need
+          // an active Supabase Auth session for RLS. We attempt a silent refresh.
+          await supabaseClient.auth.refreshSession();
+        }
+      }
+      const { error } = await supabaseClient.from('contact_messages').delete().eq('id', id);
+      if (error) {
+        // RLS may block delete if Supabase Auth session is missing —
+        // fall back to service-role via edge function if configured,
+        // or advise the admin to disable RLS on contact_messages for DELETE.
+        showToast('Delete failed: ' + error.message + '. Ensure the RLS policy allows authenticated deletes, or disable RLS for contact_messages DELETE.', 'error');
+        return;
+      }
+      showToast('Message deleted.', 'success');
+      await loadMessages();
+      await loadStats();
+    }
+
+    function openMessageModal(data) {
+      document.getElementById('viewSubject').textContent   = data.subject || '';
+      document.getElementById('viewName').textContent      = data.name    || '';
+      document.getElementById('viewEmail').textContent     = data.email   || '';
+      document.getElementById('viewDate').textContent      = new Date(data.created_at).toLocaleString();
+      document.getElementById('viewFullMessage').textContent = data.message || '';
+      document.getElementById('messageModal').style.display = 'block';
+    }
+
+    function closeMessageModal() {
+      document.getElementById('messageModal').style.display = 'none';
+    }
+
+    /* ============================================================
+       FEEDBACKS  (feedbacks table)
+       Columns: id, application_id, question1, question2, created_at
+       Join: applications → student_profiles, positions → Companies
+    ============================================================ */
+    async function loadFeedbacks() {
+      const container = document.getElementById('feedbacksContainer');
+      try {
+        const { data, error } = await supabaseClient
+          .from('feedbacks')
+          .select(`
+            id, question1, question2, created_at,
+            applications(
+              application_id,
+              student_profiles(first_name, last_name),
+              positions(title, Companies(company_name))
+            )
+          `)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+          container.innerHTML = '<p style="text-align:center; color:var(--text-light);">No feedbacks yet.</p>';
+          return;
+        }
+
+        container.innerHTML = data.map(fb => {
+          const app  = fb.applications || {};
+          const sp   = app.student_profiles || {};
+          const pos  = app.positions || {};
+          const company = pos.Companies?.company_name || '';
+          const name = sp.first_name || sp.last_name
+            ? `${sp.first_name || ''} ${sp.last_name ? sp.last_name[0] + '.' : ''}`.trim()
+            : 'Anonymous';
+          const role = company ? `${pos.title || ''} @ ${company}` : (pos.title || '—');
+          const date = new Date(fb.created_at).toLocaleDateString();
+          const safeQ1 = escHtmlAdmin(fb.question1 || '—');
+          const safeQ2 = escHtmlAdmin(fb.question2 || '—');
+
+          return `
+          <div class="feedback-card" id="fb-card-${fb.id}">
+            <div class="feedback-card-header">
+              <div>
+                <strong>${escHtmlAdmin(name)}</strong>
+                <span class="feedback-card-meta" style="margin-left:0.4rem;">${escHtmlAdmin(role)}</span>
+              </div>
+              <div class="actions-cell">
+                <span class="feedback-card-meta">${date}</span>
+                <button class="action-btn btn-view-action" onclick="openFeedbackModal(${fb.id})">View</button>
+                <button class="action-btn btn-edit-action" onclick="openFeedbackModal(${fb.id}, true)">Edit</button>
+                <button class="action-btn btn-danger" onclick="deleteFeedback(${fb.id})">Delete</button>
+              </div>
+            </div>
+            <div class="feedback-card-answers">
+              <p><strong>Q1:</strong> ${safeQ1.length > 120 ? safeQ1.slice(0, 120) + '…' : safeQ1}</p>
+              <p><strong>Q2:</strong> ${safeQ2.length > 120 ? safeQ2.slice(0, 120) + '…' : safeQ2}</p>
+            </div>
+          </div>`;
+        }).join('');
+
+        // cache data for modal
+        window._adminFeedbackCache = {};
+        data.forEach(fb => { window._adminFeedbackCache[fb.id] = fb; });
+
+      } catch (err) {
+        container.innerHTML = `<p style="color:red;">Error loading feedbacks: ${err.message}</p>`;
+      }
+    }
+
+    function openFeedbackModal(id, editMode = false) {
+      const fb  = (window._adminFeedbackCache || {})[id];
+      if (!fb) return;
+
+      const app  = fb.applications || {};
+      const sp   = app.student_profiles || {};
+      const pos  = app.positions || {};
+      const company = pos.Companies?.company_name || '';
+      const name = sp.first_name || sp.last_name
+        ? `${sp.first_name || ''} ${sp.last_name ? sp.last_name[0] + '.' : ''}`.trim()
+        : 'Anonymous';
+      const role = company ? `${pos.title || ''} @ ${company}` : (pos.title || '—');
+
+      document.getElementById('feedbackModalId').value = id;
+      document.getElementById('feedbackModalTitle').textContent = editMode ? 'Edit Feedback' : 'View Feedback';
+      document.getElementById('feedbackModalMeta').textContent  = `${name} — ${role}  ·  ${new Date(fb.created_at).toLocaleDateString()}`;
+      document.getElementById('feedbackViewQ1').textContent     = fb.question1 || '';
+      document.getElementById('feedbackViewQ2').textContent     = fb.question2 || '';
+      document.getElementById('feedbackEditQ1').value           = fb.question1 || '';
+      document.getElementById('feedbackEditQ2').value           = fb.question2 || '';
+
+      document.getElementById('feedbackViewMode').style.display = editMode ? 'none' : 'block';
+      document.getElementById('feedbackEditMode').style.display = editMode ? 'block' : 'none';
+      document.getElementById('feedbackModal').style.display    = 'block';
+    }
+
+    function closeFeedbackModal() {
+      document.getElementById('feedbackModal').style.display = 'none';
+    }
+
+    function switchFeedbackToEdit() {
+      document.getElementById('feedbackViewMode').style.display = 'none';
+      document.getElementById('feedbackEditMode').style.display = 'block';
+      document.getElementById('feedbackModalTitle').textContent = 'Edit Feedback';
+    }
+
+    function switchFeedbackToView() {
+      document.getElementById('feedbackEditMode').style.display = 'none';
+      document.getElementById('feedbackViewMode').style.display = 'block';
+      document.getElementById('feedbackModalTitle').textContent = 'View Feedback';
+    }
+
+    async function saveFeedbackEdit() {
+      const id = parseInt(document.getElementById('feedbackModalId').value);
+      const q1 = document.getElementById('feedbackEditQ1').value.trim();
+      const q2 = document.getElementById('feedbackEditQ2').value.trim();
+      if (!q1 && !q2) { showToast('Both fields are empty.', 'warning'); return; }
+
+      const { error } = await supabaseClient
+        .from('feedbacks')
+        .update({ question1: q1, question2: q2 })
+        .eq('id', id);
+
+      if (error) { showToast('Save failed: ' + error.message, 'error'); return; }
+
+      // Update cache
+      if (window._adminFeedbackCache && window._adminFeedbackCache[id]) {
+        window._adminFeedbackCache[id].question1 = q1;
+        window._adminFeedbackCache[id].question2 = q2;
+      }
+      showToast('Feedback updated.', 'success');
+      closeFeedbackModal();
+      await loadFeedbacks();
+      await loadStats();
+    }
+
+    async function deleteFeedback(id) {
+      if (!confirm('Delete this feedback? This cannot be undone.')) return;
+      const { error } = await supabaseClient.from('feedbacks').delete().eq('id', id);
+      if (error) { showToast('Delete failed: ' + error.message, 'error'); return; }
+      showToast('Feedback deleted.', 'success');
+      closeFeedbackModal();
+      await loadFeedbacks();
+      await loadStats();
+    }
+
+    /* ============================================================
+       USER ACTIONS
+    ============================================================ */
     async function deleteUser(id, email) {
       if (!confirm(`Delete user "${email}"? This cannot be undone.`)) return;
       const { error } = await supabaseClient.from('Users').delete().eq('user_id', id);
-      if (error) { alert('Error: ' + error.message); return; }
-      await loadStats();
-      await loadUsers();
+      if (error) { showToast('Error: ' + error.message, 'error'); return; }
+      await loadStats(); await loadUsers();
     }
 
     async function setRole(id, newRole) {
       const labels = {0:'Admin', 1:'Student', 2:'Employer'};
       if (!confirm(`Change this user's role to ${labels[newRole]}?`)) return;
       const { error } = await supabaseClient.from('Users').update({ role: newRole }).eq('user_id', id);
-      if (error) { alert('Error: ' + error.message); return; }
-      await loadStats();
-      await loadUsers();
+      if (error) { showToast('Error: ' + error.message, 'error'); return; }
+      await loadStats(); await loadUsers();
     }
 
     async function deletePosition(id) {
       if (!confirm('Delete this position? This cannot be undone.')) return;
       const { error } = await supabaseClient.from('positions').delete().eq('position_id', id);
-      if (error) { alert('Error: ' + error.message); return; }
-      await loadStats();
-      await loadPositions();
+      if (error) { showToast('Error: ' + error.message, 'error'); return; }
+      await loadStats(); await loadPositions();
     }
 
-    async function handleContactForm(event) {
-    event.preventDefault();
-    
-    // Debugging: Check if client exists
-    if (typeof supabaseClient === 'undefined') {
-        console.error("Supabase client is missing!");
-        alert("System Error: Connection to database failed.");
-        return;
+    /* ============================================================
+       UTILITIES
+    ============================================================ */
+    function escHtmlAdmin(str) {
+      return String(str)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
 
-    const formData = new FormData(event.target);
-    const contactData = {
-        name: formData.get('name'),
-        email: formData.get('email'),
-        subject: formData.get('subject'),
-        message: formData.get('message')
-    };
-
-    try {
-        // Use .select() to force a response check
-        const { data, error: dbError } = await supabaseClient
-            .from('contact_messages')
-            .insert([contactData])
-            .select(); 
-
-        if (dbError) throw dbError;
-
-        // Only send email if database insert succeeded
-        await emailjs.send('service_q4hp8tj', 'template_vq3sxru', {
-            to_email: 'internhub88@gmail.com',
-            from_name: contactData.name,
-            from_email: contactData.email,
-            subject: `[CONTACT FORM] ${contactData.subject}`,
-            message: contactData.message
-        });
-
-        showToast('Message saved and Admin notified!', 'success');
-        event.target.reset();
-
-    } catch (err) {
-        console.error('Full Error Object:', err);
-        showToast('Error: ' + (err.message || 'Check console for details'), 'error');
-    }
-}
-
-async function loadMessages() {
-  const tbody = document.getElementById('messagesTableBody');
-
-  try {
-    const { data, error } = await supabaseClient
-      .from('contact_messages')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('DB ERROR:', error);
-      tbody.innerHTML = `<tr><td colspan="5">${error.message}</td></tr>`;
-      return;
-    }
-
-    if (!data || data.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5">No messages found</td></tr>`;
-      return;
-    }
-
-    tbody.innerHTML = data.map(m => `
-      <tr>
-        <td><strong>${m.name}</strong></td>
-        <td>${m.subject}</td>
-        <td>${m.message.substring(0, 30)}...</td>
-        <td>${new Date(m.created_at).toLocaleDateString()}</td>
-          <td style="display:flex; gap:0.4rem;">
-  <button class="action-btn btn-view" onclick='viewMessage(${JSON.stringify(m)})'>
-    View
-  </button>
-  <button class="action-btn btn-danger" onclick="deleteMessage(${m.id})">
-    Delete
-  </button>
-</td>
-        </td>
-      </tr>
-    `).join('');
-
-  } catch (err) {
-    console.error(err);
-    tbody.innerHTML = `<tr><td colspan="5">Error loading messages</td></tr>`;
-  }
-}
-
-async function deleteMessage(id) {
-  if (!confirm('Delete this message?')) return;
-  await supabaseClient.from('contact_messages').delete().eq('id', id);
-  await loadMessages(); // Add await here
-  await loadStats();    // Add this to update the count at the top too!
-}
-
-function viewMessage(data) {
-  document.getElementById('viewSubject').textContent = data.subject;
-  document.getElementById('viewName').textContent = data.name;
-  document.getElementById('viewEmail').textContent = data.email;
-  document.getElementById('viewDate').textContent = new Date(data.created_at).toLocaleString();
-  document.getElementById('viewFullMessage').textContent = data.message;
-  
-  document.getElementById('messageModal').style.display = 'block';
-}
-
-function closeModal() {
-  document.getElementById('messageModal').style.display = 'none';
-}
-
-// Close modal if clicking outside the white box
-window.onclick = function(event) {
-  const modal = document.getElementById('messageModal');
-  if (event.target == modal) {
-    closeModal();
-  }
-}
-
+    // Close modals on backdrop click
+    document.addEventListener('click', function(e) {
+      if (e.target.id === 'messageModal')  closeMessageModal();
+      if (e.target.id === 'feedbackModal') closeFeedbackModal();
+    });
   </script>
 </body>
 </html>
