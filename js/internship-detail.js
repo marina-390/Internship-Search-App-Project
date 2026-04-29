@@ -3,6 +3,12 @@
    Harjoittelun yksityiskohtasivun logiikka
    ========================================================== */
 
+let _lastSidebarApps = null;
+
+function rerenderApplicantCards() {
+  if (_lastSidebarApps !== null) renderSidebarApplicants(_lastSidebarApps);
+}
+
 /**
  * EN: Wraps a long text string in a two-span "Show more / Show less" pattern.
  *     Returns plain text if the string is within the 200-character limit.
@@ -802,6 +808,7 @@ function formatDateEuropean(dateString) {
  * @param {object[]} apps - EN: array of application records / FI: hakemusrekisterien taulukko
  */
 function renderSidebarApplicants(apps) {
+  _lastSidebarApps = apps;
   const container = document.getElementById('companyApplicationsContainer');
   const countEl = document.getElementById('applicantsCount');
   
@@ -825,20 +832,20 @@ function renderSidebarApplicants(apps) {
       ? `<p style="margin:0.4rem 0 0; font-size:0.85rem; color:#059669;">📅 Interview: ${formatDateEuropean(app.interview_date)} ${new Date(app.interview_date).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'})}</p>`
       : '';
     const interviewBtn = app.interview_date
-      ? `<button class="btn btn-small" style="font-size:0.78rem; background:#d1fae5; color:#065f46;" onclick="scheduleInterview('${fullName}', '${email}', ${app.application_id}, '${existingDate}')">✅ Scheduled</button>`
-      : `<button class="btn btn-small btn-primary" style="font-size:0.78rem;" onclick="scheduleInterview('${fullName}', '${email}', ${app.application_id}, '')">📅 Schedule Interview</button>`;
+      ? `<button class="btn btn-small" style="font-size:0.78rem; background:#d1fae5; color:#065f46;" onclick="scheduleInterview('${fullName}', '${email}', ${app.application_id}, '${existingDate}')">${t('pages.internshipDetail.scheduledBtn')}</button>`
+      : `<button class="btn btn-small btn-primary" style="font-size:0.78rem;" onclick="scheduleInterview('${fullName}', '${email}', ${app.application_id}, '')">${t('pages.internshipDetail.scheduleInterviewBtn')}</button>`;
     return `
       <div class="application-card" style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap; padding:1rem 0; border-bottom:1px solid #eee;">
         <div style="min-width:0; flex:1;">
           <h5 style="margin:0 0 0.25rem; font-size:1rem;">${window.currentPosition?.title || ''}</h5>
           <p style="margin:0; color:#374151; font-weight:600;">${fullName}</p>
           <p style="margin:0.25rem 0 0; font-size:0.9rem; color:#6b7280;">${email}</p>
-          <p style="margin:0.5rem 0 0; font-size:0.85rem; color:#6b7280;">Applied: ${appliedDate}</p>
-          <p style="margin:0.4rem 0 0; font-size:0.85rem;">Status: <span class="status-badge status-${status}">${statusLabel}</span></p>
+          <p style="margin:0.5rem 0 0; font-size:0.85rem; color:#6b7280;">${t('pages.internshipDetail.appliedLabel')} ${appliedDate}</p>
+          <p style="margin:0.4rem 0 0; font-size:0.85rem;">${t('pages.internshipDetail.statusLabel')} <span class="status-badge status-${status}">${statusLabel}</span></p>
           ${interviewDate}
         </div>
         <div style="display:flex; gap:0.5rem; flex-wrap:wrap; flex-shrink:0;">
-          <button class="btn btn-view" onclick="viewStudentProfile(${profile.id})">View</button>
+          <button class="btn btn-view" onclick="viewStudentProfile(${profile.id})">${t('pages.internshipDetail.viewBtn')}</button>
           ${interviewBtn}
         </div>
       </div>
@@ -985,16 +992,16 @@ function scheduleInterview(fullName, email, applicationId, existingDate) {
     modal.style.cssText = 'position:fixed;z-index:9999;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;';
     modal.innerHTML = `
       <div style="background:white;padding:2rem;border-radius:12px;width:90%;max-width:400px;box-shadow:0 10px 25px rgba(0,0,0,0.2);">
-        <h3 id="interviewModalTitle" style="margin-top:0;">Schedule Interview</h3>
+        <h3 id="interviewModalTitle" style="margin-top:0;">${t('pages.internshipDetail.scheduleInterviewTitle')}</h3>
         <p id="interviewModalDesc" style="color:#6b7280;margin-bottom:1rem;"></p>
         <div class="form-group">
-          <label>Date &amp; Time</label>
+          <label>${t('pages.internshipDetail.dateTimeLabel')}</label>
           <input type="datetime-local" id="interviewDateInput" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;">
         </div>
         <div style="display:flex;gap:0.5rem;margin-top:1.5rem;flex-wrap:wrap;">
-          <button class="btn btn-primary" onclick="confirmInterviewScheduleDetail()">Confirm &amp; Open Calendar</button>
-          <button id="cancelInterviewBtnDetail" class="btn btn-outline" style="color:#dc2626;border-color:#dc2626;display:none;" onclick="cancelInterviewDetail()">Cancel Interview</button>
-          <button class="btn btn-outline" onclick="document.getElementById('interviewDateModal').style.display='none'">Close</button>
+          <button class="btn btn-primary" onclick="confirmInterviewScheduleDetail()">${t('pages.internshipDetail.confirmCalendarBtn')}</button>
+          <button id="cancelInterviewBtnDetail" class="btn btn-outline" style="color:#dc2626;border-color:#dc2626;display:none;" onclick="cancelInterviewDetail()">${t('pages.internshipDetail.cancelInterviewBtn')}</button>
+          <button class="btn btn-outline" onclick="document.getElementById('interviewDateModal').style.display='none'">${t('pages.internshipDetail.closeBtn')}</button>
         </div>
       </div>
     `;
@@ -1003,7 +1010,7 @@ function scheduleInterview(fullName, email, applicationId, existingDate) {
 
   modal._data = { fullName, email, positionTitle, applicationId };
   document.getElementById('interviewModalDesc').textContent = `${fullName} — ${positionTitle}`;
-  document.getElementById('interviewModalTitle').textContent = existingDate ? 'Reschedule Interview' : 'Schedule Interview';
+  document.getElementById('interviewModalTitle').textContent = existingDate ? t('pages.internshipDetail.rescheduleInterviewTitle') : t('pages.internshipDetail.scheduleInterviewTitle');
   document.getElementById('cancelInterviewBtnDetail').style.display = existingDate ? 'inline-block' : 'none';
 
   const input = document.getElementById('interviewDateInput');
