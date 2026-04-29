@@ -243,7 +243,9 @@ const TRANSLATIONS = {
         c6L1: 'Practice common questions', c6L2: 'Research the company', c6L3: 'Prepare your story', c6L4: 'Ask good questions', c6Btn: 'View Tips'
       },
       resumeBuilder: {
-        title: 'Resume Builder 🚀', fillInfo: 'Fill Your Info',
+        title: 'Resume Builder ',
+        subtitle: 'We will help you make a simple CV for your first internship',
+        fillInfo: 'Fill Your Info',
         namePh: 'Full Name', emailPh: 'Email', phonePh: 'Phone', educationPh: 'Education', experiencePh: 'Experience', skillsPh: 'Skills',
         downloadBtn: 'Download PDF', previewEdu: 'Education', previewExp: 'Experience', previewSkills: 'Skills'
       },
@@ -554,7 +556,8 @@ const TRANSLATIONS = {
         c6L1: 'Harjoittele yleisiä kysymyksiä', c6L2: 'Tutki yritys', c6L3: 'Valmistele tarinasi', c6L4: 'Kysy hyviä kysymyksiä', c6Btn: 'Näytä vinkit'
       },
       resumeBuilder: {
-        title: 'CV-työkalu 🚀', fillInfo: 'Täytä tietosi',
+        title: 'CV-työkalu', subtitle: 'Autamme sinua tekemään yksinkertaisen CV:n ensimmäistä harjoitteluasi varten',
+        fillInfo: 'Täytä tietosi',
         namePh: 'Koko nimi', emailPh: 'Sähköposti', phonePh: 'Puhelin', educationPh: 'Koulutus', experiencePh: 'Kokemus', skillsPh: 'Taidot',
         downloadBtn: 'Lataa PDF', previewEdu: 'Koulutus', previewExp: 'Kokemus', previewSkills: 'Taidot'
       },
@@ -865,7 +868,9 @@ const TRANSLATIONS = {
         c6L1: 'Öva på vanliga frågor', c6L2: 'Undersök företaget', c6L3: 'Förbered din berättelse', c6L4: 'Ställ bra frågor', c6Btn: 'Visa tips'
       },
       resumeBuilder: {
-        title: 'CV-verktyg 🚀', fillInfo: 'Fyll i din information',
+        title: 'CV-verktyg', 
+        subtitle:'Vi hjälper dig att skapa ett enkelt CV inför din första praktikplats', 
+        fillInfo: 'Fyll i din information',
         namePh: 'Fullständigt namn', emailPh: 'E-post', phonePh: 'Telefon', educationPh: 'Utbildning', experiencePh: 'Erfarenhet', skillsPh: 'Färdigheter',
         downloadBtn: 'Ladda ner PDF', previewEdu: 'Utbildning', previewExp: 'Erfarenhet', previewSkills: 'Färdigheter'
       },
