@@ -16,9 +16,8 @@ async function loadFavorites() {
     return;
   }
 
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  const user = session?.user;
-  if (!user) {
+  const userId = parseInt(localStorage.getItem('userId'));
+  if (!userId) {
     container.innerHTML = '<p style="font-size:0.85rem;color:var(--text-light);">Log in to see saved internships.</p>';
     return;
   }
@@ -27,7 +26,7 @@ async function loadFavorites() {
   const { data: favs, error: favError } = await supabaseClient
     .from('favorites')
     .select('id, internship_id, saved_at')
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
     .order('saved_at', { ascending: false });
 
   if (favError) {
@@ -46,21 +45,18 @@ async function loadFavorites() {
 
   // 2. Get position IDs the student already applied to (to exclude them)
   let appliedIds = new Set();
-  const intUserId = parseInt(localStorage.getItem('userId'));
-  if (intUserId) {
-    const { data: profile } = await supabaseClient
-      .from('student_profiles')
-      .select('id')
-      .eq('user_id', intUserId)
-      .maybeSingle();
+  const { data: profile } = await supabaseClient
+    .from('student_profiles')
+    .select('id')
+    .eq('user_id', userId)
+    .maybeSingle();
 
-    if (profile?.id) {
-      const { data: apps } = await supabaseClient
-        .from('applications')
-        .select('position_id')
-        .eq('student_id', profile.id);
-      appliedIds = new Set((apps || []).map(a => a.position_id?.toString()));
-    }
+  if (profile?.id) {
+    const { data: apps } = await supabaseClient
+      .from('applications')
+      .select('position_id')
+      .eq('student_id', profile.id);
+    appliedIds = new Set((apps || []).map(a => a.position_id?.toString()));
   }
 
   // 3. Keep only liked-but-not-applied
@@ -168,14 +164,13 @@ async function removeFavorite(favId, internshipId) {
 async function removeFavoriteByInternshipId(internshipId) {
   if (!internshipId) return false;
 
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  const user = session?.user;
-  if (!user) return false;
+  const userId = parseInt(localStorage.getItem('userId'));
+  if (!userId) return false;
 
   const { error } = await supabaseClient
     .from('favorites')
     .delete()
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
     .eq('internship_id', internshipId);
 
   if (error) return false;
@@ -198,23 +193,22 @@ async function syncFavoriteToSupabase(internshipId, isAdding) {
     return;
   }
 
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  const user = session?.user;
-  if (!user) {
-    console.warn('[favorites] no Supabase session — heart saved locally only');
+  const userId = parseInt(localStorage.getItem('userId'));
+  if (!userId) {
+    console.warn('[favorites] no userId in localStorage — heart saved locally only');
     return;
   }
 
   if (isAdding) {
     const { error } = await supabaseClient.from('favorites').upsert(
-      { user_id: user.id, internship_id: internshipId },
+      { user_id: userId, internship_id: internshipId },
       { onConflict: 'user_id,internship_id' }
     );
     if (error) console.error('[favorites] upsert error:', error.message, error.hint);
     else console.log('[favorites] saved OK');
   } else {
     const { error } = await supabaseClient.from('favorites').delete()
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('internship_id', internshipId);
     if (error) console.error('[favorites] delete error:', error.message);
   }
@@ -226,14 +220,13 @@ async function highlightSavedFavorites() {
   const userRole = localStorage.getItem('userRole');
   if (userRole !== '1') return;
 
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  const user = session?.user;
-  if (!user) return;
+  const userId = parseInt(localStorage.getItem('userId'));
+  if (!userId) return;
 
   const { data } = await supabaseClient
     .from('favorites')
     .select('internship_id')
-    .eq('user_id', user.id);
+    .eq('user_id', userId);
 
   if (!data) return;
 
