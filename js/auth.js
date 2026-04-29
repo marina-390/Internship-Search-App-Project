@@ -76,6 +76,7 @@ async function logout(event) {
   localStorage.removeItem('userId');
   localStorage.removeItem('userRole');
   localStorage.removeItem('userLogin');
+  localStorage.removeItem('favorites');
   window.location.href = 'index.html';
 }
 
@@ -151,6 +152,7 @@ function switchTab(tab) {
 function toggleRoleFields() {
   const roleInput       = document.querySelector('input[name="role"]:checked');
   const studentFields   = document.getElementById('studentFields');
+  const companyFields   = document.getElementById('companyFields');
   const socialLogin     = document.getElementById('registerSocialLogin');
   const socialDivider   = document.getElementById('registerSocialDivider');
 

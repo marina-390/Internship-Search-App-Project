@@ -570,9 +570,9 @@
 
             <!-- Edit / Save buttons -->
             <div style="text-align: right; margin-bottom: 2rem;">
-              <button class="btn btn-small btn-primary" id="editProfileBtn" onclick="enterEditMode()">Edit Profile</button>
-              <button class="btn btn-small btn-primary" id="saveProfileBtn" onclick="saveProfile()" style="display:none;">Save</button>
-              <button class="btn btn-small btn-secondary" id="cancelEditBtn" onclick="cancelEditMode()" style="display:none;">Cancel</button>
+              <button class="btn btn-small btn-primary" id="editProfileBtn" onclick="enterEditMode()" data-i18n="studentProfile.btnEdit">Edit Profile</button>
+              <button class="btn btn-small btn-primary" id="saveProfileBtn" onclick="saveProfile()" style="display:none;" data-i18n="studentProfile.btnSave">Save</button>
+              <button class="btn btn-small btn-secondary" id="cancelEditBtn" onclick="cancelEditMode()" style="display:none;" data-i18n="studentProfile.btnCancel">Cancel</button>
             </div>
 
             <!-- EN: #displayMode — read-only view of the student's profile data.
@@ -582,51 +582,51 @@
                      Kaikki d-etuliitteelliset elementit (dFirstName, dLastName jne.) täytetään
                      profile.js:llä Supabasesta latauksen yhteydessä. -->
             <div id="displayMode">
-              <div class="profile-section-title">Personal Information</div>
+              <div class="profile-section-title" data-i18n="studentProfile.personalTitle">Personal Information</div>
 
               <div class="form-row">
                 <div class="profile-field">
-                  <div class="profile-field-label">First Name</div>
+                  <div class="profile-field-label" data-i18n="studentProfile.firstNameLabel">First Name</div>
                   <div class="profile-field-value" id="dFirstName">-</div>
                 </div>
                 <div class="profile-field">
-                  <div class="profile-field-label">Last Name</div>
+                  <div class="profile-field-label" data-i18n="studentProfile.lastNameLabel">Last Name</div>
                   <div class="profile-field-value" id="dLastName">-</div>
                 </div>
               </div>
 
               <div class="form-row">
                 <div class="profile-field">
-                  <div class="profile-field-label">Date of Birth</div>
+                  <div class="profile-field-label" data-i18n="studentProfile.birthDateLabel">Date of Birth</div>
                   <div class="profile-field-value" id="dBirthDate">-</div>
                 </div>
                 <div class="profile-field">
-                  <div class="profile-field-label">Phone</div>
+                  <div class="profile-field-label" data-i18n="studentProfile.phoneLabel">Phone</div>
                   <div class="profile-field-value" id="dPhone">-</div>
                 </div>
               </div>
 
               <div class="profile-field">
-                <div class="profile-field-label">City</div>
+                <div class="profile-field-label" data-i18n="studentProfile.cityLabel">City</div>
                 <div class="profile-field-value" id="dCity">-</div>
               </div>
 
               <div class="profile-field">
-                <div class="profile-field-label">Education</div>
+                <div class="profile-field-label" data-i18n="studentProfile.educationTitle">Education</div>
                 <div id="dEducationList">
                   <span class="profile-field-value empty">No education added</span>
                 </div>
               </div>
 
-              <div class="profile-section-title">About Me</div>
+              <div class="profile-section-title" data-i18n="studentProfile.aboutTitle">About Me</div>
               <p id="dAbout" class="profile-field-value">-</p>
 
-              <div class="profile-section-title">Desired Job Categories</div>
+              <div class="profile-section-title" data-i18n="studentProfile.categoriesTitle">Desired Job Categories</div>
               <div class="selected-categories" id="dCategories">
                 <span class="profile-field-value empty">No categories selected</span>
               </div>
 
-              <div class="profile-section-title">Links</div>
+              <div class="profile-section-title" data-i18n="studentProfile.linksTitle">Links</div>
               <div id="dLinks">
                 <span class="profile-field-value empty">No links added</span>
               </div>
@@ -652,63 +652,63 @@
                      Kaupungin automaattinen täydennys käyttää <datalist>-elementtiä (#citySuggestions)
                      jonka handleCityInput() täyttää suomalaisten kaupunkien listalta. -->
             <div id="editMode" style="display: none;">
-              <div class="profile-section-title">Personal Information</div>
+              <div class="profile-section-title" data-i18n="studentProfile.personalTitle">Personal Information</div>
 
               <div class="form-row">
                 <div class="form-group">
-                  <label for="eFirstName">First Name</label>
-                  <input type="text" id="eFirstName" class="edit-input" placeholder="First name" />
+                  <label for="eFirstName" data-i18n="studentProfile.firstNameLabel">First Name</label>
+                  <input type="text" id="eFirstName" class="edit-input" placeholder="First name" data-i18n-placeholder="studentProfile.firstNameLabel" />
                 </div>
                 <div class="form-group">
-                  <label for="eLastName">Last Name</label>
-                  <input type="text" id="eLastName" class="edit-input" placeholder="Last name" />
+                  <label for="eLastName" data-i18n="studentProfile.lastNameLabel">Last Name</label>
+                  <input type="text" id="eLastName" class="edit-input" placeholder="Last name" data-i18n-placeholder="studentProfile.lastNameLabel" />
                 </div>
               </div>
 
               <div class="form-row">
                 <div class="form-group">
-                  <label for="eBirthDate">Date of Birth</label>
+                  <label for="eBirthDate" data-i18n="studentProfile.birthDateLabel">Date of Birth</label>
                   <input type="date" id="eBirthDate" class="edit-input" />
                 </div>
                 <div class="form-group">
-                  <label for="ePhone">Phone</label>
+                  <label for="ePhone" data-i18n="studentProfile.phoneLabel">Phone</label>
                   <input type="tel" id="ePhone" class="edit-input" placeholder="+358..." />
                 </div>
               </div>
 
               <div class="form-group">
-                <label for="eCity">City</label>
+                <label for="eCity" data-i18n="studentProfile.cityLabel">City</label>
                 <input type="text" id="eCity" class="edit-input" list="citySuggestions" oninput="handleCityInput(this.value)" placeholder="Start typing (e.g. Ko...)" />
                 <datalist id="citySuggestions"></datalist>
               </div>
 
-              <div class="profile-section-title">Education History</div>
+              <div class="profile-section-title" data-i18n="studentProfile.educationTitle">Education History</div>
                 <div id="eEducationContainer">
                   </div>
-                <button type="button" class="btn btn-small btn-secondary" onclick="addEducationRow()" style="margin-bottom: 2rem;">
+                <button type="button" class="btn btn-small btn-secondary" onclick="addEducationRow()" style="margin-bottom: 2rem;" data-i18n="studentProfile.btnAddEducation">
                   + Add Education
                 </button>
 
-              <div class="profile-section-title">About Me</div>
+              <div class="profile-section-title" data-i18n="studentProfile.aboutTitle">About Me</div>
               <div class="form-group">
-                <textarea id="eAbout" class="edit-textarea" placeholder="Tell about yourself..." rows="4"></textarea>
+                <textarea id="eAbout" class="edit-textarea" placeholder="Tell about yourself..." rows="4" data-i18n-placeholder="studentProfile.aboutPlaceholder"></textarea>
               </div>
 
               <div class="toggle-switch">
                 <input type="checkbox" id="eOpenToOffers" checked />
-                <label for="eOpenToOffers">Open to offers</label>
+                <label for="eOpenToOffers" data-i18n="studentProfile.openToOffers">Open to offers</label>
               </div>
 
-              <div class="profile-section-title">Desired Job Categories</div>
+              <div class="profile-section-title" data-i18n="studentProfile.categoriesTitle">Desired Job Categories</div>
               <div class="category-search">
-                <input type="text" id="categorySearchInput" placeholder="Search categories..." oninput="filterCategories()" onfocus="showCategoryDropdown()" />
+                <input type="text" id="categorySearchInput" placeholder="Search categories..." oninput="filterCategories()" onfocus="showCategoryDropdown()" data-i18n-placeholder="studentProfile.categoriesSearch" />
                 <div class="category-dropdown" id="categoryDropdown"></div>
               </div>
               <div class="selected-categories" id="eSelectedCategories"></div>
 
-              <div class="profile-section-title">Links</div>
+              <div class="profile-section-title" data-i18n="studentProfile.linksTitle">Links</div>
               <div id="eLinksContainer"></div>
-              <button type="button" class="btn btn-small btn-secondary" onclick="addLinkRow()">+ Add Link</button>
+              <button type="button" class="btn btn-small btn-secondary" onclick="addLinkRow()" data-i18n="studentProfile.btnAddLink">+ Add Link</button>
 
             </div>
 
@@ -724,8 +724,8 @@
                      Pyynnöt tallennetaan Supabasen 'practice_requests'-tauluun.
                  ──────────────────────────────────────────────────────── -->
             <div class="profile-section-title" style="display:flex; justify-content:space-between; align-items:center;">
-              <span>Internship Requests</span>
-              <button class="btn btn-small btn-primary" onclick="openAddRequestModal()">+ Add</button>
+              <span data-i18n="studentProfile.requestsTitle">Internship Requests</span>
+              <button class="btn btn-small btn-primary" onclick="openAddRequestModal()" data-i18n="studentProfile.btnAddRequest">+ Add</button>
             </div>
             <div id="dPracticeRequests">
               <span class="profile-field-value empty">No internship requests added</span>
@@ -763,10 +763,10 @@
                      - CV-tiedosto Supabase Storagesta, - Users-rivi, - Supabase Auth -käyttäjä. -->
             <div style="margin-top:3rem; padding-top:2rem; border-top:2px dashed #fca5a5;">
               <div style="border:1px solid #fca5a5; background:#fff5f5; border-radius:8px; padding:1.25rem;">
-                <h4 style="color:#dc2626; margin-top:0;">⚠ Danger Zone</h4>
-                <p style="font-size:0.85rem; color:#6b7280; margin:0 0 0.75rem;">Permanently delete your account and all personal data (GDPR Art. 17).</p>
+                <h4 style="color:#dc2626; margin-top:0;" data-i18n="studentProfile.dangerTitle">⚠ Danger Zone</h4>
+                <p style="font-size:0.85rem; color:#6b7280; margin:0 0 0.75rem;" data-i18n="studentProfile.dangerDesc">Permanently delete your account and all personal data (GDPR Art. 17).</p>
                 <button class="btn" style="width:100%; background:#dc2626; color:white; border:none; padding:10px; border-radius:6px; cursor:pointer; font-weight:600;"
-                  onclick="openDeleteAccountModal()">Delete My Account</button>
+                  onclick="openDeleteAccountModal()" data-i18n="studentProfile.btnDeleteAccount">Delete My Account</button>
               </div>
             </div>
           </div>
@@ -797,11 +797,11 @@
                FI: CV-kortti — label toimii latauksen painikkeena. Piilotettu tiedostoelementti
                    aktivoituu for="cvUpload"-assosiaation kautta. Vain PDF-tiedostot hyväksytään. -->
           <div class="sidebar-card">
-            <h4>📄 CV / Resume</h4>
+            <h4 data-i18n="studentProfile.cvTitle">📄 CV / Resume</h4>
             <div id="cvFileInfo">
-              <p>No CV uploaded yet.</p>
+              <p data-i18n="studentProfile.cvEmpty">No CV uploaded yet.</p>
             </div>
-            <label for="cvUpload" class="btn btn-secondary" style="width:100%; display:block; text-align:center; cursor:pointer;">
+            <label for="cvUpload" class="btn btn-secondary" style="width:100%; display:block; text-align:center; cursor:pointer;" data-i18n="studentProfile.btnUploadCv">
               Upload CV (PDF)
             </label>
             <input type="file" id="cvUpload" accept=".pdf" style="display:none;" onchange="uploadCV(this)" />
@@ -809,9 +809,9 @@
 
           <!-- Applications card — compact -->
           <div class="sidebar-card">
-            <h4>📋 My Applications</h4>
+            <h4 data-i18n="studentProfile.applicationsTitle">📋 My Applications</h4>
             <div id="applicationsContainer">
-              <p>No applications yet.</p>
+              <p data-i18n="studentProfile.applicationsEmpty">No applications yet.</p>
             </div>
           </div>
           <!-- MODAL: Edit Application
@@ -872,9 +872,9 @@
 
           <!-- Favorites card -->
 <div class="sidebar-card">
-  <h4>❤️ Saved Internships</h4>
+  <h4 data-i18n="studentProfile.savedTitle">❤️ Saved Internships</h4>
   <div id="favoritesContainer">
-    <p style="color:var(--text-light); font-size:0.9rem;">No saved internships yet.</p>
+    <p style="color:var(--text-light); font-size:0.9rem;" data-i18n="studentProfile.savedEmpty">No saved internships yet.</p>
   </div>
 </div>
 

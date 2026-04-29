@@ -16,6 +16,73 @@ var BUSINESS_ID_CONFIG = {
   OTHER: { label: 'Business Registration Number',             placeholder: 'Enter registration number', hint: 'Official business ID from your country',         regex: null,               filter: null,           autoDash: null }
 };
 
+var prhLookupTimer = null;
+var prhCache = { id: null, ok: false, name: null };
+var prhAutoFilled = false;
+
+function validateYTunnus(value) {
+  var match = value.match(/^(\d{6,7})-(\d)$/);
+  if (!match) return false;
+  var digits = match[1].padStart(7, '0').split('').map(Number);
+  var checkDigit = parseInt(match[2]);
+  var weights = [7, 9, 10, 5, 8, 4, 2];
+  var sum = digits.reduce(function(acc, d, i) { return acc + d * weights[i]; }, 0);
+  var remainder = sum % 11;
+  if (remainder === 1) return false;
+  return checkDigit === (remainder === 0 ? 0 : 11 - remainder);
+}
+
+async function fetchPRHData(businessId) {
+  var r = await fetch('https://avoindata.prh.fi/opendata-ytj-api/v3/companies?businessId=' + encodeURIComponent(businessId));
+  if (!r.ok) throw new Error('PRH API error: ' + r.status);
+  var data = await r.json();
+  return { source: 'v3', found: data.companies && data.companies.length > 0, data: data };
+}
+
+function lookupFinnishCompany(businessId) {
+  clearTimeout(prhLookupTimer);
+  var verifyEl = document.getElementById('businessIdVerify');
+  verifyEl.style.color = '#6b7280';
+  verifyEl.textContent = 'Checking Finnish Business Registry...';
+  verifyEl.style.display = 'block';
+  prhLookupTimer = setTimeout(async function() {
+    try {
+      var result = await fetchPRHData(businessId);
+      if (result.found) {
+        var names = result.data.companies[0].names || [];
+        var nameObj = names.find(function(n) { return n.version === 1 && !n.endDate; }) || names[0];
+        var companyName = nameObj ? nameObj.name : '';
+        prhCache = { id: businessId, ok: true, name: companyName };
+        var nameEl = document.getElementById('companyName');
+        if (nameEl) { nameEl.value = companyName; prhAutoFilled = true; }
+        verifyEl.style.color = '#22c55e';
+        verifyEl.textContent = '✓ Found: ' + companyName;
+      } else {
+        // Valid checksum but not in Trade Register — sole traders and small businesses
+        // are registered only with Tax Administration, not in the trade register
+        prhCache = { id: businessId, ok: true, name: null };
+        verifyEl.style.color = '#f59e0b';
+        verifyEl.textContent = '⚠ Valid Y-Tunnus. Not in Trade Register (e.g. sole trader) — enter company name manually.';
+      }
+    } catch (e) {
+      // Both direct and proxy failed — checksum already validated
+      prhCache = { id: businessId, ok: null, name: null };
+      verifyEl.style.color = '#f59e0b';
+      verifyEl.textContent = '⚠ Registry temporarily unavailable. Checksum is valid — you can proceed.';
+    }
+  }, 800);
+}
+
+function onBusinessIdBlur() {
+  var country = document.getElementById('companyCountry').value;
+  if (country !== 'FI') return;
+  var val = document.getElementById('businessId').value.trim();
+  var config = BUSINESS_ID_CONFIG['FI'];
+  if (config.regex.test(val) && validateYTunnus(val)) {
+    lookupFinnishCompany(val);
+  }
+}
+
 function updateBusinessIdField() {
   var country = document.getElementById('companyCountry').value;
   var config = BUSINESS_ID_CONFIG[country] || BUSINESS_ID_CONFIG['OTHER'];
@@ -56,25 +123,51 @@ function onBusinessIdInput() {
       : digits;
   }
 
-  // Live format validation
+  // Live format + checksum validation
   var val = input.value.trim();
+  var verifyEl = document.getElementById('businessIdVerify');
+
+  // Reset cache and auto-filled name when user edits the field
+  if (prhCache.id && prhCache.id !== val) {
+    prhCache = { id: null, ok: false, name: null };
+    if (prhAutoFilled) {
+      var nameEl = document.getElementById('companyName');
+      if (nameEl) nameEl.value = '';
+      prhAutoFilled = false;
+    }
+  }
+
   if (!val) {
     input.style.borderColor = '';
     errEl.style.display = 'none';
+    verifyEl.style.display = 'none';
+    clearTimeout(prhLookupTimer);
     return;
   }
+
   if (config.regex) {
-    if (config.regex.test(val)) {
+    var formatOk = config.regex.test(val);
+    if (formatOk && country === 'FI' && !validateYTunnus(val)) {
+      input.style.borderColor = '#ef4444';
+      errEl.textContent = 'Incorrect checksum digit';
+      errEl.style.display = 'block';
+      verifyEl.style.display = 'none';
+      clearTimeout(prhLookupTimer);
+    } else if (formatOk) {
       input.style.borderColor = '#22c55e';
       errEl.style.display = 'none';
+      verifyEl.style.display = 'none';
     } else {
       input.style.borderColor = '#ef4444';
       errEl.textContent = config.hint;
       errEl.style.display = 'block';
+      verifyEl.style.display = 'none';
+      clearTimeout(prhLookupTimer);
     }
   } else {
     input.style.borderColor = '';
     errEl.style.display = 'none';
+    verifyEl.style.display = 'none';
   }
 }
 
@@ -103,9 +196,9 @@ function showToast(message, type) {
     'font-size:0.95rem', 'font-weight:500', 'max-width:340px',
     'box-shadow:0 4px 16px rgba(0,0,0,0.15)',
     'transition:opacity 0.4s ease',
-    type === 'error'
-      ? 'background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5'
-      : 'background:#dcfce7;color:#15803d;border:1px solid #86efac'
+    type === 'error'   ? 'background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5' :
+    type === 'warning' ? 'background:#fef9c3;color:#92400e;border:1px solid #fde68a' :
+                         'background:#dcfce7;color:#15803d;border:1px solid #86efac'
   ].join(';');
 
   document.body.appendChild(toast);
@@ -235,7 +328,9 @@ async function handleLogin(event) {
     //     pre-dates Supabase Auth and has no matching auth.users row.
     // FI: Muodostetaan Supabase Auth -istunto RLS:ää varten — virhe ohitetaan hiljaa,
     //     jos tili on luotu ennen Supabase Auth:ia eikä sillä ole auth.users-tietuetta.
-    await supabaseClient.auth.signInWithPassword({ email: email, password: password }).catch(function() {});
+    await supabaseClient.auth.signInWithPassword({ email: email, password: password }).catch(function(e) {
+      console.warn('[auth] Supabase signInWithPassword failed (legacy account?):', e?.message);
+    });
 
     localStorage.setItem('isLoggedIn', 'true');
     localStorage.setItem('userId',   user.user_id);
@@ -373,19 +468,22 @@ async function handleRegister(event) {
       }
 
       if (country === 'FI' && businessId) {
-        try {
-          submitBtn.textContent = 'Verifying with business registry...';
-          var prhUrl   = 'https://avoindata.prh.fi/bis/v1?businessId=' + encodeURIComponent(businessId);
-          var proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(prhUrl);
-          var prhRes   = await fetch(proxyUrl);
-          var prhProxy = await prhRes.json();
-          var prhData  = JSON.parse(prhProxy.contents);
-          if (!prhData.results || prhData.results.length === 0) {
-            showToast('Y-Tunnus not found in Finnish Business Registry.', 'error');
-            return;
+        if (!validateYTunnus(businessId)) {
+          showToast('Invalid Y-Tunnus: incorrect checksum digit.', 'error');
+          return;
+        }
+        if (prhCache.id === businessId && prhCache.ok === true) {
+          // already verified during input — skip repeat call
+        } else if (prhCache.id === businessId && prhCache.ok === true) {
+          // verified or checksum-only during input — allow
+        } else {
+          try {
+            submitBtn.textContent = 'Verifying with business registry...';
+            var prhResult = await fetchPRHData(businessId);
+            // not found in trade register is still ok — sole traders etc. are valid
+          } catch (e) {
+            showToast('Registry temporarily unavailable — proceeding based on checksum validation.', 'warning');
           }
-        } catch (e) {
-          console.warn('PRH API check failed, skipping:', e);
         }
         submitBtn.textContent = 'Creating account...';
       }
