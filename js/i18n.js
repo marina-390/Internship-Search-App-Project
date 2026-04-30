@@ -14,7 +14,7 @@ const TRANSLATIONS = {
       contact: 'Contact',
       studentsHeading: 'For Students',
       careerResources: 'Career Resources',
-      resumeBuilder: 'Resume Builder',
+      resumeBuilder: 'Resume Building Tips',
       interviewTips: 'Interview Tips',
       employersHeading: 'For Employers',
       postJob: 'Post Job',
@@ -243,7 +243,7 @@ const TRANSLATIONS = {
         c6L1: 'Practice common questions', c6L2: 'Research the company', c6L3: 'Prepare your story', c6L4: 'Ask good questions', c6Btn: 'View Tips'
       },
       resumeBuilder: {
-        title: 'Resume Builder',
+        title: 'Resume Building Tips',
         subtitle: 'CV Tips & Recommendations for Students',
         // TIPS ONLY (FORM KEYS REMOVED)
         cvTipsTitle: '📝 CV Tips for Students',
@@ -508,7 +508,7 @@ const TRANSLATIONS = {
       aboutHeading: 'InternHub-tietoja',
       aboutUs: 'Meistä', team: 'Tiimimme', contact: 'Yhteystiedot',
       studentsHeading: 'Opiskelijoille',
-      careerResources: 'Uraresurssit', resumeBuilder: 'CV-työkalu', interviewTips: 'Haastatteluvinkit',
+      careerResources: 'Uraresurssit', resumeBuilder: 'CV-vinkkejä', interviewTips: 'Haastatteluvinkit',
       employersHeading: 'Työnantajille',
       postJob: 'Ilmoita paikka', browseCandidates: 'Selaa hakijoita', support: 'Tuki',
       legalHeading: 'Oikeudellinen',
@@ -732,7 +732,7 @@ const TRANSLATIONS = {
         c6L1: 'Harjoittele yleisiä kysymyksiä', c6L2: 'Tutki yritys', c6L3: 'Valmistele tarinasi', c6L4: 'Kysy hyviä kysymyksiä', c6Btn: 'Näytä vinkit'
       },
       resumeBuilder: {
-        title: 'CV-työkalu',
+        title: 'CV-vinkkejä',
         subtitle: 'CV-vinkkejä ja suosituksia opiskelijoille',
         // VAIN VINKIT (LOMAKEPOISTETTU)
         cvTipsTitle: '📝 CV-vinkkejä opiskelijoille',
@@ -997,7 +997,7 @@ const TRANSLATIONS = {
       aboutHeading: 'Om InternHub',
       aboutUs: 'Om oss', team: 'Vårt team', contact: 'Kontakt',
       studentsHeading: 'För studenter',
-      careerResources: 'Karriärresurser', resumeBuilder: 'CV-verktyg', interviewTips: 'Intervjutips',
+      careerResources: 'Karriärresurser', resumeBuilder: 'CV-tips', interviewTips: 'Intervjutips',
       employersHeading: 'För arbetsgivare',
       postJob: 'Publicera tjänst', browseCandidates: 'Bläddra kandidater', support: 'Support',
       legalHeading: 'Juridiskt',
@@ -1221,7 +1221,7 @@ const TRANSLATIONS = {
         c6L1: 'Öva på vanliga frågor', c6L2: 'Undersök företaget', c6L3: 'Förbered din berättelse', c6L4: 'Ställ bra frågor', c6Btn: 'Visa tips'
       },
       resumeBuilder: {
-        title: 'CV-verktyg',
+        title: 'CV-tips',
         subtitle: 'CV-tips och rekommendationer för studenter',
         // BARA TIPS (FORM borttagen)
         cvTipsTitle: '📝 CV-tips för studenter',

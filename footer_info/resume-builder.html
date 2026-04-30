@@ -4,12 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="../icon.png">
-<title>Resume Builder - InternHub</title>
+<title>Resume Building Tips - InternHub</title>
 
 <link rel="stylesheet" href="../css/style.css">
-
-<!-- PDF library -->
-  <!-- No PDF needed for static tips page -->
 
 </head>
 
@@ -43,95 +40,259 @@
     </div>
   </nav>
 
-     <section
-      class="section"
-      style="
-        background: linear-gradient(
-          160deg,
-          #3b30c8 0%,
-          #435088 0%,
-          #524ba2 100%
-        );
-        color: white;
-        padding: 3rem 1rem;
-      "
-    >
-      <div class="container text-center">
-        <h1 style="color: white" data-i18n="pages.resumeBuilder.title">Resume Builder</h1>
-        <p style="color: rgba(255, 255, 255, 0.9)" data-i18n="pages.resumeBuilder.subtitle">
-          We help you make a simple resume for your first internship
-        </p>
-      </div>
-    </section>
-
-<section class="section">
-  <div class="container">
-
-    <!-- CV TIPS SECTION (UPDATED TO PRIMARY) -->
-    <div class="card" style="margin-top: 2rem">
-      <h2 data-i18n="pages.resumeBuilder.cvTipsTitle">📝 CV Tips for Students</h2>
-      <p data-i18n="pages.resumeBuilder.cvTipsSubtitle">Essential advice to make your resume stand out for internships</p>
+  <section
+    class="section"
+    style="
+      background: linear-gradient(
+        160deg,
+        #3b30c8 0%,
+        #435088 0%,
+        #524ba2 100%
+      );
+      color: white;
+      padding: 3rem 1rem;
+    "
+  >
+    <div class="container text-center">
+      <h1 style="color: white" data-i18n="pages.resumeBuilder.title">Resume Building Tips</h1>
+      <p style="color: rgba(255, 255, 255, 0.9)" data-i18n="pages.resumeBuilder.subtitle">
+        We help you make a simple resume for your first internship
+      </p>
     </div>
+  </section>
 
-    <div class="grid-3" style="gap: 2rem; margin-top: 1rem">
+  <style>
+    .tips-section-label {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .tips-section-label .label-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      flex-shrink: 0;
+    }
+    .tips-section-label h2 {
+      margin: 0;
+      font-size: 1.3rem;
+    }
+    .label-icon.blue  { background: #e0e7ff; }
+    .label-icon.green { background: #d1fae5; }
+    .label-icon.amber { background: #fef3c7; }
+    .label-icon.rose  { background: #fee2e2; }
+    .label-icon.purple { background: #ede9fe; }
+
+    .tip-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 600px) {
+      .tip-grid { grid-template-columns: 1fr; }
+    }
+
+    .tip-item {
+      display: flex;
+      gap: 0.875rem;
+      align-items: flex-start;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .tip-item:hover {
+      box-shadow: 0 4px 14px rgba(0,0,0,0.07);
+      transform: translateY(-2px);
+    }
+    .tip-item-icon {
+      font-size: 1.5rem;
+      line-height: 1;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .tip-item-text h4 {
+      margin: 0 0 0.25rem;
+      font-size: 0.95rem;
+      color: #1f2937;
+    }
+    .tip-item-text p {
+      margin: 0;
+      font-size: 0.875rem;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+
+    .mistake-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+    @media (max-width: 600px) {
+      .mistake-list { grid-template-columns: 1fr; }
+    }
+    .mistake-list li {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 0.7rem 1rem;
+      font-size: 0.9rem;
+      color: #374151;
+      font-weight: 500;
+    }
+    .mistake-list li::before {
+      content: "❌";
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+  </style>
+
+  <section class="section">
+    <div class="container" style="max-width: 900px">
+
       <!-- BASIC STRUCTURE -->
       <div class="card">
-        <h3 data-i18n="pages.resumeBuilder.basicStructureH">Basic Structure</h3>
-        <h4 data-i18n="pages.resumeBuilder.tip1H">Keep it 1 Page</h4>
-        <p data-i18n="pages.resumeBuilder.tip1P">Focus on most relevant info for internships. Recruiters spend ~7 seconds scanning.</p>
-        <h4 data-i18n="pages.resumeBuilder.tip2H">Clear Sections</h4>
-        <p data-i18n="pages.resumeBuilder.tip2P">Use Contact | Education | Experience | Skills. Simple fonts (Arial/Calibri 10-12pt).</p>
-        <h4 data-i18n="pages.resumeBuilder.tip3H">Contact at Top</h4>
-        <p data-i18n="pages.resumeBuilder.tip3P">Name (large), Phone, Email, LinkedIn, City. No full address/photo needed.</p>
-        <h4 data-i18n="pages.resumeBuilder.tip4H">Education First</h4>
-        <p data-i18n="pages.resumeBuilder.tip4P">For students: University/Degree | Expected Graduation | Relevant Coursework.</p>
+        <div class="tips-section-label">
+          <div class="label-icon blue">📄</div>
+          <h2 data-i18n="pages.resumeBuilder.basicStructureH">Basic Structure</h2>
+        </div>
+        <div class="tip-grid">
+          <div class="tip-item">
+            <span class="tip-item-icon">📏</span>
+            <div class="tip-item-text">
+              <h4 data-i18n="pages.resumeBuilder.tip1H">Keep it 1 Page</h4>
+              <p data-i18n="pages.resumeBuilder.tip1P">Focus on most relevant info for internships. Recruiters spend ~7 seconds scanning.</p>
+            </div>
+          </div>
+          <div class="tip-item">
+            <span class="tip-item-icon">🗂️</span>
+            <div class="tip-item-text">
+              <h4 data-i18n="pages.resumeBuilder.tip2H">Clear Sections</h4>
+              <p data-i18n="pages.resumeBuilder.tip2P">Use Contact | Education | Experience | Skills. Simple fonts (Arial/Calibri 10-12pt).</p>
+            </div>
+          </div>
+          <div class="tip-item">
+            <span class="tip-item-icon">📇</span>
+            <div class="tip-item-text">
+              <h4 data-i18n="pages.resumeBuilder.tip3H">Contact at Top</h4>
+              <p data-i18n="pages.resumeBuilder.tip3P">Name (large), Phone, Email, LinkedIn, City. No full address or photo needed.</p>
+            </div>
+          </div>
+          <div class="tip-item">
+            <span class="tip-item-icon">🎓</span>
+            <div class="tip-item-text">
+              <h4 data-i18n="pages.resumeBuilder.tip4H">Education First</h4>
+              <p data-i18n="pages.resumeBuilder.tip4P">For students: University/Degree | Expected Graduation | Relevant Coursework.</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- CONTENT TIPS -->
-      <div class="card">
-        <h3 data-i18n="pages.resumeBuilder.contentTipsH">Content Tips</h3>
-        <h4 data-i18n="pages.resumeBuilder.tip5H">Action Verbs</h4>
-        <p data-i18n="pages.resumeBuilder.tip5P">Start bullets: "Developed", "Led", "Analyzed", "Created" (not "Responsible for").</p>
-        <h4 data-i18n="pages.resumeBuilder.tip6H">Quantify Achievements</h4>
-        <p data-i18n="pages.resumeBuilder.tip6P">"Improved efficiency 30%" > "Helped team". Use numbers/projects.</p>
-        <h4 data-i18n="pages.resumeBuilder.tip7H">Tailor Skills</h4>
-        <p data-i18n="pages.resumeBuilder.tip7P">Match job description keywords. List 6-8: Python, Excel, Teamwork, etc.</p>
-        <h4 data-i18n="pages.resumeBuilder.tip8H">Projects & Courses</h4>
-        <p data-i18n="pages.resumeBuilder.tip8P">Add school projects, GitHub, hackathons as "Experience" if no jobs.</p>
+      <div class="card" style="margin-top: 2rem">
+        <div class="tips-section-label">
+          <div class="label-icon green">✍️</div>
+          <h2 data-i18n="pages.resumeBuilder.contentTipsH">Content Tips</h2>
+        </div>
+        <div class="tip-grid">
+          <div class="tip-item">
+            <span class="tip-item-icon">💪</span>
+            <div class="tip-item-text">
+              <h4 data-i18n="pages.resumeBuilder.tip5H">Action Verbs</h4>
+              <p data-i18n="pages.resumeBuilder.tip5P">Start bullets with "Developed", "Led", "Analyzed", "Created" — not "Responsible for".</p>
+            </div>
+          </div>
+          <div class="tip-item">
+            <span class="tip-item-icon">📊</span>
+            <div class="tip-item-text">
+              <h4 data-i18n="pages.resumeBuilder.tip6H">Quantify Achievements</h4>
+              <p data-i18n="pages.resumeBuilder.tip6P">"Improved efficiency 30%" beats "Helped team". Use numbers and project counts.</p>
+            </div>
+          </div>
+          <div class="tip-item">
+            <span class="tip-item-icon">🎯</span>
+            <div class="tip-item-text">
+              <h4 data-i18n="pages.resumeBuilder.tip7H">Tailor Skills</h4>
+              <p data-i18n="pages.resumeBuilder.tip7P">Match job description keywords. List 6–8 skills: Python, Excel, Teamwork, etc.</p>
+            </div>
+          </div>
+          <div class="tip-item">
+            <span class="tip-item-icon">🛠️</span>
+            <div class="tip-item-text">
+              <h4 data-i18n="pages.resumeBuilder.tip8H">Projects & Courses</h4>
+              <p data-i18n="pages.resumeBuilder.tip8P">Add school projects, GitHub, hackathons as "Experience" if you have no jobs yet.</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- ATS OPTIMIZATION -->
-      <div class="card">
-        <h3 data-i18n="pages.resumeBuilder.atsTipsH">ATS Optimization</h3>
-        <h4 data-i18n="pages.resumeBuilder.tip9H">Standard Headings</h4>
-        <p data-i18n="pages.resumeBuilder.tip9P">Use "Education", not "My School Years". Avoid tables/graphics.</p>
-        <h4 data-i18n="pages.resumeBuilder.tip10H">Keywords from JD</h4>
-        <p data-i18n="pages.resumeBuilder.tip10P">Copy exact phrases from job description (e.g. "data analysis").</p>
-        <h4 data-i18n="pages.resumeBuilder.tip11H">PDF Format</h4>
-        <p data-i18n="pages.resumeBuilder.tip11P">Always PDF. Name: FirstName_LastName_Internship.pdf.</p>
-        <h4 data-i18n="pages.resumeBuilder.tip12H">No Errors</h4>
-        <p data-i18n="pages.resumeBuilder.tip12P">Spellcheck everything. Get professor/friend review.</p>
+      <div class="card" style="margin-top: 2rem">
+        <div class="tips-section-label">
+          <div class="label-icon amber">🤖</div>
+          <h2 data-i18n="pages.resumeBuilder.atsTipsH">ATS Optimization</h2>
+        </div>
+        <div class="tip-grid">
+          <div class="tip-item">
+            <span class="tip-item-icon">🏷️</span>
+            <div class="tip-item-text">
+              <h4 data-i18n="pages.resumeBuilder.tip9H">Standard Headings</h4>
+              <p data-i18n="pages.resumeBuilder.tip9P">Use "Education", not "My School Years". Avoid tables and graphics.</p>
+            </div>
+          </div>
+          <div class="tip-item">
+            <span class="tip-item-icon">🔑</span>
+            <div class="tip-item-text">
+              <h4 data-i18n="pages.resumeBuilder.tip10H">Keywords from JD</h4>
+              <p data-i18n="pages.resumeBuilder.tip10P">Copy exact phrases from the job description, such as "data analysis".</p>
+            </div>
+          </div>
+          <div class="tip-item">
+            <span class="tip-item-icon">📁</span>
+            <div class="tip-item-text">
+              <h4 data-i18n="pages.resumeBuilder.tip11H">PDF Format</h4>
+              <p data-i18n="pages.resumeBuilder.tip11P">Always submit as PDF. Name it: FirstName_LastName_Internship.pdf.</p>
+            </div>
+          </div>
+          <div class="tip-item">
+            <span class="tip-item-icon">✅</span>
+            <div class="tip-item-text">
+              <h4 data-i18n="pages.resumeBuilder.tip12H">No Errors</h4>
+              <p data-i18n="pages.resumeBuilder.tip12P">Spellcheck everything. Get a professor or friend to review it.</p>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <!-- COMMON MISTAKES -->
+      <div class="card" style="margin-top: 2rem">
+        <div class="tips-section-label">
+          <div class="label-icon rose">⚠️</div>
+          <h2 data-i18n="pages.resumeBuilder.mistakesTitle">Common Mistakes to Avoid</h2>
+        </div>
+        <ul class="mistake-list">
+          <li data-i18n="pages.resumeBuilder.mistake1">Generic objective statement — just delete it</li>
+          <li data-i18n="pages.resumeBuilder.mistake2">Irrelevant high school jobs (3+ years old)</li>
+          <li data-i18n="pages.resumeBuilder.mistake3">Fancy design or graphics (ATS breaks them)</li>
+          <li data-i18n="pages.resumeBuilder.mistake4">Typos and grammar errors</li>
+          <li data-i18n="pages.resumeBuilder.mistake5">Listing duties instead of achievements</li>
+        </ul>
+      </div>
+
     </div>
-
-    <!-- COMMON MISTAKES -->
-    <div class="card" style="margin-top: 2rem">
-      <h3 data-i18n="pages.resumeBuilder.mistakesTitle">Common Mistakes to Avoid</h3>
-      <ul>
-        <li data-i18n="pages.resumeBuilder.mistake1">Generic objective ("seeking position") – delete it</li>
-        <li data-i18n="pages.resumeBuilder.mistake2">Irrelevant high school jobs (3+ years old)</li>
-        <li data-i18n="pages.resumeBuilder.mistake3">Fancy design/graphics (ATS breaks them)</li>
-        <li data-i18n="pages.resumeBuilder.mistake4">Typos/grammar errors</li>
-        <li data-i18n="pages.resumeBuilder.mistake5">Listing duties instead of achievements</li>
-      </ul>
-    </div>
-
-  </div>
-</section>
-
-<script>
-</script>
-
+  </section>
 
   <footer>
     <div class="footer-content">
@@ -147,7 +308,7 @@
         <h4 data-i18n="footer.studentsHeading">For Students</h4>
         <ul>
           <li><a href="career-resources.html" data-i18n="footer.careerResources">Career Resources</a></li>
-          <li><a href="resume-builder.html" data-i18n="footer.resumeBuilder">Resume Builder</a></li>
+          <li><a href="resume-builder.html" data-i18n="footer.resumeBuilder">Resume Building Tips</a></li>
           <li><a href="interview-tips.html" data-i18n="footer.interviewTips">Interview Tips</a></li>
         </ul>
       </div>
@@ -173,22 +334,19 @@
     </div>
   </footer>
 
-  
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../js/supabase.js"></script>
-
-<script src="../js/auth.js"></script>
-<script src="../js/i18n.js"></script>
-<script src="../js/script.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/i18n.js"></script>
+  <script src="../js/script.js"></script>
   <script src="../js/cookie-consent.js"></script>
 
-<script>
-  // Hide CTA login/register section if already logged in
-  document.addEventListener('DOMContentLoaded', function () {
-    const loggedIn = localStorage.getItem('isLoggedIn') === 'true' && localStorage.getItem('userId');
-    const cta = document.getElementById('ctaSection');
-    if (loggedIn && cta) cta.style.display = 'none';
-  });
-</script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const loggedIn = localStorage.getItem('isLoggedIn') === 'true' && localStorage.getItem('userId');
+      const cta = document.getElementById('ctaSection');
+      if (loggedIn && cta) cta.style.display = 'none';
+    });
+  </script>
 </body>
 </html>
