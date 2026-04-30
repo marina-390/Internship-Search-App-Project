@@ -175,7 +175,7 @@ function nextShareTestimonial() {
  */
 async function loadExperiencesFromDB() {
   try {
-    const { data } = await supabaseClient
+    const { data, error } = await supabaseClient
       .from('feedbacks')
       .select(`
         id, question1, question2,
@@ -187,6 +187,10 @@ async function loadExperiencesFromDB() {
       `)
       .order('created_at', { ascending: false });
 
+    if (error) {
+      console.error('loadExperiencesFromDB error:', error);
+      return;
+    }
     if (!data || data.length === 0) return;
 
     shareTestimonials.length = 0;
@@ -212,7 +216,7 @@ async function loadExperiencesFromDB() {
     shareIndex = 0;
     updateShareCards();
   } catch (e) {
-    // keep cards empty on error
+    console.error('loadExperiencesFromDB exception:', e);
   }
 }
 

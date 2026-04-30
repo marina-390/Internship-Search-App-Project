@@ -4,6 +4,3 @@ dist
 *.log
 *.env
 .venv/
-
-# Supabase credentials — copy supabase.example.js → supabase.js and fill in your keys
-js/supabase.js
