@@ -3,6 +3,11 @@
    Globaali navigaatio, UI-apuvälineet ja harjoittelulistaus
    ========================================================== */
 
+// category_id → group_id map, built once in loadCategoriesForFilter()
+let categoryGroupMap = {};
+// active match-mode params set by initMatchMode()
+let _matchMode = null;
+
 /**
  * EN: Appends a red asterisk (*) to every label that corresponds to a required
  *     input/select/textarea within the given root element.
@@ -458,9 +463,11 @@ function filterJobs() {
 
     const matchesSearch = !searchText || title.includes(searchText) || company.includes(searchText);
     const matchesLocation = !locationText || location.includes(locationText);
-    const matchesCategory = !categoryId || cardCategoryIds.includes(categoryId);
-    const matchesStart = !dateStartLimit || (jobStart && jobStart >= dateStartLimit);
-    const matchesEnd = !dateEndLimit || (jobEnd && jobEnd <= dateEndLimit);
+    // In match mode the group filter (matchesGroup below) replaces the dropdown
+    const matchesCategory = _matchMode ? true : (!categoryId || cardCategoryIds.includes(categoryId));
+    // In match mode the overlap filter handles dates — skip the strict start/end check
+    const matchesStart = _matchMode || !dateStartLimit || (jobStart && jobStart >= dateStartLimit);
+    const matchesEnd   = _matchMode || !dateEndLimit   || (jobEnd   && jobEnd   <= dateEndLimit);
 
     const favoritesOnly = document.getElementById('favoritesOnly')?.checked || false;
 
@@ -470,7 +477,27 @@ function filterJobs() {
       matchesFavorites = true;
     }
 
-    if (matchesSearch && matchesLocation && matchesCategory && matchesStart && matchesEnd && matchesFavorites) {
+    // Smart match: period overlap >= 50% of request duration + top-level group match
+    let matchesOverlap = true;
+    let matchesGroup = true;
+    if (_matchMode) {
+      const { start: mStart, end: mEnd, groupIds: mGroups } = _matchMode;
+      if (mStart && mEnd && jobStart && jobEnd) {
+        const cardStart = new Date(jobStart);
+        const cardEnd   = new Date(jobEnd);
+        const overlapMs = Math.max(0, Math.min(mEnd, cardEnd) - Math.max(mStart, cardStart));
+        const requestMs = mEnd - mStart;
+        matchesOverlap = requestMs === 0 || (overlapMs / requestMs) >= 0.5;
+      }
+      if (mGroups.size > 0) {
+        matchesGroup = cardCategoryIds.some(catId => {
+          const gid = categoryGroupMap[parseInt(catId)];
+          return gid && mGroups.has(gid);
+        });
+      }
+    }
+
+    if (matchesSearch && matchesLocation && matchesCategory && matchesStart && matchesEnd && matchesFavorites && matchesOverlap && matchesGroup) {
       card.style.display = '';
       visibleCount++;
     } else {
@@ -530,25 +557,145 @@ async function loadCategoriesForFilter() {
     const { data: categories, error } = await supabaseClient
       .from('job_categories')
       .select(`
-        category_id, 
-        title, 
+        category_id,
+        title,
+        group_id,
         job_groups (title)
       `)
       .order('title');
 
     if (error) throw error;
 
+    categoryGroupMap = {};
     filterCategory.innerHTML = '<option value="">All Categories</option>';
 
     categories.forEach(cat => {
+      if (cat.group_id) categoryGroupMap[cat.category_id] = cat.group_id;
       const option = document.createElement('option');
-      option.value = cat.category_id; // Using ID for strictly accurate filtering
+      option.value = cat.category_id;
       const groupTitle = cat.job_groups ? `${cat.job_groups.title}: ` : '';
       option.textContent = `${groupTitle}${cat.title}`;
       filterCategory.appendChild(option);
     });
   } catch (err) {
     console.error('Error loading categories:', err);
+  }
+}
+
+// Reads match-mode URL params set by the "Find matches" button on a practice request card.
+// Pre-fills the location filter, shows a dismissable banner, and stores params in _matchMode
+// so filterJobs() can apply overlap and group-level filtering.
+function initMatchMode() {
+  const qp = new URLSearchParams(location.search);
+  const matchCity    = qp.get('matchCity')   || '';
+  const matchStart   = qp.get('matchStart')  || '';
+  const matchEnd     = qp.get('matchEnd')    || '';
+  const matchGroups  = qp.get('matchGroups') || '';
+  const matchCatIds  = qp.get('matchCatIds') || '';
+
+  if (!matchCity && !matchStart && !matchEnd && !matchGroups && !matchCatIds) return;
+
+  _matchMode = {
+    city:     matchCity,
+    start:    matchStart ? new Date(matchStart) : null,
+    end:      matchEnd   ? new Date(matchEnd)   : null,
+    groupIds: matchGroups
+      ? new Set(matchGroups.split(',').map(Number).filter(Boolean))
+      : new Set(),
+  };
+
+  if (matchCity) {
+    const locInput = document.getElementById('filterLocation');
+    if (locInput) locInput.value = matchCity;
+  }
+  if (matchStart) {
+    const ds = document.getElementById('filterDateStart');
+    if (ds) ds.value = matchStart;
+  }
+  if (matchEnd) {
+    const de = document.getElementById('filterDateEnd');
+    if (de) de.value = matchEnd;
+  }
+  // Pre-fill category dropdown with the first category from the request.
+  // Actual filtering uses group-level logic (matchesGroup in filterJobs),
+  // so the dropdown is visual context only — not used for filtering in match mode.
+  if (matchCatIds) {
+    const firstCatId = matchCatIds.split(',')[0];
+    const catSelect = document.getElementById('filterCategory');
+    if (catSelect && firstCatId) catSelect.value = firstCatId;
+  }
+
+  // Build and inject banner above jobs list
+  const jobsList = document.getElementById('jobsList');
+  if (jobsList && !document.getElementById('matchModeBanner')) {
+    const startFmt = matchStart ? formatDateEuropean(matchStart) : '—';
+    const endFmt   = matchEnd   ? formatDateEuropean(matchEnd)   : '—';
+    const banner   = document.createElement('div');
+    banner.id = 'matchModeBanner';
+    banner.style.cssText = 'background:#eef2ff; border:1px solid #c7d2fe; border-radius:0.5rem; padding:0.6rem 1rem; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center; font-size:0.85rem; color:#4338ca; gap:0.5rem; flex-wrap:wrap;';
+    banner.innerHTML = `
+      <span>🎯 <strong>Smart match</strong> — ${matchCity ? matchCity + ' · ' : ''}${startFmt} – ${endFmt}</span>
+      <button onclick="clearMatchMode()" style="background:none; border:none; cursor:pointer; font-size:1rem; color:#6b7280;" title="Clear match filter">✕</button>
+    `;
+    jobsList.parentNode.insertBefore(banner, jobsList);
+  }
+
+  filterJobs();
+  markAppliedPositions();
+}
+
+function clearMatchMode() {
+  _matchMode = null;
+  const banner = document.getElementById('matchModeBanner');
+  if (banner) banner.remove();
+  const locInput = document.getElementById('filterLocation');
+  if (locInput) locInput.value = '';
+  const ds = document.getElementById('filterDateStart');
+  if (ds) ds.value = '';
+  const de = document.getElementById('filterDateEnd');
+  if (de) de.value = '';
+  const catSelect = document.getElementById('filterCategory');
+  if (catSelect) catSelect.value = '';
+  document.querySelectorAll('.applied-badge').forEach(b => b.remove());
+  filterJobs();
+}
+
+// Fetches the current student's applied position IDs and adds an "Applied" badge
+// to matching job cards. Only runs for logged-in students (role 1).
+async function markAppliedPositions() {
+  if (localStorage.getItem('userRole') !== '1') return;
+  const userId = parseInt(localStorage.getItem('userId'));
+  if (!userId) return;
+
+  try {
+    const { data: profile } = await supabaseClient
+      .from('student_profiles')
+      .select('id')
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (!profile?.id) return;
+
+    const { data: apps } = await supabaseClient
+      .from('applications')
+      .select('position_id')
+      .eq('student_id', profile.id);
+    if (!apps || apps.length === 0) return;
+
+    const appliedIds = new Set(apps.map(a => a.position_id?.toString()));
+
+    document.querySelectorAll('.job-card').forEach(card => {
+      const jobId = card.getAttribute('data-job-id');
+      if (!appliedIds.has(jobId)) return;
+      if (card.querySelector('.applied-badge')) return;
+      const badge = document.createElement('span');
+      badge.className = 'applied-badge';
+      badge.textContent = '✓ Applied';
+      badge.style.cssText = 'display:inline-block; background:#dcfce7; color:#16a34a; font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:999px; margin-left:0.5rem; vertical-align:middle;';
+      const title = card.querySelector('.job-title');
+      if (title) title.appendChild(badge);
+    });
+  } catch (e) {
+    console.error('[markAppliedPositions]', e);
   }
 }
 
@@ -691,7 +838,7 @@ async function loadInternships() {
             <span style="font-size:0.8rem; color:var(--text-light);">
               👥 ${pos.applications?.[0]?.count ?? 0} applied
             </span>
-            <a href="internship-detail.html?id=${pos.position_id}" class="btn btn-small btn-primary">View Details</a>
+            <a href="internship-detail.html?id=${pos.position_id}" class="btn btn-small btn-primary" data-i18n="pages.internshipDetail.viewDetailsBtn">${t('pages.internshipDetail.viewDetailsBtn')}</a>
           </div>
         </div>
       `;
@@ -703,6 +850,8 @@ async function loadInternships() {
     if (typeof highlightSavedFavorites === 'function') {
       highlightSavedFavorites();
     }
+
+    initMatchMode();
 
   } catch (err) {
     console.error('Error loading internships:', err);

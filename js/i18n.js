@@ -194,7 +194,16 @@ const TRANSLATIONS = {
       appEmailLabel: 'Email:', appPhoneLabel: 'Phone:', appStatusLabel: 'Status:',
       appLetterLabel: 'Cover Letter', appLetterEmpty: 'No cover letter provided.',
       appCvLabel: 'CV / Resume',
-      btnAccept: 'Accept', btnDecline: 'Decline', btnViewed: 'Mark Viewed', btnClose: 'Close'
+      btnAccept: 'Accept', btnDecline: 'Decline', btnViewed: 'Mark Viewed', btnClose: 'Close',
+      posView: 'View', posEdit: 'Edit', posDelete: 'Delete',
+      posApplications: 'Applications', posShowMore: 'Show more', posShowLess: 'Show less',
+      matchFindBtn: '🔍 Find matching students',
+      matchEmpty: 'No matching students found.',
+      matchActionsTitle: 'Actions',
+      matchFavourite: '♡ Favourite', matchFavourited: '♥ Favourited',
+      matchMarkViewed: '👁 Mark as Viewed', matchViewed: '✓ Viewed',
+      matchInvite: '📅 Invite to Interview', matchInviteScheduled: '📅 Interview Scheduled',
+      matchBadgeCompany: '🔍 Company Match', matchBadgeViewed: '👁 Viewed'
     },
     common: {
       save: 'Save', cancel: 'Cancel', confirm: 'Confirm', delete: 'Delete',
@@ -444,7 +453,8 @@ const TRANSLATIONS = {
         dateTimeLabel: 'Date & Time',
         confirmCalendarBtn: 'Confirm & Open Calendar',
         cancelInterviewBtn: 'Cancel Interview',
-        closeBtn: 'Close'
+        closeBtn: 'Close',
+        viewDetailsBtn: 'View Details'
       },
       termsOfService: {
         title: 'Terms of Service', subtitle: 'Last Updated: April 2026',
@@ -683,7 +693,16 @@ const TRANSLATIONS = {
       appEmailLabel: 'Sähköposti:', appPhoneLabel: 'Puhelin:', appStatusLabel: 'Tila:',
       appLetterLabel: 'Saatekirje', appLetterEmpty: 'Saatekirjettä ei ole toimitettu.',
       appCvLabel: 'CV / Ansioluettelo',
-      btnAccept: 'Hyväksy', btnDecline: 'Hylkää', btnViewed: 'Merkitse nähdyksi', btnClose: 'Sulje'
+      btnAccept: 'Hyväksy', btnDecline: 'Hylkää', btnViewed: 'Merkitse nähdyksi', btnClose: 'Sulje',
+      posView: 'Näytä', posEdit: 'Muokkaa', posDelete: 'Poista',
+      posApplications: 'Hakemukset', posShowMore: 'Näytä lisää', posShowLess: 'Näytä vähemmän',
+      matchFindBtn: '🔍 Etsi sopivia opiskelijoita',
+      matchEmpty: 'Sopivia opiskelijoita ei löydetty.',
+      matchActionsTitle: 'Toiminnot',
+      matchFavourite: '♡ Suosikki', matchFavourited: '♥ Lisätty suosikkeihin',
+      matchMarkViewed: '👁 Merkitse nähdyksi', matchViewed: '✓ Nähty',
+      matchInvite: '📅 Kutsu haastatteluun', matchInviteScheduled: '📅 Haastattelu sovittu',
+      matchBadgeCompany: '🔍 Yrityksen löytämä', matchBadgeViewed: '👁 Nähty'
     },
     common: {
       save: 'Tallenna', cancel: 'Peruuta', confirm: 'Vahvista', delete: 'Poista',
@@ -933,7 +952,8 @@ const TRANSLATIONS = {
         dateTimeLabel: 'Päivämäärä & Aika',
         confirmCalendarBtn: 'Vahvista & Avaa kalenteri',
         cancelInterviewBtn: 'Peruuta haastattelu',
-        closeBtn: 'Sulje'
+        closeBtn: 'Sulje',
+        viewDetailsBtn: 'Näytä tiedot'
       },
       termsOfService: {
         title: 'Käyttöehdot', subtitle: 'Päivitetty viimeksi: huhtikuu 2026',
@@ -1172,7 +1192,16 @@ const TRANSLATIONS = {
       appEmailLabel: 'E-post:', appPhoneLabel: 'Telefon:', appStatusLabel: 'Status:',
       appLetterLabel: 'Personligt brev', appLetterEmpty: 'Inget personligt brev bifogat.',
       appCvLabel: 'CV / Meritförteckning',
-      btnAccept: 'Acceptera', btnDecline: 'Avböj', btnViewed: 'Markera som sedd', btnClose: 'Stäng'
+      btnAccept: 'Acceptera', btnDecline: 'Avböj', btnViewed: 'Markera som sedd', btnClose: 'Stäng',
+      posView: 'Visa', posEdit: 'Redigera', posDelete: 'Ta bort',
+      posApplications: 'Ansökningar', posShowMore: 'Visa mer', posShowLess: 'Visa mindre',
+      matchFindBtn: '🔍 Hitta matchande studenter',
+      matchEmpty: 'Inga matchande studenter hittades.',
+      matchActionsTitle: 'Åtgärder',
+      matchFavourite: '♡ Favorit', matchFavourited: '♥ Tillagd som favorit',
+      matchMarkViewed: '👁 Markera som sedd', matchViewed: '✓ Sedd',
+      matchInvite: '📅 Bjud in till intervju', matchInviteScheduled: '📅 Intervju inbokad',
+      matchBadgeCompany: '🔍 Företagsmatch', matchBadgeViewed: '👁 Sedd'
     },
     common: {
       save: 'Spara', cancel: 'Avbryt', confirm: 'Bekräfta', delete: 'Ta bort',
@@ -1422,7 +1451,8 @@ const TRANSLATIONS = {
         dateTimeLabel: 'Datum & Tid',
         confirmCalendarBtn: 'Bekräfta & Öppna kalender',
         cancelInterviewBtn: 'Avboka intervju',
-        closeBtn: 'Stäng'
+        closeBtn: 'Stäng',
+        viewDetailsBtn: 'Visa detaljer'
       },
       termsOfService: {
         title: 'Användarvillkor', subtitle: 'Senast uppdaterad: april 2026',
@@ -1523,6 +1553,7 @@ function applyTranslations() {
   if (typeof updateShareCards === 'function') updateShareCards();
   if (typeof rerenderApplicantCards === 'function') rerenderApplicantCards();
   if (typeof rerenderCompanyApplications === 'function') rerenderCompanyApplications();
+  if (typeof rerenderCompanyPostings === 'function') rerenderCompanyPostings();
 }
 
 document.addEventListener('DOMContentLoaded', applyTranslations);
