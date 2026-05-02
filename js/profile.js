@@ -1254,23 +1254,33 @@ async function fetchPositionApplicants(positionId, container) {
       const viewBtn = isCompanyMatch
         ? `<button class="btn btn-small btn-view" onclick="openStudentProfileModal(${app.student_id}, null, null, ${app.position_id})">${t('pages.internshipDetail.viewBtn')}</button>`
         : `<button class="btn btn-small btn-view" onclick="openCompanyAppModal(${JSON.stringify(app).replace(/"/g, '&quot;')})">${t('pages.internshipDetail.viewBtn')}</button>`;
+      const sp = app.student_profiles;
+      const photoUrl = sp?.photo_url || '';
+      const initials = [(sp?.first_name || ''), (sp?.last_name || '')].map(n => n.charAt(0).toUpperCase()).join('') || '?';
+      const avatarInner = photoUrl
+        ? `<img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover;">`
+        : `<span style="font-size:0.85rem;font-weight:700;color:white;">${initials}</span>`;
       return `
-        <div style="padding:0.6rem 0; border-top:1px solid #f3f4f6;">
-          <div style="display:flex; align-items:center; gap:0.25rem; flex-wrap:wrap;">
-            <p style="margin:0; font-weight:600; color:#374151;">${favIcon}${studentName}</p>
-            ${sourceBadge}
+        <div style="display:flex; gap:0.75rem; align-items:flex-start; padding:0.75rem 0; border-top:2px solid #e2e8f0;">
+          <div style="width:38px;height:38px;border-radius:50%;flex-shrink:0;overflow:hidden;background:linear-gradient(135deg,#4f46e5,#10b981);display:flex;align-items:center;justify-content:center;">
+            ${avatarInner}
           </div>
-          <p style="margin:0.15rem 0 0; font-size:0.85rem; color:#6b7280;">${studentEmail}</p>
-          ${isCompanyMatch ? '' : `<p style="margin:0.25rem 0 0; font-size:0.82rem; color:#9ca3af;">${t('pages.internshipDetail.appliedLabel')} ${appliedDate}</p>`}
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; margin-top:0.25rem; flex-wrap:wrap;">
-            <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
-              <span style="font-size:0.82rem;">${t('pages.internshipDetail.statusLabel')}</span>
-              <span class="status-badge status-${status}">${status.replace('_', ' ')}</span>
-              ${app.interview_date ? `<span style="font-size:0.82rem; color:#059669;">📅 ${formatDateEuropean(app.interview_date)} ${new Date(app.interview_date).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'})}</span>` : ''}
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex; align-items:center; gap:0.25rem; flex-wrap:wrap;">
+              <p style="margin:0; font-weight:600; color:#374151;">${favIcon}${studentName}</p>
+              ${sourceBadge}
             </div>
-            <div style="display:flex; gap:0.4rem; flex-shrink:0;">
-              ${viewBtn}
-              ${interviewBtn}
+            <p style="margin:0.1rem 0 0; font-size:0.82rem; color:#6b7280;">${studentEmail}</p>
+            ${isCompanyMatch ? '' : `<p style="margin:0.15rem 0 0; font-size:0.78rem; color:#9ca3af;">${t('pages.internshipDetail.appliedLabel')} ${appliedDate}</p>`}
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; margin-top:0.4rem; flex-wrap:wrap;">
+              <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                <span class="status-badge status-${status}">${status.replace('_', ' ')}</span>
+                ${app.interview_date ? `<span style="font-size:0.78rem; color:#059669;">📅 ${formatDateEuropean(app.interview_date)} ${new Date(app.interview_date).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'})}</span>` : ''}
+              </div>
+              <div style="display:flex; gap:0.4rem; flex-shrink:0;">
+                ${viewBtn}
+                ${interviewBtn}
+              </div>
             </div>
           </div>
         </div>`;
