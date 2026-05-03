@@ -230,7 +230,7 @@ const TRANSLATIONS = {
       careerResources: {
         title: 'Career Resources', subtitle: 'Everything you need to succeed in your internship journey',
         c1H: '📝 Resume Writing Guide', c1P: 'Create a professional resume that stands out to employers and passes ATS systems.',
-        c1L1: 'Use clear structure and formatting', c1L2: 'Focus on achievements, not duties', c1L3: 'Use strong action verbs', c1L4: 'Keep it 1 page for internships', c1Btn: 'Build Resume',
+        c1L1: 'Use clear structure and formatting', c1L2: 'Focus on achievements, not duties', c1L3: 'Use strong action verbs', c1L4: 'Keep it 1 page for internships', c1Btn: 'Resume Building Tips',
         c2H: '💼 Cover Letter Tips', c2P: 'Write personalized cover letters that increase your chances of getting interviews.',
         c2L1: 'Address the company directly', c2L2: 'Show motivation and fit', c2L3: 'Keep it short and clear', c2L4: 'Avoid generic templates',
         c3H: '🎯 Career Planning', c3P: 'Plan your career path and set clear goals for your future.',

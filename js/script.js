@@ -458,7 +458,17 @@ function filterJobs() {
 
     const matchesSearch = !searchText || title.includes(searchText) || company.includes(searchText);
     const matchesLocation = !locationText || location.includes(locationText);
-    const matchesCategory = !categoryId || cardCategoryIds.includes(categoryId);
+    let matchesCategory = true;
+    if (categoryId) {
+      if (categoryId.startsWith('group:')) {
+        const groupId = categoryId.replace('group:', '');
+        const groupCatIds = (card.getAttribute('data-group-ids') || '').split(',').filter(Boolean);
+        matchesCategory = groupCatIds.includes(groupId);
+      } else {
+        const catId = categoryId.replace('cat:', '');
+        matchesCategory = cardCategoryIds.includes(catId);
+      }
+    }
     const matchesStart = !dateStartLimit || (jobStart && jobStart >= dateStartLimit);
     const matchesEnd = !dateEndLimit || (jobEnd && jobEnd <= dateEndLimit);
 
@@ -526,26 +536,34 @@ async function loadCategoriesForFilter() {
   if (!filterCategory) return;
 
   try {
-    // Joining with job_groups to show group context
-    const { data: categories, error } = await supabaseClient
-      .from('job_categories')
+    const { data: groups, error: groupError } = await supabaseClient
+      .from('job_groups')
       .select(`
-        category_id, 
-        title, 
-        job_groups (title)
+        group_id,
+        title,
+        job_categories(category_id, title)
       `)
       .order('title');
 
-    if (error) throw error;
+    if (groupError) throw groupError;
 
     filterCategory.innerHTML = '<option value="">All Categories</option>';
 
-    categories.forEach(cat => {
-      const option = document.createElement('option');
-      option.value = cat.category_id; // Using ID for strictly accurate filtering
-      const groupTitle = cat.job_groups ? `${cat.job_groups.title}: ` : '';
-      option.textContent = `${groupTitle}${cat.title}`;
-      filterCategory.appendChild(option);
+    groups.forEach(group => {
+      // Group-level option (selecting this matches ALL categories in the group)
+      const groupOpt = document.createElement('option');
+      groupOpt.value = `group:${group.group_id}`;
+      groupOpt.textContent = `⬡ ${group.title}`;
+      groupOpt.style.fontWeight = '700';
+      filterCategory.appendChild(groupOpt);
+
+      // Individual category options indented under the group
+      (group.job_categories || []).forEach(cat => {
+        const catOpt = document.createElement('option');
+        catOpt.value = `cat:${cat.category_id}`;
+        catOpt.textContent = `  - ${cat.title}`;
+        filterCategory.appendChild(catOpt);
+      });
     });
   } catch (err) {
     console.error('Error loading categories:', err);
@@ -590,7 +608,7 @@ async function loadInternships() {
         company_id,
         created_at,
         applications(count),
-        position_categories(category_id, job_categories(title))
+        position_categories(category_id, job_categories(title, group_id))
       `)
       .eq('status', 'active')
       .order('created_at', { ascending: false });
@@ -636,6 +654,11 @@ async function loadInternships() {
       const companyLogo = company.logo_url || null;
       const location = company.city || 'Remote';
       const posCategoryIds = (pos.position_categories || []).map(pc => pc.category_id).join(',');
+      const posGroupIds = [...new Set(
+        (pos.position_categories || [])
+          .map(pc => pc.job_categories?.group_id)
+          .filter(Boolean)
+      )].join(',');
       const categoryBadges = (pos.position_categories || []).map(pc => `<span class="badge">${pc.job_categories?.title || ''}</span>`).join('');
       const companyInitial = companyName.charAt(0).toUpperCase();
 
@@ -657,6 +680,7 @@ async function loadInternships() {
         <div class="job-card"
              data-job-id="${pos.position_id}"
              data-category-ids="${posCategoryIds}"
+             data-group-ids="${posGroupIds}"
              data-start="${pos.period_start || ''}"
              data-end="${pos.period_end || ''}"
              data-created-at="${pos.created_at}">
