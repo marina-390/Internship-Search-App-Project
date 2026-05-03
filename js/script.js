@@ -463,7 +463,17 @@ function filterJobs() {
 
     const matchesSearch = !searchText || title.includes(searchText) || company.includes(searchText);
     const matchesLocation = !locationText || location.includes(locationText);
-    const matchesCategory = !categoryId || cardCategoryIds.includes(categoryId);
+    let matchesCategory = true;
+    if (categoryId) {
+      if (categoryId.startsWith('group:')) {
+        const groupId = categoryId.replace('group:', '');
+        const groupCatIds = (card.getAttribute('data-group-ids') || '').split(',').filter(Boolean);
+        matchesCategory = groupCatIds.includes(groupId);
+      } else {
+        const catId = categoryId.replace('cat:', '');
+        matchesCategory = cardCategoryIds.includes(catId);
+      }
+    }
     const matchesStart = !dateStartLimit || (jobStart && jobStart >= dateStartLimit);
     const matchesEnd = !dateEndLimit || (jobEnd && jobEnd <= dateEndLimit);
 
@@ -554,23 +564,31 @@ async function loadCategoriesForFilter() {
     const { data: groups, error: groupError } = await supabaseClient
       .from('job_groups')
       .select(`
-        category_id, 
-        title, 
-        job_groups (title)
+        group_id,
+        title,
+        job_categories(category_id, title)
       `)
       .order('title');
 
     if (groupError) throw groupError;
 
-    categoryGroupMap = {};
     filterCategory.innerHTML = '<option value="">All Categories</option>';
 
-    categories.forEach(cat => {
-      const option = document.createElement('option');
-      option.value = cat.category_id; // Using ID for strictly accurate filtering
-      const groupTitle = cat.job_groups ? `${cat.job_groups.title}: ` : '';
-      option.textContent = `${groupTitle}${cat.title}`;
-      filterCategory.appendChild(option);
+    groups.forEach(group => {
+      // Group-level option (selecting this matches ALL categories in the group)
+      const groupOpt = document.createElement('option');
+      groupOpt.value = `group:${group.group_id}`;
+      groupOpt.textContent = `⬡ ${group.title}`;
+      groupOpt.style.fontWeight = '700';
+      filterCategory.appendChild(groupOpt);
+
+      // Individual category options indented under the group
+      (group.job_categories || []).forEach(cat => {
+        const catOpt = document.createElement('option');
+        catOpt.value = `cat:${cat.category_id}`;
+        catOpt.textContent = `  - ${cat.title}`;
+        filterCategory.appendChild(catOpt);
+      });
     });
   } catch (err) {
     console.error('Error loading categories:', err);
