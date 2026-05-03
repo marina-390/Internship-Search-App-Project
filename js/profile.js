@@ -133,6 +133,8 @@ async function loadStudentProfile() {
     }
 
     currentProfile = profile;
+    if (profile.city) localStorage.setItem('userCity', profile.city);
+    else localStorage.removeItem('userCity');
 
     // Load student categories with real student_id
     const { data: studentCats } = await supabaseClient
@@ -1095,7 +1097,7 @@ function toggleReqText(id) {
   const isExpanded = fullEl.style.display !== 'none';
   shortEl.style.display = isExpanded ? 'inline' : 'none';
   fullEl.style.display  = isExpanded ? 'none'   : 'inline';
-  btn.textContent       = isExpanded ? 'Show more' : 'Show less';
+  btn.textContent       = isExpanded ? t('companyProfile.posShowMore') : t('companyProfile.posShowLess');
 }
 
 /**
@@ -1117,29 +1119,48 @@ async function loadCompanyPostings() {
       // Fetch positions with application counts and categories in one query
       const { data: positions, error } = await supabaseClient
           .from('positions')
-          .select('position_id, title, status, requirements, applications(count), position_categories(category_id, job_categories(title))')
+          .select('position_id, title, status, requirements, period_start, period_end, applications(count), position_categories(category_id, job_categories(title, group_id))')
           .eq('company_id', currentProfile.company_id)
           .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      if (!positions || positions.length === 0) {
-          container.innerHTML = '<p style="text-align:center; color:var(--text-light); font-size:0.85rem;">No postings yet.</p>';
-          return;
-      }
+      fillCompanyPostings(positions || []);
+  } catch (err) {
+      console.error("Error loading postings:", err);
+      document.getElementById('companyPostingsList').innerHTML = '<p style="color:red; font-size:0.85rem;">Error loading postings.</p>';
+  }
+}
 
-      const statusColors = {
-        active: 'background:#d1fae5;color:#065f46;',
-        draft:  'background:#f3f4f6;color:#374151;',
-        closed: 'background:#fee2e2;color:#991b1b;'
-      };
+function fillCompanyPostings(positions) {
+  _lastCompanyPostings = positions;
+  const container = document.getElementById('companyPostingsList');
+  if (!container) return;
 
-      container.innerHTML = positions.map(pos => {
+  if (!positions || positions.length === 0) {
+      container.innerHTML = `<p style="text-align:center; color:var(--text-light); font-size:0.85rem;">${t('companyProfile.postingsEmpty')}</p>`;
+      return;
+  }
+
+  const statusColors = {
+    active: 'background:#d1fae5;color:#065f46;',
+    draft:  'background:#f3f4f6;color:#374151;',
+    closed: 'background:#fee2e2;color:#991b1b;'
+  };
+
+  positionDataMap = {};
+  container.innerHTML = positions.map(pos => {
           const appCount = pos.applications?.[0]?.count ?? 0;
           const sc = statusColors[pos.status] || '';
           const cats = (pos.position_categories || [])
               .map(pc => `<span class="category-tag" style="font-size:0.75rem; padding:0.2rem 0.5rem;">${pc.job_categories?.title || ''}</span>`)
               .join('');
+          // Store position data for use in fetchMatchingStudents
+          positionDataMap[pos.position_id] = {
+            groupIds:    [...new Set((pos.position_categories || []).map(pc => pc.job_categories?.group_id).filter(Boolean))],
+            periodStart: pos.period_start || null,
+            periodEnd:   pos.period_end   || null,
+          };
           return `
           <div class="position-card" id="posting-${pos.position_id}">
             <div class="position-card-inner">
@@ -1153,34 +1174,36 @@ async function loadCompanyPostings() {
                     <span id="req-short-${pos.position_id}">${pos.requirements.length > 120 ? pos.requirements.slice(0, 120) + '…' : pos.requirements}</span>
                     ${pos.requirements.length > 120 ? `
                     <span id="req-full-${pos.position_id}" style="display:none;">${pos.requirements}</span>
-                    <a href="javascript:void(0)" id="req-btn-${pos.position_id}" onclick="toggleReqText(${pos.position_id})" style="font-size:0.78rem;margin-left:0.25rem;">Show more</a>` : ''}
+                    <a href="javascript:void(0)" id="req-btn-${pos.position_id}" onclick="toggleReqText(${pos.position_id})" style="font-size:0.78rem;margin-left:0.25rem;">${t('companyProfile.posShowMore')}</a>` : ''}
                   </p>
                 </div>` : ''}
                 ${appCount > 0 ? `
                 <div class="position-apps-toggle">
                   <button id="pos-apps-btn-${pos.position_id}" onclick="togglePositionApplicants(${pos.position_id}, ${appCount})"
                     style="background:none; border:none; cursor:pointer; color:#6366f1; font-size:0.85rem; font-weight:600; padding:0; display:flex; align-items:center; gap:0.3rem;">
-                    <span id="pos-apps-arrow-${pos.position_id}">▼</span> 👥 Applications (${appCount})
+                    <span id="pos-apps-arrow-${pos.position_id}">▼</span> 👥 ${t('companyProfile.posApplications')} (${appCount})
                   </button>
                 </div>` : ''}
+                <div class="position-apps-toggle" style="margin-top:0.4rem;">
+                  <button id="pos-match-btn-${pos.position_id}" onclick="toggleMatchStudents(${pos.position_id})"
+                    style="background:none; border:none; cursor:pointer; color:#059669; font-size:0.85rem; font-weight:600; padding:0; display:flex; align-items:center; gap:0.3rem;">
+                    <span id="pos-match-arrow-${pos.position_id}">▼</span> ${t('companyProfile.matchFindBtn')}
+                  </button>
+                </div>
               </div>
               <div class="position-card-right">
                 <span class="status-badge" style="${sc}">${pos.status}</span>
                 <div class="pos-actions" id="pos-actions-${pos.position_id}">
-                  <a href="internship-detail.html?id=${pos.position_id}" class="text-primary">View</a>
-                  <a href="javascript:void(0)" onclick="openEditModal(${pos.position_id})" class="text-primary">Edit</a>
-                  <a href="javascript:void(0)" onclick="deletePosition(${pos.position_id})" style="color:#dc3545;">Delete</a>
+                  <a href="internship-detail.html?id=${pos.position_id}" class="text-primary">${t('companyProfile.posView')}</a>
+                  <a href="javascript:void(0)" onclick="openEditModal(${pos.position_id})" class="text-primary">${t('companyProfile.posEdit')}</a>
+                  <a href="javascript:void(0)" onclick="deletePosition(${pos.position_id})" style="color:#dc3545;">${t('companyProfile.posDelete')}</a>
                 </div>
               </div>
             </div>
             ${appCount > 0 ? `<div id="pos-apps-${pos.position_id}" style="display:none; border-top:1px solid #f0f0f0; margin-top:0.5rem; padding-top:0.25rem;"></div>` : ''}
+            <div id="pos-match-${pos.position_id}" style="display:none; border-top:1px solid #f0f0f0; margin-top:0.5rem; padding-top:0.25rem;"></div>
           </div>`;
       }).join('');
-
-  } catch (err) {
-      console.error("Error loading postings:", err);
-      container.innerHTML = '<p style="color:red; font-size:0.85rem;">Error loading postings.</p>';
-  }
 }
 
 /**
@@ -1219,29 +1242,47 @@ async function fetchPositionApplicants(positionId, container) {
     container.innerHTML = apps.map(app => {
       const status       = app.status || 'pending';
       const studentName  = app.student_profiles ? `${app.student_profiles.first_name || ''} ${app.student_profiles.last_name || ''}`.trim() || 'Applicant' : 'Applicant';
-      const studentEmail = app.student_profiles?.contact_email || app.student_profiles?.Users?.user_login || '';
+      const studentEmail = app.student_profiles?.Users?.user_login || '';
       const appliedDate  = formatDateEuropean(app.applied_at);
       const existingDate = app.interview_date || '';
-      const interviewDate = app.interview_date
-        ? `<p style="margin:0.3rem 0 0; font-size:0.82rem; color:#059669;">📅 ${formatDateEuropean(app.interview_date)} ${new Date(app.interview_date).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'})}</p>`
+      const isCompanyMatch = app.initiated_by === 'company';
+      const favIcon    = app.is_favorited ? '<span style="color:#dc2626;" title="Favourited">♥</span> ' : '';
+      const sourceBadge = isCompanyMatch
+        ? `<span style="background:#f0f9ff;color:#0369a1;font-size:0.72rem;padding:0.1rem 0.45rem;border-radius:9999px;border:1px solid #bae6fd;margin-left:0.4rem;">${t('companyProfile.matchBadgeCompany')}</span>`
         : '';
       const interviewBtn = app.interview_date
         ? `<button class="btn btn-small" style="font-size:0.78rem; background:#d1fae5; color:#065f46;" onclick="scheduleInterviewProfile('${studentName}', '${studentEmail}', '${app.positions?.title || ''}', ${app.application_id}, '${existingDate}')">${t('pages.internshipDetail.scheduledBtn')}</button>`
         : `<button class="btn btn-small btn-primary" style="font-size:0.78rem;" onclick="scheduleInterviewProfile('${studentName}', '${studentEmail}', '${app.positions?.title || ''}', ${app.application_id}, '')">${t('pages.internshipDetail.scheduleInterviewBtn')}</button>`;
+      const viewBtn = isCompanyMatch
+        ? `<button class="btn btn-small btn-view" onclick="openStudentProfileModal(${app.student_id}, null, null, ${app.position_id})">${t('pages.internshipDetail.viewBtn')}</button>`
+        : `<button class="btn btn-small btn-view" onclick="openCompanyAppModal(${JSON.stringify(app).replace(/"/g, '&quot;')})">${t('pages.internshipDetail.viewBtn')}</button>`;
+      const sp = app.student_profiles;
+      const photoUrl = sp?.photo_url || '';
+      const initials = [(sp?.first_name || ''), (sp?.last_name || '')].map(n => n.charAt(0).toUpperCase()).join('') || '?';
+      const avatarInner = photoUrl
+        ? `<img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover;">`
+        : `<span style="font-size:0.85rem;font-weight:700;color:white;">${initials}</span>`;
       return `
-        <div style="padding:0.6rem 0; border-top:1px solid #f3f4f6;">
-          <p style="margin:0; font-weight:600; color:#374151;">${studentName}</p>
-          <p style="margin:0.15rem 0 0; font-size:0.85rem; color:#6b7280;">${studentEmail}</p>
-          <p style="margin:0.25rem 0 0; font-size:0.82rem; color:#9ca3af;">${t('pages.internshipDetail.appliedLabel')} ${appliedDate}</p>
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; margin-top:0.25rem; flex-wrap:wrap;">
-            <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
-              <span style="font-size:0.82rem;">${t('pages.internshipDetail.statusLabel')}</span>
-              <span class="status-badge status-${status}">${status.replace('_', ' ')}</span>
-              ${app.interview_date ? `<span style="font-size:0.82rem; color:#059669;">📅 ${formatDateEuropean(app.interview_date)} ${new Date(app.interview_date).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'})}</span>` : ''}
+        <div style="display:flex; gap:0.75rem; align-items:flex-start; padding:0.75rem 0; border-top:2px solid #e2e8f0;">
+          <div style="width:38px;height:38px;border-radius:50%;flex-shrink:0;overflow:hidden;background:linear-gradient(135deg,#4f46e5,#10b981);display:flex;align-items:center;justify-content:center;">
+            ${avatarInner}
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex; align-items:center; gap:0.25rem; flex-wrap:wrap;">
+              <p style="margin:0; font-weight:600; color:#374151;">${favIcon}${studentName}</p>
+              ${sourceBadge}
             </div>
-            <div style="display:flex; gap:0.4rem; flex-shrink:0;">
-              <button class="btn btn-small btn-view" onclick="openCompanyAppModal(${JSON.stringify(app).replace(/"/g, '&quot;')})">${t('pages.internshipDetail.viewBtn')}</button>
-              ${interviewBtn}
+            <p style="margin:0.1rem 0 0; font-size:0.82rem; color:#6b7280;">${studentEmail}</p>
+            ${isCompanyMatch ? '' : `<p style="margin:0.15rem 0 0; font-size:0.78rem; color:#9ca3af;">${t('pages.internshipDetail.appliedLabel')} ${appliedDate}</p>`}
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; margin-top:0.4rem; flex-wrap:wrap;">
+              <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                <span class="status-badge status-${status}">${status.replace('_', ' ')}</span>
+                ${app.interview_date ? `<span style="font-size:0.78rem; color:#059669;">📅 ${formatDateEuropean(app.interview_date)} ${new Date(app.interview_date).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'})}</span>` : ''}
+              </div>
+              <div style="display:flex; gap:0.4rem; flex-shrink:0;">
+                ${viewBtn}
+                ${interviewBtn}
+              </div>
             </div>
           </div>
         </div>`;
@@ -1286,6 +1327,142 @@ async function togglePositionApplicants(positionId, appCount) {
   if (container.dataset.loaded) return;
 
   await fetchPositionApplicants(positionId, container);
+}
+
+async function toggleMatchStudents(positionId) {
+  const container = document.getElementById(`pos-match-${positionId}`);
+  const arrow     = document.getElementById(`pos-match-arrow-${positionId}`);
+  const actions   = document.getElementById(`pos-actions-${positionId}`);
+  if (!container) return;
+
+  const isOpen = container.dataset.open === 'true';
+  if (isOpen) {
+    container.style.display = 'none';
+    container.dataset.open = 'false';
+    if (arrow) arrow.textContent = '▼';
+    if (actions) actions.style.display = '';
+    return;
+  }
+
+  container.style.display = 'block';
+  container.dataset.open = 'true';
+  if (arrow) arrow.textContent = '▲';
+  if (actions) actions.style.display = 'none';
+
+  if (container.dataset.loaded) return;
+  await fetchMatchingStudents(positionId, container);
+}
+
+async function fetchMatchingStudents(positionId, container) {
+  container.innerHTML = '<p style="color:#888; font-size:0.85rem; padding:0.5rem 0;">Searching for matching students…</p>';
+
+  const posData    = positionDataMap[positionId];
+  const companyCity = (currentProfile?.city || '').toLowerCase().trim();
+
+  try {
+    const [{ data: requests, error }, { data: companyApps }] = await Promise.all([
+      supabaseClient
+        .from('student_practice_requests')
+        .select(`
+          request_id, period_start, period_end,
+          student_profiles!inner(id, first_name, last_name, city, Users:user_id(user_login)),
+          student_request_categories(category_id, job_categories(title, group_id))
+        `)
+        .eq('status', 'searching'),
+      supabaseClient
+        .from('applications')
+        .select('student_id, status, is_favorited, interview_date')
+        .eq('position_id', positionId)
+        .eq('initiated_by', 'company')
+    ]);
+
+    if (error) throw error;
+
+    // Map student_id → company action state
+    const companyActionMap = {};
+    (companyApps || []).forEach(a => { companyActionMap[a.student_id] = a; });
+
+    const posGroupIds  = new Set(posData?.groupIds || []);
+    const posStart     = posData?.periodStart ? new Date(posData.periodStart) : null;
+    const posEnd       = posData?.periodEnd   ? new Date(posData.periodEnd)   : null;
+
+    const matches = (requests || []).filter(r => {
+      const sp = r.student_profiles;
+
+      // City match
+      const studentCity = (sp?.city || '').toLowerCase().trim();
+      const cityMatch = !companyCity || !studentCity || studentCity === companyCity;
+
+      // Period overlap ≥ 50% of student's request period
+      let overlapMatch = true;
+      if (posStart && posEnd && r.period_start && r.period_end) {
+        const rStart   = new Date(r.period_start);
+        const rEnd     = new Date(r.period_end);
+        const overlapMs = Math.max(0, Math.min(posEnd, rEnd) - Math.max(posStart, rStart));
+        const reqMs     = rEnd - rStart;
+        overlapMatch    = reqMs === 0 || (overlapMs / reqMs) >= 0.5;
+      }
+
+      // Group match — at least one shared top-level group
+      let groupMatch = posGroupIds.size === 0;
+      if (!groupMatch) {
+        groupMatch = (r.student_request_categories || []).some(sc =>
+          sc.job_categories?.group_id && posGroupIds.has(sc.job_categories.group_id)
+        );
+      }
+
+      if (!(cityMatch && overlapMatch && groupMatch)) return false;
+
+      // Hide students already moved to applications (favourited or interview scheduled)
+      const ca = companyActionMap[sp?.id];
+      if (ca && (ca.is_favorited || ca.interview_date)) return false;
+
+      return true;
+    });
+
+    if (matches.length === 0) {
+      container.innerHTML = `<p style="color:#888; font-size:0.85rem; padding:0.5rem 0;">${t('companyProfile.matchEmpty')}</p>`;
+      container.dataset.loaded = 'true';
+      return;
+    }
+
+    container.innerHTML = matches.map(r => {
+      const sp          = r.student_profiles;
+      const city        = sp?.city || '';
+      const cityMatch   = !companyCity || city.toLowerCase().trim() === companyCity;
+      const name        = `${sp?.first_name || ''} ${sp?.last_name || ''}`.trim() || 'Student';
+      const periodText  = r.period_start && r.period_end
+        ? `${formatDateEuropean(r.period_start)} – ${formatDateEuropean(r.period_end)}`
+        : '—';
+      const catChips    = (r.student_request_categories || [])
+        .map(sc => `<span class="category-tag" style="font-size:0.72rem; padding:0.15rem 0.45rem;">${sc.job_categories?.title || ''}</span>`)
+        .join('');
+      const ca          = companyActionMap[sp?.id];
+      const viewedBadge = (ca && ca.status === 'viewed')
+        ? `<span style="font-size:0.72rem; color:#059669; margin-left:0.4rem;">${t('companyProfile.matchBadgeViewed')}</span>`
+        : '';
+
+      return `
+        <div style="padding:0.6rem 0; border-top:1px solid #f3f4f6;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem; flex-wrap:wrap;">
+            <div>
+              <p style="margin:0; font-weight:600; color:#374151;">${name}${viewedBadge}</p>
+              ${city ? `<p style="margin:0.1rem 0 0; font-size:0.82rem; color:#6b7280;">📍 ${city} ${cityMatch ? '<span style="color:#059669;">✓</span>' : ''}</p>` : ''}
+              <p style="margin:0.1rem 0 0; font-size:0.82rem; color:#6b7280;">📅 ${periodText}</p>
+              ${catChips ? `<div style="display:flex; flex-wrap:wrap; gap:0.25rem; margin-top:0.35rem;">${catChips}</div>` : ''}
+            </div>
+            <div style="display:flex; gap:0.4rem; flex-shrink:0; align-items:flex-start; flex-wrap:wrap;">
+              <button class="btn btn-small btn-view" onclick="openStudentProfileModal(${sp?.id}, '${r.period_start || ''}', '${r.period_end || ''}', ${positionId})">View</button>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+
+    container.dataset.loaded = 'true';
+  } catch (err) {
+    console.error('[fetchMatchingStudents]', err);
+    container.innerHTML = `<p style="color:red; font-size:0.85rem;">Error: ${err.message}</p>`;
+  }
 }
 
 /**
@@ -1605,8 +1782,13 @@ function openCompanyAppModal(app) {
 // ==========================================
 // STUDENT PROFILE MODAL (read-only, for company reviewers)
 // ==========================================
-async function openStudentProfileModal(studentId) {
+async function openStudentProfileModal(studentId, requestPeriodStart = null, requestPeriodEnd = null, positionId = null) {
   if (!studentId) { showToast('No student ID available.', 'warning'); return; }
+
+  _spPositionId   = positionId || null;
+  _spStudentId    = studentId;
+  _spAppId        = null;
+  _spStudentEmail = '';
 
   const modal   = document.getElementById('studentProfileModal');
   const loading = document.getElementById('spLoading');
@@ -1623,7 +1805,7 @@ async function openStudentProfileModal(studentId) {
   try {
     // Fetch profile, categories and links in parallel
     const [profileRes, catsRes, linksRes] = await Promise.all([
-      supabaseClient.from('student_profiles').select('*').eq('id', studentId).single(),
+      supabaseClient.from('student_profiles').select('*, Users:user_id(user_login)').eq('id', studentId).single(),
       supabaseClient.from('student_categories')
         .select('category_id, job_categories(title)')
         .eq('student_id', studentId),
@@ -1636,6 +1818,8 @@ async function openStudentProfileModal(studentId) {
     const p     = profileRes.data;
     const cats  = catsRes.data  || [];
     const links = linksRes.data || [];
+
+    _spStudentEmail = p.Users?.user_login || '';
 
     // --- Avatar ---
     const avatarEl = document.getElementById('spAvatar');
@@ -1674,10 +1858,12 @@ async function openStudentProfileModal(studentId) {
       eduWrap.style.display = 'none';
     }
 
-    // --- Practice period ---
+    // --- Practice period (prefer request period if passed, fall back to profile fields) ---
+    const periodStart = requestPeriodStart || p.practice_start;
+    const periodEnd   = requestPeriodEnd   || p.practice_end;
     document.getElementById('spPractice').textContent =
-      (p.practice_start || p.practice_end)
-        ? `${formatDateEuropean(p.practice_start)} – ${formatDateEuropean(p.practice_end)}`
+      (periodStart || periodEnd)
+        ? `${formatDateEuropean(periodStart)} – ${formatDateEuropean(periodEnd)}`
         : 'Not specified';
     document.getElementById('spOpen').innerHTML = p.is_open_to_offers
       ? '<span style="color:#059669; font-weight:600;">✅ Open to offers</span>'
@@ -1717,6 +1903,9 @@ async function openStudentProfileModal(studentId) {
       cvWrap.style.borderColor = '#e5e7eb';
     }
 
+    // Action buttons (only when opened from a specific position context)
+    await _renderSpActions();
+
     // Show content
     loading.style.display = 'none';
     content.style.display = 'block';
@@ -1725,6 +1914,120 @@ async function openStudentProfileModal(studentId) {
     console.error('openStudentProfileModal error:', err);
     loading.style.display = 'none';
     errorEl.style.display  = 'block';
+  }
+}
+
+async function _renderSpActions() {
+  const old = document.getElementById('spActionsSection');
+  if (old) old.remove();
+  if (!_spPositionId) return;
+
+  const { data } = await supabaseClient
+    .from('applications')
+    .select('application_id, status, is_favorited, interview_date')
+    .eq('position_id', _spPositionId)
+    .eq('student_id',  _spStudentId)
+    .eq('initiated_by', 'company')
+    .maybeSingle();
+
+  _spAppId = data?.application_id || null;
+
+  const isFav        = data?.is_favorited || false;
+  const isViewed     = !!(data && data.status && data.status !== 'pending');
+  const hasInterview = !!data?.interview_date;
+
+  const section = document.createElement('div');
+  section.id = 'spActionsSection';
+  section.style.cssText = 'margin-top:1.5rem; padding-top:1.25rem; border-top:2px solid #f3f4f6;';
+  section.innerHTML = `
+    <p style="margin:0 0 0.75rem; font-weight:700; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.06em; color:#9ca3af;">${t('companyProfile.matchActionsTitle')}</p>
+    <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+      <button id="spFavBtn" onclick="spToggleFavorite()"
+        class="btn btn-small"
+        style="${isFav ? 'background:#fef2f2;color:#dc2626;border-color:#fecaca;' : ''}">
+        ${isFav ? t('companyProfile.matchFavourited') : t('companyProfile.matchFavourite')}
+      </button>
+      <button id="spViewedBtn" onclick="spMarkViewed()"
+        class="btn btn-small"
+        style="${isViewed ? 'background:#f0fdf4;color:#059669;border-color:#bbf7d0;' : ''}">
+        ${isViewed ? t('companyProfile.matchViewed') : t('companyProfile.matchMarkViewed')}
+      </button>
+      <button id="spInterviewBtn" onclick="spInviteInterview()"
+        class="btn btn-small ${hasInterview ? '' : 'btn-primary'}"
+        style="${hasInterview ? 'background:#d1fae5;color:#065f46;' : ''}">
+        ${hasInterview ? t('companyProfile.matchInviteScheduled') : t('companyProfile.matchInvite')}
+      </button>
+    </div>`;
+  document.getElementById('spContent').appendChild(section);
+}
+
+async function ensureCompanyApp() {
+  if (_spAppId) return _spAppId;
+  const { data: existing } = await supabaseClient
+    .from('applications')
+    .select('application_id')
+    .eq('position_id',  _spPositionId)
+    .eq('student_id',   _spStudentId)
+    .eq('initiated_by', 'company')
+    .maybeSingle();
+  if (existing) { _spAppId = existing.application_id; return _spAppId; }
+  const { data, error } = await supabaseClient
+    .from('applications')
+    .insert({ position_id: _spPositionId, student_id: _spStudentId, initiated_by: 'company', status: 'pending', applied_at: new Date().toISOString() })
+    .select('application_id')
+    .single();
+  if (error) throw error;
+  _spAppId = data.application_id;
+  await _refreshPositionApplicants(_spPositionId);
+  return _spAppId;
+}
+
+async function spToggleFavorite() {
+  try {
+    const appId = await ensureCompanyApp();
+    const btn = document.getElementById('spFavBtn');
+    const nowFav = btn.textContent.trim().startsWith('♡');
+    await supabaseClient.from('applications').update({ is_favorited: nowFav }).eq('application_id', appId);
+    btn.innerHTML = nowFav ? t('companyProfile.matchFavourited') : t('companyProfile.matchFavourite');
+    btn.style.cssText = nowFav ? 'background:#fef2f2;color:#dc2626;border-color:#fecaca;' : '';
+    await _refreshPositionApplicants(_spPositionId);
+  } catch(err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+async function spMarkViewed() {
+  try {
+    const appId = await ensureCompanyApp();
+    await supabaseClient.from('applications').update({ status: 'viewed' }).eq('application_id', appId);
+    const btn = document.getElementById('spViewedBtn');
+    btn.innerHTML = t('companyProfile.matchViewed');
+    btn.style.cssText = 'background:#f0fdf4;color:#059669;border-color:#bbf7d0;';
+    await _refreshPositionApplicants(_spPositionId);
+  } catch(err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+async function spInviteInterview() {
+  try {
+    const appId    = await ensureCompanyApp();
+    const name     = document.getElementById('spFullName')?.textContent || 'Student';
+    const posTitle = document.querySelector(`#posting-${_spPositionId} h4`)?.textContent || 'Position';
+    scheduleInterviewProfile(name, _spStudentEmail, posTitle, appId, '');
+    const interviewModal = document.getElementById('interviewDateModal');
+    if (interviewModal) interviewModal.style.zIndex = '12000';
+  } catch(err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+async function _refreshPositionApplicants(positionId) {
+  // Refresh applicants accordion
+  const appsContainer = document.getElementById(`pos-apps-${positionId}`);
+  if (!appsContainer) { await loadCompanyPostings(); return; }
+  delete appsContainer.dataset.loaded;
+  if (appsContainer.dataset.open === 'true') await fetchPositionApplicants(positionId, appsContainer);
+
+  // Refresh matching students accordion (force reload so viewed/moved students update)
+  const matchContainer = document.getElementById(`pos-match-${positionId}`);
+  if (matchContainer) {
+    delete matchContainer.dataset.loaded;
+    if (matchContainer.dataset.open === 'true') await fetchMatchingStudents(positionId, matchContainer);
   }
 }
 
@@ -3383,7 +3686,18 @@ function downloadCV() {
 let practiceRequests = [];
 let showAllRequests = false;
 let reqSelectedCategoryIds = [];
+let currentEditRequestId = null;
 let positionSelectedCategoryIds = [];
+let positionDataMap = {}; // position_id → { groupIds, periodStart, periodEnd }
+let _lastCompanyPostings = null;
+
+function rerenderCompanyPostings() {
+  if (_lastCompanyPostings !== null) fillCompanyPostings(_lastCompanyPostings);
+}
+let _spPositionId   = null;
+let _spStudentId    = null;
+let _spAppId        = null;
+let _spStudentEmail = '';
 let _lastCompanyApplications = null;
 
 function rerenderCompanyApplications() {
@@ -3408,7 +3722,7 @@ function rerenderCompanyApplications() {
 async function loadPracticeRequests(studentId) {
   const { data, error } = await supabaseClient
     .from('student_practice_requests')
-    .select('*, student_request_categories(category_id, job_categories(title)), Companies:found_company_id(company_name)')
+    .select('*, student_request_categories(category_id, job_categories(title, group_id)), Companies:found_company_id(company_name)')
     .eq('student_id', studentId)
     .order('period_start', { ascending: false });
 
@@ -3501,6 +3815,16 @@ function renderRequestCard(r, today) {
   const nextLabel = r.status === 'found' ? 'Back to Searching' : 'Mark as Found';
   const companyName = r.Companies?.company_name || r.found_company_name || null;
 
+  // Build "Find matches" URL from request period, student city, and top-level groups
+  const groupIds = [...new Set(
+    (r.student_request_categories || [])
+      .map(sc => sc.job_categories?.group_id)
+      .filter(Boolean)
+  )];
+  const catIds = (r.student_request_categories || [])
+    .map(sc => sc.category_id)
+    .filter(Boolean);
+
   return `
     <div class="practice-request-card${isExpired ? ' expired' : ''}">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem; flex-wrap:wrap;">
@@ -3516,8 +3840,12 @@ function renderRequestCard(r, today) {
       <div style="display:flex; gap:0.5rem; margin-top:0.75rem; flex-wrap:wrap;">
         <button style="background:#eef2ff; color:var(--primary-color); border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:0.8rem; font-weight:600;"
           onclick="${nextStatus === 'found' ? `openFoundCompanyModal(${r.request_id})` : `togglePracticeRequestStatus(${r.request_id}, 'searching')`}">${nextLabel}</button>
+        <button style="background:#f8fafc; color:#374151; border:1px solid #e5e7eb; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:0.8rem; font-weight:600;"
+          onclick="openEditRequestModal(${r.request_id})">Edit</button>
         <button style="background:#fef2f2; color:#ef4444; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:0.8rem; font-weight:600;"
           onclick="deletePracticeRequest(${r.request_id})">Delete</button>
+        <button style="background:#f0fdf4; color:#16a34a; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:0.8rem; font-weight:600;"
+          onclick="goToMatchingPositions(${r.request_id})">🔍 Find matches</button>
       </div>
     </div>
   `;
@@ -3608,11 +3936,53 @@ function toggleShowAllRequests() {
  *     avauskerrasta. Tyhjentää kaikki lomakekentät ja rakentaa valikkolistauksen
  *     uudelleen ennen modaalin näyttämistä.
  */
+// Builds the match URL at click time so city is always up-to-date.
+function goToMatchingPositions(requestId) {
+  const r = practiceRequests.find(req => req.request_id === requestId);
+  if (!r) return;
+
+  const groupIds = [...new Set(
+    (r.student_request_categories || [])
+      .map(sc => sc.job_categories?.group_id)
+      .filter(Boolean)
+  )];
+  const catIds = (r.student_request_categories || [])
+    .map(sc => sc.category_id)
+    .filter(Boolean);
+
+  const city = currentProfile?.city || localStorage.getItem('userCity') || '';
+  const params = new URLSearchParams();
+  if (city)            params.set('matchCity',   city);
+  if (r.period_start)  params.set('matchStart',  r.period_start);
+  if (r.period_end)    params.set('matchEnd',    r.period_end);
+  if (groupIds.length) params.set('matchGroups', groupIds.join(','));
+  if (catIds.length)   params.set('matchCatIds', catIds.join(','));
+
+  window.location.href = `internships.html?${params.toString()}`;
+}
+
 function openAddRequestModal() {
+  currentEditRequestId = null;
   reqSelectedCategoryIds = [];
   document.getElementById('reqPeriodStart').value = '';
   document.getElementById('reqPeriodEnd').value = '';
   document.getElementById('reqNotes').value = '';
+  document.querySelector('#addRequestModal h3').textContent = 'Add Internship Request';
+  renderReqSelectedCategories();
+  buildReqCategoryDropdown('');
+  document.getElementById('addRequestModal').style.display = 'block';
+}
+
+function openEditRequestModal(requestId) {
+  const r = practiceRequests.find(req => req.request_id === requestId);
+  if (!r) return;
+
+  currentEditRequestId = requestId;
+  reqSelectedCategoryIds = (r.student_request_categories || []).map(sc => sc.category_id);
+  document.getElementById('reqPeriodStart').value = r.period_start || '';
+  document.getElementById('reqPeriodEnd').value   = r.period_end   || '';
+  document.getElementById('reqNotes').value       = r.notes        || '';
+  document.querySelector('#addRequestModal h3').textContent = 'Edit Internship Request';
   renderReqSelectedCategories();
   buildReqCategoryDropdown('');
   document.getElementById('addRequestModal').style.display = 'block';
@@ -3646,30 +4016,49 @@ function closeAddRequestModal() {
  */
 async function savePracticeRequest() {
   const periodStart = document.getElementById('reqPeriodStart').value;
-  const periodEnd = document.getElementById('reqPeriodEnd').value;
-  const notes = document.getElementById('reqNotes').value.trim();
+  const periodEnd   = document.getElementById('reqPeriodEnd').value;
+  const notes       = document.getElementById('reqNotes').value.trim();
 
   if (!periodStart || !periodEnd) { showToast('Please set both start and end dates.', 'warning'); return; }
-  if (periodEnd < periodStart) { showToast('End date must be after start date.', 'warning'); return; }
+  if (periodEnd < periodStart)    { showToast('End date must be after start date.', 'warning'); return; }
 
   try {
-    const { data: newReq, error } = await supabaseClient
-      .from('student_practice_requests')
-      .insert({
-        student_id: currentProfile.id,
-        period_start: periodStart,
-        period_end: periodEnd,
-        status: 'searching',
-        notes: notes || null
-      })
-      .select()
-      .single();
+    let requestId;
 
-    if (error) throw error;
+    if (currentEditRequestId) {
+      // Update existing request
+      const { error } = await supabaseClient
+        .from('student_practice_requests')
+        .update({ period_start: periodStart, period_end: periodEnd, notes: notes || null })
+        .eq('request_id', currentEditRequestId);
+      if (error) throw error;
+      requestId = currentEditRequestId;
+
+      // Replace categories: delete old, insert new
+      await supabaseClient
+        .from('student_request_categories')
+        .delete()
+        .eq('request_id', requestId);
+    } else {
+      // Insert new request
+      const { data: newReq, error } = await supabaseClient
+        .from('student_practice_requests')
+        .insert({
+          student_id:   currentProfile.id,
+          period_start: periodStart,
+          period_end:   periodEnd,
+          status:       'searching',
+          notes:        notes || null
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      requestId = newReq.request_id;
+    }
 
     if (reqSelectedCategoryIds.length > 0) {
       const catRows = reqSelectedCategoryIds.map(catId => ({
-        request_id: newReq.request_id,
+        request_id:  requestId,
         category_id: catId
       }));
       const { error: catError } = await supabaseClient
