@@ -462,7 +462,7 @@ function filterJobs() {
     const jobEnd = card.getAttribute('data-end');
 
     const matchesSearch = !searchText || title.includes(searchText) || company.includes(searchText);
-    const matchesLocation = !locationText || location.includes(locationText);
+    const matchesLocation = !locationText || location.includes(locationText) || location.toLowerCase() === 'remote';
     let matchesCategory = true;
     if (categoryId && !_matchMode) {
       if (categoryId.startsWith('group:')) {
