@@ -858,6 +858,7 @@ async function openEditModal(id) {
       // Fill fields
       document.getElementById('pTitle').value = data.title || "";
       document.getElementById('pDesc').value = data.description || "";
+      document.getElementById('pSalary').value = data.salary || "";
       document.getElementById('pRespon').value = data.responsibilities || "";
       document.getElementById('pReqs').value = data.requirements || "";
       document.getElementById('pStatus').value = data.status || "active";
@@ -900,6 +901,7 @@ async function submitPosition() {
       description: document.getElementById('pDesc').value,
       responsibilities: document.getElementById('pRespon').value,
       requirements: document.getElementById('pReqs').value,
+      salary: document.getElementById('pSalary').value.trim() || null,
       status: document.getElementById('pStatus').value,
       period_start: document.getElementById('pStart').value || null,
       period_end: document.getElementById('pEnd').value || null,

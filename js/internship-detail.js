@@ -133,11 +133,17 @@ async function loadInternshipDetail(positionId) {
             const endDate = position.period_end ? formatDateEuropean(position.period_end) : 'Open';
             bDuration.textContent = `${startDate} - ${endDate}`;
         }
-  
-        const salaryEl = document.getElementById('displaySalary');
-        if (salaryEl) {
-            const salaryValue = position.salary != null ? String(position.salary).trim() : '';
-            salaryEl.textContent = salaryValue !== '' ? salaryValue : 'Negotiable';
+
+        const bSalary = document.getElementById('badgeSalary');
+        if (bSalary) {
+            bSalary.textContent = formatSalary(position.salary);
+        }
+
+        function formatSalary(salary) {
+            if (salary == null || salary === '') return 'Negotiable';
+            const numSalary = parseFloat(salary);
+            if (isNaN(numSalary)) return salary;
+            return `${Math.round(numSalary)}€ / month`;
         }
         
                 const durationEl = document.getElementById('displayDuration');
