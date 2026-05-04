@@ -1202,19 +1202,6 @@ function fillCompanyPostings(positions) {
                     <a href="javascript:void(0)" id="req-btn-${pos.position_id}" onclick="toggleReqText(${pos.position_id})" style="font-size:0.78rem;margin-left:0.25rem;">${t('companyProfile.posShowMore')}</a>` : ''}
                   </p>
                 </div>` : ''}
-                ${appCount > 0 ? `
-                <div class="position-apps-toggle">
-                  <button id="pos-apps-btn-${pos.position_id}" onclick="togglePositionApplicants(${pos.position_id}, ${appCount})"
-                    style="background:none; border:none; cursor:pointer; color:#6366f1; font-size:0.85rem; font-weight:600; padding:0; display:flex; align-items:center; gap:0.3rem;">
-                    <span id="pos-apps-arrow-${pos.position_id}">▼</span> 👥 ${t('companyProfile.posApplications')} (${appCount})
-                  </button>
-                </div>` : ''}
-                <div class="position-apps-toggle" style="margin-top:0.4rem;">
-                  <button id="pos-match-btn-${pos.position_id}" onclick="toggleMatchStudents(${pos.position_id})"
-                    style="background:none; border:none; cursor:pointer; color:#059669; font-size:0.85rem; font-weight:600; padding:0; display:flex; align-items:center; gap:0.3rem;">
-                    <span id="pos-match-arrow-${pos.position_id}">▼</span> ${t('companyProfile.matchFindBtn')}
-                  </button>
-                </div>
               </div>
               <div class="position-card-right">
                 <span class="status-badge" style="${sc}">${pos.status}</span>
@@ -1225,8 +1212,21 @@ function fillCompanyPostings(positions) {
                 </div>
               </div>
             </div>
-            ${appCount > 0 ? `<div id="pos-apps-${pos.position_id}" style="display:none; border-top:1px solid #f0f0f0; margin-top:0.5rem; padding-top:0.25rem;"></div>` : ''}
-            <div id="pos-match-${pos.position_id}" style="display:none; border-top:1px solid #f0f0f0; margin-top:0.5rem; padding-top:0.25rem;"></div>
+            ${appCount > 0 ? `
+            <div class="position-apps-toggle" style="border-top:1px solid #f0f0f0; margin-top:0.5rem; padding-top:0.4rem;">
+              <button id="pos-apps-btn-${pos.position_id}" onclick="togglePositionApplicants(${pos.position_id}, ${appCount})"
+                style="background:none; border:none; cursor:pointer; color:#6366f1; font-size:0.85rem; font-weight:600; padding:0; display:flex; align-items:center; gap:0.3rem;">
+                <span id="pos-apps-arrow-${pos.position_id}">▼</span> 👥 ${t('companyProfile.posApplications')} (${appCount})
+              </button>
+            </div>
+            <div id="pos-apps-${pos.position_id}" style="display:none; padding-top:0.25rem;"></div>` : ''}
+            <div class="position-apps-toggle" style="border-top:1px solid #f0f0f0; margin-top:0.5rem; padding-top:0.4rem;">
+              <button id="pos-match-btn-${pos.position_id}" onclick="toggleMatchStudents(${pos.position_id})"
+                style="background:none; border:none; cursor:pointer; color:#059669; font-size:0.85rem; font-weight:600; padding:0; display:flex; align-items:center; gap:0.3rem;">
+                <span id="pos-match-arrow-${pos.position_id}">▼</span> ${t('companyProfile.matchFindBtn')}
+              </button>
+            </div>
+            <div id="pos-match-${pos.position_id}" style="display:none; padding-top:0.25rem;"></div>
           </div>`;
       }).join('')
     : `<p style="text-align:center; color:var(--text-light); font-size:0.85rem;">No active postings.</p>`;
