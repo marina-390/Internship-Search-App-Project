@@ -15,25 +15,6 @@
              before external auth-page.js finishes loading. Toggles .active on form wrappers and tab buttons.
          FI: Inline switchTab() on määritelty tässä <head>:ssä, jotta välilehtien vaihto toimii heti,
              ennen kuin ulkoinen auth-page.js on ladattu. Vaihtaa .active-luokkaa lomakkeissa ja painikkeissa. -->
-    <script>
-      function switchTab(tab) {
-        var lf = document.getElementById("loginForm");
-        var rf = document.getElementById("registerForm");
-        var tabs = document.querySelectorAll(".form-tab");
-        if (!lf || !rf) return;
-        if (tab === "login") {
-          lf.classList.add("active");
-          rf.classList.remove("active");
-          if (tabs[0]) tabs[0].classList.add("active");
-          if (tabs[1]) tabs[1].classList.remove("active");
-        } else {
-          lf.classList.remove("active");
-          rf.classList.add("active");
-          if (tabs[0]) tabs[0].classList.remove("active");
-          if (tabs[1]) tabs[1].classList.add("active");
-        }
-      }
-    </script>
   </head>
   <body>
     <!-- ── NAVIGATION ──────────────────────────────────────────

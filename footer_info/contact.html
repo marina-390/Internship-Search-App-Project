@@ -275,63 +275,7 @@
       type="text/javascript"
       src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"
     ></script>
-
-    <script>
-      // Hide CTA login/register section if already logged in
-      document.addEventListener("DOMContentLoaded", function () {
-        const loggedIn =
-          localStorage.getItem("isLoggedIn") === "true" &&
-          localStorage.getItem("userId");
-        const cta = document.getElementById("ctaSection");
-        if (loggedIn && cta) cta.style.display = "none";
-      });
-
-      // Initialize EmailJS
-      (function () {
-        emailjs.init("sEPTKkb6HZBc_Qopf");
-      })();
-
-      async function handleContactForm(event) {
-        event.preventDefault();
-
-        // Check if client exists
-        if (typeof supabaseClient === "undefined") {
-          alert("Error: Supabase is not connected. Check your file paths!");
-          return;
-        }
-
-        const formData = new FormData(event.target);
-        const contactData = {
-          name: formData.get("name"),
-          email: formData.get("email"),
-          subject: formData.get("subject"),
-          message: formData.get("message"),
-        };
-
-        try {
-          // THE FIX: Use .select() to confirm it was added
-          const { data, error: dbError } = await supabaseClient
-            .from("contact_messages")
-            .insert([contactData])
-            .select();
-
-          if (dbError) throw dbError;
-
-          await emailjs.send("service_q4hp8tj", "template_vq3sxru", {
-            to_email: "internhub88@gmail.com",
-            from_name: contactData.name,
-            from_email: contactData.email,
-            subject: `[CONTACT FORM] ${contactData.subject}`,
-            message: contactData.message,
-          });
-
-          showToast("Message saved and sent to Admin!", "success");
-          event.target.reset();
-        } catch (err) {
-          console.error("Submission Error:", err);
-          showToast("Failed to send: " + err.message, "error");
-        }
-      }
-    </script>
+    <script src="../js/footer-cta.js"></script>
+    <script src="../js/contact.js"></script>
   </body>
 </html>

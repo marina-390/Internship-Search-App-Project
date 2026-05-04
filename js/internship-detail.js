@@ -1164,3 +1164,30 @@ async function deleteApplicationFromSidebar(applicationId, studentName) {
     showToast('Error deleting application: ' + err.message, 'error');
   }
 }
+
+document.addEventListener('DOMContentLoaded', async function () {
+  const urlParams = new URLSearchParams(window.location.search);
+  const positionId = urlParams.get('id') || (typeof getUrlParameter === 'function' ? getUrlParameter('id') : null);
+
+  if (!positionId) {
+    console.error('Missing internship ID in URL.');
+    return;
+  }
+
+  try {
+    await loadInternshipDetail(positionId);
+  } catch (err) {
+    console.error('Detail page initialization failed:', err);
+  }
+
+  const quickApplyForm = document.getElementById('quickApplyForm');
+  if (quickApplyForm) {
+    quickApplyForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (window.currentPosition) {
+        showToast(`Applied to ${window.currentPosition.title}!`, 'success');
+        this.reset();
+      }
+    });
+  }
+});

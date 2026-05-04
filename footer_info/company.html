@@ -255,15 +255,6 @@
     <script src="../js/script.js"></script>
     <script src="../js/cookie-consent.js"></script>
 
-    <script>
-      // Hide CTA login/register section if already logged in
-      document.addEventListener("DOMContentLoaded", function () {
-        const loggedIn =
-          localStorage.getItem("isLoggedIn") === "true" &&
-          localStorage.getItem("userId");
-        const cta = document.getElementById("ctaSection");
-        if (loggedIn && cta) cta.style.display = "none";
-      });
-    </script>
+    <script src="../js/footer-cta.js"></script>
   </body>
 </html>
