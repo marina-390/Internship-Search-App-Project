@@ -275,11 +275,12 @@
                      laitteiden ja istuntojen välillä. -->
             <div style="margin-top:2rem; padding-top:1.5rem; border-top:1px solid #e5e7eb;">
               <h4 data-i18n="studentProfile.langTitle" style="margin:0 0 0.75rem; color:#1f2937;">🌐 Interface Language</h4>
-              <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-                <button class="lang-btn lang-pref-btn" data-lang="en" onclick="savePreferredLang('en')">🇬🇧 English</button>
-                <button class="lang-btn lang-pref-btn" data-lang="fi" onclick="savePreferredLang('fi')">🇫🇮 Suomi</button>
-                <button class="lang-btn lang-pref-btn" data-lang="sv" onclick="savePreferredLang('sv')">🇸🇪 Svenska</button>
-              </div>
+              <select id="langPrefSelect" onchange="savePreferredLang(this.value)"
+                style="padding:6px 10px; border:1px solid #d1d5db; border-radius:6px; font-size:0.9rem; color:#374151; background:#fff; cursor:pointer;">
+                <option value="en">🇬🇧 English</option>
+                <option value="fi">🇫🇮 Suomi</option>
+                <option value="sv">🇸🇪 Svenska</option>
+              </select>
             </div>
 
             <!-- EN: Danger Zone — GDPR Art. 17 "right to erasure" implementation.

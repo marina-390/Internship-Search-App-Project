@@ -1116,7 +1116,6 @@ async function loadCompanyPostings() {
   if (!container || !currentProfile) return;
 
   try {
-      // Fetch positions with application counts and categories in one query
       const { data: positions, error } = await supabaseClient
           .from('positions')
           .select('position_id, title, status, requirements, period_start, period_end, applications(count), position_categories(category_id, job_categories(title, group_id))')
@@ -1124,6 +1123,21 @@ async function loadCompanyPostings() {
           .order('created_at', { ascending: false });
 
       if (error) throw error;
+
+      // Auto-close any active positions that already have an accepted student
+      const activeIds = (positions || []).filter(p => p.status === 'active').map(p => p.position_id);
+      if (activeIds.length > 0) {
+          const { data: acceptedApps } = await supabaseClient
+              .from('applications')
+              .select('position_id')
+              .eq('status', 'accepted')
+              .in('position_id', activeIds);
+          const toClose = new Set((acceptedApps || []).map(a => a.position_id));
+          if (toClose.size > 0) {
+              await supabaseClient.from('positions').update({ status: 'closed' }).in('position_id', [...toClose]);
+              (positions || []).forEach(p => { if (toClose.has(p.position_id)) p.status = 'closed'; });
+          }
+      }
 
       fillCompanyPostings(positions || []);
   } catch (err) {
@@ -1135,12 +1149,20 @@ async function loadCompanyPostings() {
 function fillCompanyPostings(positions) {
   _lastCompanyPostings = positions;
   const container = document.getElementById('companyPostingsList');
+  const showAllWrap = document.getElementById('showAllPostingsWrap');
   if (!container) return;
 
   if (!positions || positions.length === 0) {
       container.innerHTML = `<p style="text-align:center; color:var(--text-light); font-size:0.85rem;">${t('companyProfile.postingsEmpty')}</p>`;
+      if (showAllWrap) showAllWrap.style.display = 'none';
       return;
   }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const active = positions.filter(p => p.status === 'active' && new Date(p.period_end) >= today);
+  const archived = positions.filter(p => p.status !== 'active' || new Date(p.period_end) < today);
+  const toShow = showAllPostings ? positions : active;
 
   const statusColors = {
     active: 'background:#d1fae5;color:#065f46;',
@@ -1149,18 +1171,21 @@ function fillCompanyPostings(positions) {
   };
 
   positionDataMap = {};
-  container.innerHTML = positions.map(pos => {
+  // Pre-populate positionDataMap for all positions (even archived), needed for matchStudents
+  positions.forEach(pos => {
+    positionDataMap[pos.position_id] = {
+      groupIds:    [...new Set((pos.position_categories || []).map(pc => pc.job_categories?.group_id).filter(Boolean))],
+      periodStart: pos.period_start || null,
+      periodEnd:   pos.period_end   || null,
+    };
+  });
+
+  container.innerHTML = toShow.length > 0 ? toShow.map(pos => {
           const appCount = pos.applications?.[0]?.count ?? 0;
           const sc = statusColors[pos.status] || '';
           const cats = (pos.position_categories || [])
               .map(pc => `<span class="category-tag" style="font-size:0.75rem; padding:0.2rem 0.5rem;">${pc.job_categories?.title || ''}</span>`)
               .join('');
-          // Store position data for use in fetchMatchingStudents
-          positionDataMap[pos.position_id] = {
-            groupIds:    [...new Set((pos.position_categories || []).map(pc => pc.job_categories?.group_id).filter(Boolean))],
-            periodStart: pos.period_start || null,
-            periodEnd:   pos.period_end   || null,
-          };
           return `
           <div class="position-card" id="posting-${pos.position_id}">
             <div class="position-card-inner">
@@ -1203,7 +1228,20 @@ function fillCompanyPostings(positions) {
             ${appCount > 0 ? `<div id="pos-apps-${pos.position_id}" style="display:none; border-top:1px solid #f0f0f0; margin-top:0.5rem; padding-top:0.25rem;"></div>` : ''}
             <div id="pos-match-${pos.position_id}" style="display:none; border-top:1px solid #f0f0f0; margin-top:0.5rem; padding-top:0.25rem;"></div>
           </div>`;
-      }).join('');
+      }).join('')
+    : `<p style="text-align:center; color:var(--text-light); font-size:0.85rem;">No active postings.</p>`;
+
+  if (showAllWrap) {
+    if (archived.length > 0) {
+      showAllWrap.style.display = 'block';
+      const btn = document.getElementById('showAllPostingsBtn');
+      if (btn) btn.textContent = showAllPostings
+        ? 'Show active only'
+        : `Show all (${positions.length})`;
+    } else {
+      showAllWrap.style.display = 'none';
+    }
+  }
 }
 
 /**
@@ -1746,9 +1784,11 @@ function openCompanyAppModal(app) {
 
   document.getElementById('companyAppId').value = app.application_id;
 
-  // Store student_id so "View Student Profile" button can use it
   const studentIdEl = document.getElementById('companyAppStudentId');
   if (studentIdEl) studentIdEl.value = app.student_id || '';
+
+  const positionIdEl = document.getElementById('companyAppPositionId');
+  if (positionIdEl) positionIdEl.value = app.position_id || '';
 
   document.getElementById('companyAppPosition').textContent = app.positions?.title || 'Position';
   document.getElementById('companyAppName').textContent = app.full_name || 'Applicant';
@@ -2070,6 +2110,13 @@ async function saveCompanyApplicationStatus(newStatus) {
       return;
     }
 
+    if (newStatus === 'accepted') {
+      const positionId = document.getElementById('companyAppPositionId')?.value;
+      if (positionId) {
+        await supabaseClient.from('positions').update({ status: 'closed' }).eq('position_id', parseInt(positionId, 10));
+      }
+    }
+
     showToast(newStatus === 'accepted' ? 'Application accepted.' : newStatus === 'rejected' ? 'Application declined.' : 'Application updated.', newStatus === 'accepted' ? 'success' : newStatus === 'rejected' ? 'success' : 'info');
     if (modal) modal.style.display = 'none';
 
@@ -2280,12 +2327,9 @@ function fillApplications(applications) {
       return;
   }
 
-  container.innerHTML = applications.map(app => {
+  const renderCard = (app) => {
       const jobTitle = app.positions?.title || 'Unknown Position';
-      
-      // Convert the app object to a string so it can be passed into the function
       const appData = JSON.stringify(app).replace(/"/g, '&quot;');
-
       return `
           <div class="application-card" id="app-${app.application_id}">
               <div class="app-info">
@@ -2294,14 +2338,25 @@ function fillApplications(applications) {
               </div>
               <div class="app-actions" style="display: flex; gap: 8px; margin-top: 10px;">
                   <button class="btn-view" onclick="viewApplication(${app.position_id})">View</button>
-                  
                   <button class="btn-view" style="background:#f3f4f6; color:#374151;" onclick="openEditAppModal(${appData})">Edit</button>
-                  
                   <button class="btn-delete" onclick="deleteApplication(${app.application_id})">Delete</button>
               </div>
           </div>
       `;
-  }).join('');
+  };
+
+  const studentApps = applications.filter(a => a.initiated_by !== 'company');
+  const companyApps = applications.filter(a => a.initiated_by === 'company');
+
+  let html = studentApps.map(renderCard).join('');
+
+  if (companyApps.length > 0) {
+      if (studentApps.length > 0) html += '<hr style="margin:10px 0; border:none; border-top:1px solid #e5e7eb;">';
+      html += `<p style="font-size:0.75rem;font-weight:600;color:#6b7280;margin-bottom:6px;">${t('studentProfile.companyInvitationsLabel')}</p>`;
+      html += companyApps.map(renderCard).join('');
+  }
+
+  container.innerHTML = html;
 }
 
 
@@ -3685,6 +3740,7 @@ function downloadCV() {
  */
 let practiceRequests = [];
 let showAllRequests = false;
+let showAllPostings = false;
 let reqSelectedCategoryIds = [];
 let currentEditRequestId = null;
 let positionSelectedCategoryIds = [];
@@ -3920,6 +3976,11 @@ async function deletePracticeRequest(requestId) {
 function toggleShowAllRequests() {
   showAllRequests = !showAllRequests;
   fillPracticeRequests();
+}
+
+function toggleShowAllPostings() {
+  showAllPostings = !showAllPostings;
+  if (_lastCompanyPostings) fillCompanyPostings(_lastCompanyPostings);
 }
 
 // --- Add Request Modal ---

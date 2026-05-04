@@ -150,7 +150,7 @@ const TRANSLATIONS = {
       openToOffers: 'Open to offers',
       requestsTitle: 'Internship Requests', btnAddRequest: '+ Add',
       cvTitle: '📄 CV / Resume', cvEmpty: 'No CV uploaded yet.', btnUploadCv: 'Upload CV (PDF)',
-      applicationsTitle: '📋 My Applications', applicationsEmpty: 'No applications yet.',
+      applicationsTitle: '📋 My Applications', applicationsEmpty: 'No applications yet.', companyInvitationsLabel: '📨 Company invitations',
       savedTitle: '❤️ Saved Internships', savedEmpty: 'No saved internships yet.',
       langTitle: '🌐 Interface Language',
       dangerTitle: '⚠ Danger Zone',
@@ -649,7 +649,7 @@ const TRANSLATIONS = {
       openToOffers: 'Avoin tarjouksille',
       requestsTitle: 'Harjoittelupyynnöt', btnAddRequest: '+ Lisää',
       cvTitle: '📄 CV / Ansioluettelo', cvEmpty: 'CV:tä ei ole vielä ladattu.', btnUploadCv: 'Lataa CV (PDF)',
-      applicationsTitle: '📋 Omat hakemukset', applicationsEmpty: 'Ei vielä hakemuksia.',
+      applicationsTitle: '📋 Omat hakemukset', applicationsEmpty: 'Ei vielä hakemuksia.', companyInvitationsLabel: '📨 Kutsut yrityksiltä',
       savedTitle: '❤️ Tallennetut harjoittelupaikat', savedEmpty: 'Ei vielä tallennettuja harjoittelupaikkoja.',
       langTitle: '🌐 Käyttöliittymän kieli',
       dangerTitle: '⚠ Vaaravyöhyke',
@@ -1148,7 +1148,7 @@ const TRANSLATIONS = {
       openToOffers: 'Öppen för erbjudanden',
       requestsTitle: 'Praktikförfrågningar', btnAddRequest: '+ Lägg till',
       cvTitle: '📄 CV / Meritförteckning', cvEmpty: 'Inget CV har laddats upp ännu.', btnUploadCv: 'Ladda upp CV (PDF)',
-      applicationsTitle: '📋 Mina ansökningar', applicationsEmpty: 'Inga ansökningar ännu.',
+      applicationsTitle: '📋 Mina ansökningar', applicationsEmpty: 'Inga ansökningar ännu.', companyInvitationsLabel: '📨 Företagsinbjudningar',
       savedTitle: '❤️ Sparade praktikplatser', savedEmpty: 'Inga sparade praktikplatser ännu.',
       langTitle: '🌐 Gränssnittsspråk',
       dangerTitle: '⚠ Farozon',
@@ -1550,6 +1550,8 @@ function applyTranslations() {
   document.querySelectorAll('.lang-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.lang === lang);
   });
+  const langPrefSelect = document.getElementById('langPrefSelect');
+  if (langPrefSelect) langPrefSelect.value = lang;
   if (typeof updateShareCards === 'function') updateShareCards();
   if (typeof rerenderApplicantCards === 'function') rerenderApplicantCards();
   if (typeof rerenderCompanyApplications === 'function') rerenderCompanyApplications();

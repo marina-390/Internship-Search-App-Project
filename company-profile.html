@@ -382,6 +382,9 @@
           <div class="card-content" id="companyPostingsList">
             <p style="color:var(--text-light); text-align:center;" data-i18n="companyProfile.postingsEmpty">No postings yet.</p>
           </div>
+          <div id="showAllPostingsWrap" style="display:none; margin-top:0.5rem; padding:0 0 0.5rem;">
+            <button class="btn btn-small btn-secondary" id="showAllPostingsBtn" onclick="toggleShowAllPostings()">Show all</button>
+          </div>
         </div>
 
         <!-- EN: #companyApplicationsContainer — legacy placeholder; kept so that any
@@ -810,6 +813,7 @@
       <h2 style="margin-top:0; margin-bottom:1rem;" data-i18n="companyProfile.appReviewTitle">Review Application</h2>
       <input type="hidden" id="companyAppId">
       <input type="hidden" id="companyAppStudentId">
+      <input type="hidden" id="companyAppPositionId">
 
       <div style="display:grid; gap:1rem;">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.75rem;">

@@ -464,7 +464,7 @@ function filterJobs() {
     const matchesSearch = !searchText || title.includes(searchText) || company.includes(searchText);
     const matchesLocation = !locationText || location.includes(locationText);
     let matchesCategory = true;
-    if (categoryId) {
+    if (categoryId && !_matchMode) {
       if (categoryId.startsWith('group:')) {
         const groupId = categoryId.replace('group:', '');
         const groupCatIds = (card.getAttribute('data-group-ids') || '').split(',').filter(Boolean);
@@ -474,8 +474,8 @@ function filterJobs() {
         matchesCategory = cardCategoryIds.includes(catId);
       }
     }
-    const matchesStart = !dateStartLimit || (jobStart && jobStart >= dateStartLimit);
-    const matchesEnd = !dateEndLimit || (jobEnd && jobEnd <= dateEndLimit);
+    const matchesStart = _matchMode ? true : (!dateStartLimit || (jobStart && jobStart >= dateStartLimit));
+    const matchesEnd = _matchMode ? true : (!dateEndLimit || (jobEnd && jobEnd <= dateEndLimit));
 
     const favoritesOnly = document.getElementById('favoritesOnly')?.checked || false;
 
@@ -574,6 +574,7 @@ async function loadCategoriesForFilter() {
 
     filterCategory.innerHTML = '<option value="">All Categories</option>';
 
+    categoryGroupMap = {};
     groups.forEach(group => {
       // Group-level option (selecting this matches ALL categories in the group)
       const groupOpt = document.createElement('option');
@@ -584,6 +585,7 @@ async function loadCategoriesForFilter() {
 
       // Individual category options indented under the group
       (group.job_categories || []).forEach(cat => {
+        categoryGroupMap[cat.category_id] = group.group_id;
         const catOpt = document.createElement('option');
         catOpt.value = `cat:${cat.category_id}`;
         catOpt.textContent = `  - ${cat.title}`;
@@ -690,22 +692,31 @@ async function markAppliedPositions() {
 
     const { data: apps } = await supabaseClient
       .from('applications')
-      .select('position_id')
+      .select('position_id, initiated_by')
       .eq('student_id', profile.id);
     if (!apps || apps.length === 0) return;
 
-    const appliedIds = new Set(apps.map(a => a.position_id?.toString()));
+    const appliedIds  = new Set(apps.filter(a => a.initiated_by !== 'company').map(a => a.position_id?.toString()));
+    const invitedIds  = new Set(apps.filter(a => a.initiated_by === 'company').map(a => a.position_id?.toString()));
 
     document.querySelectorAll('.job-card').forEach(card => {
       const jobId = card.getAttribute('data-job-id');
-      if (!appliedIds.has(jobId)) return;
       if (card.querySelector('.applied-badge')) return;
-      const badge = document.createElement('span');
-      badge.className = 'applied-badge';
-      badge.textContent = '✓ Applied';
-      badge.style.cssText = 'display:inline-block; background:#dcfce7; color:#16a34a; font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:999px; margin-left:0.5rem; vertical-align:middle;';
-      const title = card.querySelector('.job-title');
-      if (title) title.appendChild(badge);
+      if (appliedIds.has(jobId)) {
+        const badge = document.createElement('span');
+        badge.className = 'applied-badge';
+        badge.textContent = '✓ Applied';
+        badge.style.cssText = 'display:inline-block; background:#dcfce7; color:#16a34a; font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:999px; margin-left:0.5rem; vertical-align:middle;';
+        const title = card.querySelector('.job-title');
+        if (title) title.appendChild(badge);
+      } else if (invitedIds.has(jobId)) {
+        const badge = document.createElement('span');
+        badge.className = 'applied-badge';
+        badge.textContent = '📨 Invited by company';
+        badge.style.cssText = 'display:inline-block; background:#ede9fe; color:#6d28d9; font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:999px; margin-left:0.5rem; vertical-align:middle;';
+        const title = card.querySelector('.job-title');
+        if (title) title.appendChild(badge);
+      }
     });
   } catch (e) {
     console.error('[markAppliedPositions]', e);
@@ -760,8 +771,16 @@ async function loadInternships() {
       throw error;
     }
 
+    // Exclude positions that already have an accepted student
+    const { data: acceptedApps } = await supabaseClient
+      .from('applications')
+      .select('position_id')
+      .eq('status', 'accepted');
+    const acceptedPositionIds = new Set((acceptedApps || []).map(a => a.position_id));
+    const visiblePositions = (positions || []).filter(p => !acceptedPositionIds.has(p.position_id));
+
     // Load company names in bulk to avoid N+1 queries
-    const companyIds = [...new Set((positions || []).map(p => p.company_id).filter(Boolean))];
+    const companyIds = [...new Set(visiblePositions.map(p => p.company_id).filter(Boolean))];
     let companyMap = {};
     if (companyIds.length > 0) {
       const { data: companies, error: companyError } = await supabaseClient
@@ -777,7 +796,7 @@ async function loadInternships() {
     }
 
 
-    if (!positions || positions.length === 0) {
+    if (visiblePositions.length === 0) {
       jobsList.innerHTML = '';
       if (noResults) noResults.style.display = 'block';
       return;
@@ -790,7 +809,7 @@ async function loadInternships() {
     const userRole = localStorage.getItem('userRole');
     const showHeart = userRole === '1'; // Only students see heart
 
-    jobsList.innerHTML = positions.map((pos, index) => {
+    jobsList.innerHTML = visiblePositions.map((pos, index) => {
     const company = companyMap[pos.company_id] || {};
       const companyName = company.company_name || 'Unknown Company';
       const companyLogo = company.logo_url || null;
